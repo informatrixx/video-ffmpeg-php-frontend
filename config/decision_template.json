@@ -1,0 +1,168 @@
+{
+	"presets": {
+		"high":		"High",
+		"low":		"Low",
+		"series":	"Serien",
+		"old":		"Alt"
+	},
+	"video":
+	{
+		"8k": {
+			"name":		"8K Full-UHD",
+			"width":	7680,
+			"crf":		25,
+			"preset":	"slow",
+			"crop":		"auto",
+			"resize":	"4k",
+			"old":	{
+				"nlmeans":	"medium",
+				"resize":	"720"
+			}
+		},
+		"4k": {
+			"name":		"4K UHD",
+			"width":	3840,
+			"crf":		24,
+			"preset":	"slow",
+			"crop":		"auto",
+			"resize":	false,
+			"old":	{
+				"nlmeans":	"medium",
+				"resize":	"720"
+			}
+		},
+		"quad": {
+			"name":		"Quad HD",
+			"width":	2560,
+			"crf":		24,
+			"preset":	"slow",
+			"crop":		"auto",
+			"resize":	"1080",
+			"old":	{
+				"nlmeans":	"medium",
+				"resize":	"720"
+			}
+		}, 
+		"1080": {
+			"name":		"Full HD",
+			"width":	1920,
+			"crf":		23,
+			"preset":	"slow",
+			"crop":		"auto",
+			"resize":	false,
+			"high": {
+				"crf":	22
+			},
+			"old": {
+				"nlmeans":	"medium",
+				"resize":	"720"
+			}
+		},
+		"720": {
+			"name":		"HD 720p",
+			"width":	1280,
+			"crf":		22,
+			"preset":	"slow",
+			"crop":		"auto",
+			"resize":	false,
+			"old": {
+				"nlmeans":	"medium"
+			}
+		},
+		"sd": {
+			"name":		"SD",
+			"width":	540,
+			"crf":		22,
+			"preset":	"slow",
+			"crop":		"auto",
+			"nlmeans":	"light",
+			"resize":	false
+		}
+	},
+	"audio": {
+		"choices": {
+			"ger" : {
+				"loudnorm":	"off",
+				"8":		"7.1",
+				"7":		"5.1",
+				"6":		"5.1",
+				"5":		"5.1",
+				"4":		"dpl",
+				"3":		"dpl",
+				"2":		"stereo",
+				"1":		"mono"
+			},
+			"eng" : {
+				"loudnorm":	"ebur128",
+				"preset":	"low",
+				"8":		"5.1",
+				"7":		"5.1",
+				"6":		"5.1",
+				"5":		"dpl",
+				"4":		"dpl",
+				"3":		"dpl",
+				"2":		"stereo",
+				"1":		"mono"
+			},
+			"default" : {
+				"loudnorm":	"off",
+				"8":		"7.1",
+				"7":		"5.1",
+				"6":		"5.1",
+				"5":		"5.1",
+				"4":		"dpl",
+				"3":		"dpl",
+				"2":		"stereo",
+				"1":		"mono"
+			}
+		},
+		"profiles": {
+			"mono": {
+				"profile":		"aac_he_v2",
+				"bitrate":		"48k",
+				"samplerate":	48000,
+				"channels":		1
+			},
+			"stereo": {
+				"profile":		"aac_he",
+				"bitrate":		"96k",
+				"samplerate":	48000,
+				"channels":		2,
+				"low": {
+					"profile":		"aac_he_v2",
+					"bitrate":		"56k"
+				}
+			},
+			"dpl": {
+				"profile":		"aac_he",
+				"bitrate":		"192k",
+				"samplerate":	48000,
+				"channels":		2,
+				"filter":		"aresample=matrix_encoding=dplii",
+				"low": {
+					"bitrate":	"160k"
+				}
+			},
+			"5.1": {
+				"profile":		"main",
+				"bitrate":		"512k",
+				"samplerate":	44100,
+				"channels":		6,
+				"low": {
+					"profile":		"aac_he",
+					"bitrate":		"256k",
+					"samplerate":	48000
+				}
+			},
+			"7.1": {
+				"profile":		"main",
+				"bitrate":		"640k",
+				"samplerate":	44100,
+				"channels":		8
+			}
+		}
+	},
+	"subtitles": {
+		"pick": ["ger", "eng"]	
+	}
+}

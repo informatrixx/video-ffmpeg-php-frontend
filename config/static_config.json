@@ -1,0 +1,78 @@
+{
+	"video": {
+		"presets": {
+			"ultrafast":	"Ultrafast",	
+			"superfast":	"Superfast",	
+			"veryfast":		"Veryfast",	
+			"faster":		"Faster",	
+			"fast":			"Fast",	
+			"medium":		"Medium",	
+			"slow":			"Slow",	
+			"slower":		"Slower",	
+			"veryslow":		"Veryslow",	
+			"placebo":		"Placebo"	
+		},
+		"nlmeans": {
+			"off": {
+				"name":		"-kein Entrauschen-",
+				"value":	0,
+				"default":	true
+			},
+			"light": {
+				"name":		"Leicht",
+				"value":	"1.0:7:5:3:3"
+			},
+			"medium": {
+				"name":		"Mittel",
+				"value":	"3.0:9:9:5:5"
+			},
+			"strong": {
+				"name":		"Stark",
+				"value":	"5.0:11:11:7:7"
+			}
+		}
+	},
+	"audio": {
+		"profile": {
+			"default":		"Main (LC)",	
+			"aac_he":		"HE-AAC",	
+			"aac_he_v2":	"HE-AACv2"	
+		},
+		"channels": {
+			"1":	"Mono",
+			"2":	"Stereo",
+			"dpl":	"Dolby Pro Logic II",
+			"6":	"5.1 (Surround)",
+			"8":	"7.1 (Surround)"
+		},
+		"bitrate": ["32k", "40k", "48k", "56k", "64k", "80k", "96k", "112k", "128k", "160k", "192k", "224k", "256k", "320k", "448k", "512k", "640k"],
+		"samplerate": [32000, 44100, 48000],
+		"loudnorm": {
+			"ebur128": {
+				"name":	"EBU R128 (TV)",
+				"I":	-23,
+				"TP":	-2,
+				"LRA":	7
+			},
+			"aes": {
+				"name":	"AES (Radio)",
+				"I":	-16,
+				"TP":	-1.5,
+				"LRA":	11
+			},
+			"off": {
+				"name":	"-keine Loudnorm-"
+			}
+		}
+	},
+	"languages": {
+		"ger":	"Deutsch",	
+		"eng":	"English",
+		"unknown":	"-Unbekannt-"
+	},
+	"queue": {
+		"max_convert_tasks": 1,
+		"max_scan_tasks": 5,
+		"max_unpack_tasks": 1
+	}
+}
