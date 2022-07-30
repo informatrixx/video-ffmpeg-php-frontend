@@ -3,8 +3,12 @@
 	header('Cache-Control: no-store, no-cache, must-revalidate');
 	header('X-Accel-Buffering: no');
 	
+	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
+	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../run'), characters: '/') . '/');
+
+	define(constant_name: 'RESPONSE_SOCKET_FILE', value: tempnam(directory: RUN_DIR, prefix: '.sock.'));
+
 	define(constant_name: 'QUMA_ID', value: file_get_contents('../config/ID'));
-	define(constant_name: 'RESPONSE_SOCKET_FILE', value: tempnam(directory: __DIR__, prefix: '.sock.'));	
 	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents('../config.json'), associative: true));
 	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents('../config/static_config.json'), associative: true));
 
@@ -35,7 +39,7 @@
 	$aQueueManagerSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
 	
 	//Send message to socket without connection
-	if(socket_sendto(socket: $aQueueManagerSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: null, address: "../quma/quma.sock") === false)
+	if(socket_sendto(socket: $aQueueManagerSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: null, address: "../run/quma.sock") === false)
 		$aResult['error'] = socket_strerror(socket_last_error());
 	
 	//Create a temporary socket for the response

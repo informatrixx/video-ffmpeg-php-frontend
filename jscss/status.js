@@ -62,7 +62,7 @@ function displayProgress(aProgressData)
 			aTargetTable.appendChild(aTargetTR);
 		}
 		else
-			var aTargetTR = document.getElementsByClassName(aDataKeys[i])[0];
+			var aTargetTR = aTargetTable.getElementsByClassName(aDataKeys[i])[0];
 
 		aTargetTR.innerHTML = '<td>' + aDataKeys[i] + '</td><td>' + aData[aDataKeys[i]] + '</td>';
 	}

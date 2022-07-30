@@ -8,9 +8,13 @@
 
 
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
-	define(constant_name: 'PID_FILE', value: SCRIPT_DIR . pathinfo(path: __FILE__, flags: PATHINFO_FILENAME) . '.pid');
+	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../run'), characters: '/') . '/');
+	
+	define(constant_name: 'PID_FILE', value: RUN_DIR . pathinfo(path: __FILE__, flags: PATHINFO_FILENAME) . '.pid');
+	define(constant_name: 'CONTROL_SOCKET_FILE', value: RUN_DIR . 'quma.sock');
+
 	define(constant_name: 'QUEUE_FILE', value: SCRIPT_DIR . 'queue.json');
-	define(constant_name: 'CONTROL_SOCKET_FILE', value: SCRIPT_DIR . 'quma.sock');
+	
 	
 	
 	//Check if PID file is orphaned or an old Process is still running
@@ -23,7 +27,7 @@
 
 	function shutDownFunction()
 	{
-		global $gShMStatus, $gControlSocket, $gConvertQueue;
+		global $gControlSocket, $gConvertQueue;
 		
 		_msg(message: 'Shutdown...');
 		
@@ -50,9 +54,6 @@
 		_msg(message: 'Removing PID File...', CRF: '');
 		_msg(message: unlink(PID_FILE) ? 'OK' : 'Error!', fixedWidth: 6);
 			
-		_msg(message: 'Deleting shared memory...', CRF: '');
-		_msg(message: shmop_delete($gShMStatus) ? 'OK' : 'Error!', fixedWidth: 6);
-		
 		_msg(message: 'Deleting control socket...', CRF: '');
 		socket_close($gControlSocket);
 		_msg(message: unlink(CONTROL_SOCKET_FILE) ? 'OK' : 'Error!', fixedWidth: 6);
@@ -107,14 +108,18 @@
 	
 	function statusEcho(string $topic, array $statusArray)
 	{
-		global $gShMStatus;
+		global $gStatusSockets;
 		
 		$aDataMessage = array(
 			"topic"	=> $topic,
 			"data"	=> $statusArray,
 			);
 		
-		shmop_write(shmop: $gShMStatus, data: json_encode(value: $aDataMessage) . "\0", offset: 0);
+		$aMessage = json_encode(value: $aDataMessage) . '\0';
+		
+		foreach($gStatusSockets as $aSocketIndex => $aStatusSocket)
+			if(@socket_send(socket: $aStatusSocket, data: $aMessage, length: strlen($aMessage), flags: MSG_EOR) === false)
+				unset($gStatusSockets[$aSocketIndex]);
 	}
 	
 	function readConvertQueue()
@@ -244,10 +249,6 @@
 	define(constant_name: 'MY_ID', value: file_get_contents(SCRIPT_DIR . '../config/ID'));
 
 	
-	//Init shared memory for status reports
-	$aShMStatusKey = ftok(filename: realpath(__FILE__), project_id: 's');
-	$gShMStatus = shmop_open(key: $aShMStatusKey, mode: "c", permissions: 0644, size: 1024 * 64);
-	
 	
 	//Init socket for queue updates
 	if(file_exists(CONTROL_SOCKET_FILE))
@@ -266,6 +267,8 @@
 		'scan' =>		array(),
 		'unpack' =>		array(),
 		);
+	
+	$gStatusSockets = array();
 	
 	while(true)
 	{
@@ -299,6 +302,19 @@
 									_msg(message: 'Response socket shutdown failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
 								if(socket_close(socket: $aResponseSocket) === false)
 									_msg(message: 'Response socket closing failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+							break;
+							case 'add_status_socket':
+								_msg(message: 'Got status client request...', CRF: '');
+								$aNewStatusSocket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+								 
+								usleep(100);
+								if(socket_connect(socket: $aNewStatusSocket, address: $aControlMessage['response_sock']) === false)
+									_msg(message: 'Could not connect: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+								else
+								{
+									_msg(message: 'OK', fixedWidth: 6);
+									$gStatusSockets[] = $aNewStatusSocket;
+								}
 							break;
 						}
 				}
