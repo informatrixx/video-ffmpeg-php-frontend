@@ -421,6 +421,7 @@
 				switch(true)
 				{
 					case preg_match_all(pattern: '/\[parsed_loudnorm.+\]\s+({[^[]+})/i', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
+						_msg(message: "Got Loudnorm scan results for: " . $aQueueItem['settings']['outfile']);
 						foreach($aMatches as $aScanIndex => $aLoudnormJSON)
 							$aQueueItem['loudnorm_scan'][$aScanIndex] = json_decode(json: $aLoudnormJSON[1], associative: true);
 					break;
