@@ -38,8 +38,7 @@ At the moment the early development goal is to make a running application that c
 - Installation scripts
 
 ## Installation/Configuration
-**Not yet documented 
-No configuration files provided** -> So it's not yet installable without them**
+**Not yet documented / No configuration files provided** -> So it's not yet installable without them
 
 ## Notes
 I am from Austria!
