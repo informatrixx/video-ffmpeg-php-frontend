@@ -23,30 +23,29 @@
 
 	function shutDownFunction()
 	{
-		global $gShMStatus, $gControlSocket, $gQueueProcesses, $gConvertQueue;
+		global $gShMStatus, $gControlSocket, $gConvertQueue;
 		
 		_msg(message: 'Shutdown...');
 		
 		_msg(message: 'Terminating child processes...');
-		foreach($gQueueProcesses as $aItemID => $aProcRessource)
-		{
-			_msg(message: 'Terminating child processes...');
-			foreach($gConvertQueue as $gQueueItem)
-				if($gQueueItem['id'] == $aItemID)
+		foreach($gConvertQueue as &$aQueueItem)
+			if(isset($aQueueItem['proc']))
+			{
+				$aQueueItem['status'] = 99;
+				_msg(message: 'Child PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], CRF: '');
+				proc_terminate(process: $aQueueItem['proc']['ressource']);
+				sleep(1);
+				while(proc_get_status(process: $aQueueItem['proc']['ressource'])['running'])
 				{
-					$gQueueItem['settings']['status'] = 99;
-					_msg(message: 'Child PID: ' . proc_get_status(process: $aProcRessource)['pid'], CRF: '');
-					proc_terminate(process: $aProcRessource);
+					_msg(message: '.', CRF: '', fixedWidth: 1);
 					sleep(1);
-					while(proc_get_status(process: $aProcRessource)['running'])
-					{
-						_msg(message: '.', CRF: '', fixedWidth: 1);
-						sleep(1);
-					}
-					_msg(message: ' OK', fixedWidth: 3);
-					break;
 				}
-		}
+				_msg(message: ' OK', fixedWidth: 3);
+				break;
+			}
+		unset($aQueueItem);
+		
+		writeConvertQueue();
 		
 		_msg(message: 'Removing PID File...', CRF: '');
 		_msg(message: unlink(PID_FILE) ? 'OK' : 'Error!', fixedWidth: 6);
@@ -125,6 +124,30 @@
 		return true;
 	}
 	
+	function writeConvertQueue()
+	{
+		global $gConvertQueue;
+		
+		_msg(message: 'Writing convert queue file... ', CRF: '');
+		
+		//Create temp object and remove unwanted elements...
+		$aTempQueue = array();
+		foreach($gConvertQueue as $aQueueItem)
+		{
+			if(isset($aQueueItem['proc']))
+				unset($aQueueItem['proc']);
+			$aTempQueue[] = $aQueueItem;
+		}
+		
+		if(file_put_contents(filename: QUEUE_FILE, data: json_encode(value: $aTempQueue, flags: JSON_PRETTY_PRINT | JSON_PARTIAL_OUTPUT_ON_ERROR )) === false)
+		{
+			_msg(message: 'Error!', fixedWidth: 6);
+			_msg(message: 'Error writing queue file to disk: ' . QUEUE_FILE, toSTDERROR: true);
+		}
+		else
+			_msg(message: 'OK', fixedWidth: 6);
+	}
+	
 	function addQueueItem(array $newItem)
 	{
 		global $gConvertQueue;
@@ -135,23 +158,23 @@
 			'error' =>		'',
 			);
 		
+		_msg(message: 'Adding queue item: ' . $newItem['settings']['outfile'], CRF: '');
+		
         //Check for duplicate item
         foreach($gConvertQueue as $aQueueItem)
         {
         	if($newItem['settings']['outfolder'] == $aQueueItem['settings']['outfolder'] && $newItem['settings']['outfile'] == $aQueueItem['settings']['outfile'])
 			{
 				$aResult['error'] = 'Duplicate';
+				_msg(message: 'Duplicate', fixedWidth: 6);
 				return $aResult;
 			}
         }
 		
         $gConvertQueue[] = $newItem;
         $aResult['success'] = true;
-        _msg(message: 'Adding queue item: ' . $newItem['settings']['outfile']);
-        
-        if(file_put_contents(filename: QUEUE_FILE, data: json_encode(value: $gConvertQueue, flags: JSON_PRETTY_PRINT)) === false)
-           _msg(message: 'Error writing queue file to disk: ' . QUEUE_FILE, toSTDERROR: true);
-        
+       _msg(message: 'OK', fixedWidth: 6);
+       
         return $aResult;
 	}
 	
@@ -200,10 +223,10 @@
 	
 	/*	SCRIPT BODY	*/
 	
-	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents('../config.json'), associative: true));
-	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents('../config/static_config.json'), associative: true));
+	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config.json'), associative: true));
+	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config/static_config.json'), associative: true));
 
-	define(constant_name: 'MY_ID', value: file_get_contents('../config/ID'));
+	define(constant_name: 'MY_ID', value: file_get_contents(SCRIPT_DIR . '../config/ID'));
 
 	
 	//Init shared memory for status reports
@@ -228,8 +251,7 @@
 		'scan' =>		array(),
 		'unpack' =>		array(),
 		);
-//	$gQueueProcesses = array();		//Array for running processes
-//	$gProcessPipes = array();		//Array for I/O pipes of running processes
+	
 	
 	while(true)
 	{
@@ -259,13 +281,16 @@
 								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
 								if(socket_sendto(socket: $aResponseSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: MSG_EOF, address: $aControlMessage['response_sock']) === false)
 									_msg(message: 'Socket response send failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+								if(socket_shutdown(socket: $aResponseSocket) === false)
+									_msg(message: 'Response socket shutdown failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+								if(socket_close(socket: $aResponseSocket) === false)
+									_msg(message: 'Response socket closing failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
 							break;
 						}
 				}
 			}
 		}
-		
-		
+
 		//Read & process queue items
 		foreach($gConvertQueue as $aItemIndex => $aQueueItem)
 		{
@@ -301,7 +326,7 @@
 		if(count($gQueueTasks['scan']) < STATIC_CONFIG['queue']['max_scan_tasks'])
 		{
 			//Scan task slots are available, check if queue items are status 1 (ready to scan)
-			foreach($gConvertQueue as $aItemIndex => $aQueueItem)
+			foreach($gConvertQueue as $aItemIndex => &$aQueueItem)
 			{
 				$aItemID = $aQueueItem['id'];
 				$aItemStatus = $aQueueItem['status'];
@@ -346,7 +371,6 @@
 					//Add itemID to scan list for identification
 					$gQueueTasks['scan'][] = $aItemID;
 					
-					changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 2);
 					
 					_msg(message: 'Start scanning of: ' . $aQueueItem['settings']['outfile'], CRF: '');
 					
@@ -357,36 +381,103 @@
 						2 => array('pipe', 'w')
 						);
 					
-					$gQueueProcesses[$aItemID] = proc_open(command: $aAudioScanString, descriptor_spec: $aDescriptorSpec, pipes: $gProcessPipes[$aItemID]);
-					if(is_resource($gQueueProcesses[$aItemID]))
+					$aQueueItem['proc']['ressource'] = proc_open(command: $aAudioScanString, descriptor_spec: $aDescriptorSpec, pipes: $aQueueItem['proc']['pipes']);
+					if(is_resource($aQueueItem['proc']['ressource']))
 					{
-						_msg(message: 'PID: ' . proc_get_status(process: $gQueueProcesses[$aItemID])['pid'], fixedWidth: 12);
-						stream_set_blocking(stream: $gProcessPipes[$aItemID][1], enable: false);
-						stream_set_blocking(stream: $gProcessPipes[$aItemID][2], enable: false);
+						_msg(message: 'PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], fixedWidth: 12);
+						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
+						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 2);
 					}
 					else
 						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 92);
 				}
 			}
+			unset($aQueueItem);
+		}
+		
+		if(count($gQueueTasks['convert']) < STATIC_CONFIG['queue']['max_convert_tasks'])
+		{
+			//Convert task slots are available, check if queue items are status 3 (ready to convert)
+			foreach($gConvertQueue as $aItemIndex => $aQueueItem)
+			{
+				$aItemID = $aQueueItem['id'];
+				$aItemStatus = $aQueueItem['status'];
+				$aItemSettings = $aQueueItem['settings'];
+				
+				if($aItemStatus == 3)
+				{
+					echo "CONVERT!!!!" . PHP_EOL;
+				}
+			}
 		}
 		
 		//Check if processes have finished
-		foreach($gQueueProcesses as $aQueueItemID => $aProcess)
-		{
-			$aProcStatus = proc_get_status(process: $aProcess);
-			if($aProcStatus['running'] == false)
+		foreach($gConvertQueue as &$aQueueItem)
+			if(isset($aQueueItem['proc']))
 			{
-				foreach($gConvertQueue as $aItemIndex => $aQueueItem)
-					if($aQueueItem['id'] == $aQueueItemID)
+				//Read process output and decide what to keep...
+				$aOutput = stream_get_contents(stream: $aQueueItem['proc']['pipes'][2]);
+				switch(true)
+				{
+					case preg_match_all(pattern: '/\[parsed_loudnorm.+\]\s+({[^[]+})/i', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
+						foreach($aMatches as $aScanIndex => $aLoudnormJSON)
+							$aQueueItem['loudnorm_scan'][$aScanIndex] = json_decode(json: $aLoudnormJSON[1], associative: true);
+					break;
+					case preg_match(pattern: '@size=N/A\s+time=([\d:.]+)\sbitrate=N/A\sspeed=([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+						//echo "time={$aMatches[1]} speed={$aMatches[2]}" . PHP_EOL;
+					break;
+				}
+				
+				$aProcStatus = proc_get_status(process: $aQueueItem['proc']['ressource']);
+				if($aProcStatus['running'] == false)
+				{
+					_msg(message: "Process PID:{$aProcStatus['pid']} stopped running. Cleaning up ...");
+					
+					$aItemID = $aQueueItem['id'];
+					$aItemStatus = $aQueueItem['status'];
+					$aItemSettings = $aQueueItem['settings'];
+					
+					//Close the I/O pipes
+					fclose($aQueueItem['proc']['pipes'][0]);
+					fclose($aQueueItem['proc']['pipes'][1]);
+					fclose($aQueueItem['proc']['pipes'][2]);
+					
+					//Shutdown process
+					proc_close($aQueueItem['proc']['ressource']);
+					
+					//Unset variable
+					unset($aQueueItem['proc']);
+					
+					//Unset identifier variable from task array
+					foreach($gQueueTasks as $aTaskTopic => $aTaskTopicItems)
+						foreach($aTaskTopicItems as $aTopicItemsIndex => $aTaskItemID)
+							if($aTaskItemID == $aItemID)
+							{
+								unset($gQueueTasks[$aTaskTopic][$aTopicItemsIndex]);
+								break(2);
+							}
+					
+					if($aProcStatus['exitcode'] != 0)
 					{
-						$aItemID = $aQueueItem['id'];
-						$aItemStatus = $aQueueItem['status'];
-						$aItemSettings = $aQueueItem['settings'];
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: "9$aItemStatus");
+						continue;
+					}
+
+					switch($aItemStatus)
+					{
+						case 2:
+							//Scanning done... continue
+							if(isset($aQueueItem['loudnorm_scan']))
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 3);
+							else
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: "9$aItemStatus");
+							continue(2);
 						break;
 					}
-				
+				}
 			}
-		}
+		unset($aQueueItem);
 		
 		
 		sleep(1);
