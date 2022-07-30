@@ -105,6 +105,18 @@
 			fwrite(STDERR, $aOutMessage);
 	}
 	
+	function statusEcho(string $topic, array $statusArray)
+	{
+		global $gShMStatus;
+		
+		$aDataMessage = array(
+			"topic"	=> $topic,
+			"data"	=> $statusArray,
+			);
+		
+		shmop_write(shmop: $gShMStatus, data: json_encode(value: $aDataMessage) . "\0", offset: 0);
+	}
+	
 	function readConvertQueue()
 	{
 		global $gConvertQueue;
@@ -212,6 +224,9 @@
 			case 92:
 				_msg(message: 'Change queue item status to "Error scanning (92)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
 				break;
+			case 94:
+				_msg(message: 'Change queue item status to "Error converting (94)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
+				break;
 			case 99:
 				_msg(message: 'Change queue item status to "Abort (99)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
 				break;
@@ -231,7 +246,7 @@
 	
 	//Init shared memory for status reports
 	$aShMStatusKey = ftok(filename: realpath(__FILE__), project_id: 's');
-	$gShMStatus = shmop_open(key: $aShMStatusKey, mode: "c", permissions: 0644, size: 1024);
+	$gShMStatus = shmop_open(key: $aShMStatusKey, mode: "c", permissions: 0644, size: 1024 * 64);
 	
 	
 	//Init socket for queue updates
@@ -251,7 +266,6 @@
 		'scan' =>		array(),
 		'unpack' =>		array(),
 		);
-	
 	
 	while(true)
 	{
@@ -392,6 +406,8 @@
 					else
 						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 92);
 				}
+				if(count($gQueueTasks['scan']) >= STATIC_CONFIG['queue']['max_scan_tasks'])
+					break;
 			}
 			unset($aQueueItem);
 		}
@@ -399,7 +415,7 @@
 		if(count($gQueueTasks['convert']) < STATIC_CONFIG['queue']['max_convert_tasks'])
 		{
 			//Convert task slots are available, check if queue items are status 3 (ready to convert)
-			foreach($gConvertQueue as $aItemIndex => $aQueueItem)
+			foreach($gConvertQueue as $aItemIndex => &$aQueueItem)
 			{
 				$aItemID = $aQueueItem['id'];
 				$aItemStatus = $aQueueItem['status'];
@@ -407,9 +423,123 @@
 				
 				if($aItemStatus == 3)
 				{
-					echo "CONVERT!!!!" . PHP_EOL;
+					$aConvertString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
+					$aConvertString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
+					
+					$aStreamIndex = 0;
+					$aLoudnormIndex = 0;
+					foreach($aItemSettings['map'] as $aMapIndex => $aMapValue)
+					{
+						$aFilters = array();
+						$aDisposition = array('default' => '-', 'forced' => '-');
+						$aConvertString .= "-map $aMapValue \\" . PHP_EOL;
+						foreach($aItemSettings as $aKey => $aData)
+							if($aKey != 'map' && is_array($aData)) 
+							{
+								foreach($aData as $aDataMapIndex => $aDataValue)
+									if($aDataMapIndex == $aMapIndex)
+										switch($aKey)
+										{
+											case 'title':
+												$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("title=$aDataValue") . ' \\' . PHP_EOL;
+												break;
+											case 'loudnorm':
+												if($aDataValue != 'off' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
+												{
+													$aLNData = STATIC_CONFIG['audio']['loudnorm'][$aDataValue];
+													$aLNScan = $aQueueItem['loudnorm_scan'][$aLoudnormIndex++];
+													$aFilters[10] =	"loudnorm=I={$aLNData['I']}:TP={$aLNData['TP']}:LRA={$aLNData['LRA']}:linear=true:" .
+																	"measured_I={$aLNScan['output_i']}:measured_TP={$aLNScan['output_tp']}:measured_LRA={$aLNScan['output_lra']}:measured_thresh={$aLNScan['output_thresh']}:offset={$aLNScan['target_offset']}";
+												}
+											break;
+											case 'ac':
+												if($aDataValue != 'dpl')
+													$aConvertString .= " -$aKey:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
+												else
+												{
+													$aConvertString .= " -ac:$aStreamIndex 2" . ' \\' . PHP_EOL;
+													$aFilters[20] = "aresample=matrix_encoding=dplii";
+												}
+												break;
+												case 'nlmeans':
+													if($aDataValue != 'off')
+														$aFilters[10] = 'nlmeans=' . STATIC_CONFIG['video']['nlmeans'][$aDataValue]['value'];
+													break;
+												case 'crop':
+													if($aDataValue == 'auto')
+														$aFilters[20] = $aItemSettings['cropstring'];
+													break;
+												case 'resize':
+													if($aDataValue != '0')
+														$aFilters[30] = "scale=$aDataValue:-1";
+													break;
+												case 'default':
+												case 'forced':
+													$aDisposition[$aKey] = $aDataValue != '0' ? '+' : '-';
+													break;
+												default:
+													$aConvertString .= " -$aKey:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
+													break;
+											}
+							}
+							if(count($aFilters) > 0)
+							{
+								ksort($aFilters);
+								$aConvertString .=	" -filter:$aStreamIndex " . escapeshellarg(implode(separator: ',', array: $aFilters)) . ' \\' . PHP_EOL;
+							}
+		
+							$aConvertString .= " -disposition:$aStreamIndex ";
+							foreach($aDisposition as $aKey => $aValue)
+								$aConvertString .= "$aValue$aKey";
+							$aConvertString .= ' \\' . PHP_EOL;
+
+							$aStreamIndex++;
+					}
+					//Video codec settings x265
+					$aConvertString .= ' -c:v libx265' . ' \\' . PHP_EOL;
+					$aConvertString .= ' -x265-params "level-idc=5:deblock=false:sao=false:b-intra=false"' . ' \\' . PHP_EOL;
+					//Audio codec fdk AAC
+					$aConvertString .= ' -c:a libfdk_aac' . ' \\' . PHP_EOL;
+					//Subtitles just copy (if mapped)
+					$aConvertString .= ' -c:s copy' . ' \\' . PHP_EOL;
+					$aConvertString .= ' -reserve_index_space 100k ' . ' \\' . PHP_EOL;
+					$aConvertString .= ' -cues_to_front 1 ' . ' \\' . PHP_EOL;
+					//Filetitle and video title
+					$aConvertString .= ' -metadata ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s:v ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
+	
+					$aOutFolder = rtrim(string: $aItemSettings['outfolder'], characters: '/') . '/';
+					$aOutFile = $aItemSettings['outfile'];
+					$aConvertString .= " " . escapeshellarg("$aOutFolder$aOutFile") . PHP_EOL;
+					
+					//Add itemID to scan list for identification
+					$gQueueTasks['convert'][] = $aItemID;
+					
+					
+					_msg(message: 'Start conversion of: ' . $aQueueItem['settings']['outfile'], CRF: '');
+					
+					//Preparing I/O pipes
+					$aDescriptorSpec = array(
+						0 => array('pipe', 'r'), 
+						1 => array('pipe', 'w'),
+						2 => array('pipe', 'w')
+						);
+					
+					$aQueueItem['proc']['ressource'] = proc_open(command: $aConvertString, descriptor_spec: $aDescriptorSpec, pipes: $aQueueItem['proc']['pipes']);
+					if(is_resource($aQueueItem['proc']['ressource']))
+					{
+						_msg(message: 'PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], fixedWidth: 12);
+						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
+						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 4);
+					}
+					else
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 94);
 				}
+				if(count($gQueueTasks['convert']) >= STATIC_CONFIG['queue']['max_convert_tasks'])
+					break;
 			}
+			unset($aQueueItem);
 		}
 		
 		//Check if processes have finished
@@ -425,8 +555,31 @@
 						foreach($aMatches as $aScanIndex => $aLoudnormJSON)
 							$aQueueItem['loudnorm_scan'][$aScanIndex] = json_decode(json: $aLoudnormJSON[1], associative: true);
 					break;
-					case preg_match(pattern: '@size=N/A\s+time=([\d:.]+)\sbitrate=N/A\sspeed=([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
-						//echo "time={$aMatches[1]} speed={$aMatches[2]}" . PHP_EOL;
+					case preg_match(pattern: '@size=N/A\s+time=([\d:.]+)\sbitrate=N/A\sspeed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+						$aStatusArray = array(
+							'id'		=> $aQueueItem['id'],
+							'outfile'	=> $aQueueItem['settings']['outfile'],
+							'time' 		=> $aMatches[1],
+							'speed'		=> $aMatches[2],
+							);
+						statusEcho(topic: 'progress', statusArray: $aStatusArray);
+					break;
+					case preg_match(pattern: '@frame=\s*([\d.]+)\s+fps=\s*(\d+)\s+q=\s*([\d.]+)\s+size=\s*([\d]+\SB)\s+time=\s*([\d:.]+)\s+bitrate=\s*([\d.]+\Sbits/s)\s+speed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+						$aStatusArray = array(
+							'id'		=> $aQueueItem['id'],
+							'outfile'	=> $aQueueItem['settings']['outfile'],
+							'frame' 	=> $aMatches[1],
+							'fps'		=> $aMatches[2],
+							'q'			=> $aMatches[3],
+							'size'		=> $aMatches[4],
+							'time'		=> $aMatches[5],
+							'bitrate'	=> $aMatches[6],
+							'speed'		=> $aMatches[7],
+							);
+						statusEcho(topic: 'progress', statusArray: $aStatusArray);
+					break;
+					default:
+						echo $aOutput;
 					break;
 				}
 				

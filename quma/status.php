@@ -11,7 +11,7 @@
 	$aID = 0;
 	$aInit = true;
 	
-	$aSHMKey = ftok(filename: realpath('../config/static_config.json'), project_id: 'a');
+	$aSHMKey = ftok(filename: realpath(rtrim(string: __DIR__, characters: '/') . '/queue-manager-service.php'), project_id: 's');
 	while(!$aSHMConnected)
 	{
 		$aSHMId = shmop_open(key: $aSHMKey, mode: "a", permissions: 0, size: 0);
@@ -51,18 +51,18 @@
 		
 		if(is_array($aDataMessage))
 		{
-			$aType = $aDataMessage['type'];
+			$aTopic = $aDataMessage['topic'];
 			$aData = json_encode(value: $aDataMessage['data']);
 			
 			if($aData != $aOldData)
 			{
 				echo "id: " . $aID++ . "\n";
-				echo "event: $aType\n";
+				echo "event: $aTopic\n";
 				echo "data: $aData\n\n";
 				$aOldData = $aData;
 			}
 		}
-		else
+		elseif($aMessage != '')
 			echo "id: " . $aID++ . "\n" .
 				"event: unknown\n" .
 				"data: $aMessage\n\n";
