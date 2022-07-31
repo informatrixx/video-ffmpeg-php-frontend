@@ -1,0 +1,12 @@
+{
+	"ConvertRoots": {
+		"Example Recordings":	"/home/hts/recordings",
+		"Example Documents":	"/home/example_user/Documents"
+	},
+	"Binaries":
+	{
+		"ffprobe":      "/usr/bin/ffprobe",
+		"ffmpeg":       "/path/to/executable/ffmpeg"
+	},
+	"Debugging":    false
+}
