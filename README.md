@@ -38,7 +38,16 @@ At the moment the early development goal is to make a running application that c
 - Installation scripts
 
 ## Installation/Configuration
-**Not yet documented / No configuration files provided** -> So it's not yet installable without them
+- Edit config-example.json to your needs and rename it to **config.json**
+- Create a custom ID file if wanted: config/ID
+- Set up your web server to serve PHP scripts
+  - Make sure the directories "config/", "run/", "quma/" are not accessible!
+- The queue manager script needs to be run as a permanent service. 
+  - For example as a system unit.
+  - It needs to be executed by PHP (example: "/usr/bin/php8.1 quma/queue-manager-service.php")
+  - Consider setting up a non-root user for this!
+  
+ **Detailled installation not yet documented**
 
 ## Notes
 I am from Austria!
