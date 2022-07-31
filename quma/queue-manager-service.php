@@ -235,6 +235,13 @@
 			case 99:
 				_msg(message: 'Change queue item status to "Abort (99)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
 				break;
+				
+			$aStatusArray = array(
+				'id'		=> $gConvertQueue[$queueItemIndex]['id'],
+				'outfile'	=> $gConvertQueue[$queueItemIndex]['settings']['outfile'],
+				'status'	=> $newStatus,
+				);
+			statusEcho(topic: 'status', statusArray: $aStatusArray);
 		}
 	}
 	
@@ -246,6 +253,9 @@
 	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config.json'), associative: true));
 	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config/static_config.json'), associative: true));
 
+	if(!file_exists(SCRIPT_DIR . '../config/ID')) //Create a unique ID if not yet set
+		file_put_contents(filename: SCRIPT_DIR . '../config/ID', data: md5(rand(123456789, 12345678900)));
+	
 	define(constant_name: 'MY_ID', value: file_get_contents(SCRIPT_DIR . '../config/ID'));
 
 	
@@ -305,16 +315,13 @@
 							break;
 							case 'add_status_socket':
 								_msg(message: 'Got status client request...', CRF: '');
-								$aNewStatusSocket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+								$gStatusSockets[$aControlMessage['randomID']] = socket_create(AF_UNIX, SOCK_STREAM, 0);
 								 
 								usleep(100);
-								if(socket_connect(socket: $aNewStatusSocket, address: $aControlMessage['response_sock']) === false)
-									_msg(message: 'Could not connect: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+								if(socket_connect(socket: $gStatusSockets[$aControlMessage['randomID']], address: $aControlMessage['responseSock']) === false)
+									_msg(message: 'Could not connect (' . $aControlMessage['responseSock'] . '): ' . socket_strerror(socket_last_error()), toSTDERR: true);
 								else
-								{
 									_msg(message: 'OK', fixedWidth: 6);
-									$gStatusSockets[] = $aNewStatusSocket;
-								}
 							break;
 						}
 				}
@@ -595,7 +602,7 @@
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
 					default:
-						echo $aOutput;
+						//echo $aOutput;
 					break;
 				}
 				
@@ -642,6 +649,11 @@
 								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 3);
 							else
 								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: "9$aItemStatus");
+							continue(2);
+						break;
+						case 4:
+							//Conversion done...
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 5);
 							continue(2);
 						break;
 					}

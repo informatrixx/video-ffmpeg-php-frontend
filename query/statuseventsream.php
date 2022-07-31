@@ -40,7 +40,7 @@
 		'qumaID'		=> QUMA_ID,
 		'randomID'		=> RANDOM_ID,	
 		'action'		=> 'add_status_socket',	
-		'response_sock' => RESPONSE_SOCKET_FILE
+		'responseSock' => RESPONSE_SOCKET_FILE
 		);
 	
 	$aSockMessage = json_encode(value: $aSockMessageData);
