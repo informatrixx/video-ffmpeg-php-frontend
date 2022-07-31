@@ -11,10 +11,26 @@
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
 	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../run'), characters: '/') . '/');
 
-	define(constant_name: 'RESPONSE_SOCKET_FILE', value: tempnam(directory: RUN_DIR, prefix: '.sock.'));
+	define(constant_name: 'RANDOM_ID', value: hash('crc32', rand(1000000, 9999999)));
+	define(constant_name: 'RESPONSE_SOCKET_FILE', value: RUN_DIR . '.' . RANDOM_ID . '.sock');
 
 	define(constant_name: 'QUMA_ID', value: file_get_contents('../config/ID'));
 
+	register_shutdown_function('shutDownFunction');
+	
+	function shutDownFunction()
+	{
+		global $gResponseSocket;
+		@socket_shutdown($gResponseSocket, 2);
+		@socket_close($gResponseSocket);
+		
+		unlink(RESPONSE_SOCKET_FILE);
+		
+		echo 	"id: $aID\n" .
+				"event: shutdown\n" .
+				"data: shutdown\n\n";
+	}
+	
 	//Message ID counter
 	$aID = 0;
 	$aInit = true;
@@ -22,6 +38,7 @@
 	//Prepare message data
 	$aSockMessageData = array(
 		'qumaID'		=> QUMA_ID,
+		'randomID'		=> RANDOM_ID,	
 		'action'		=> 'add_status_socket',	
 		'response_sock' => RESPONSE_SOCKET_FILE
 		);
@@ -32,10 +49,10 @@
 	$aQueueManagerSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
 	
 	//Create a temporary socket for the status messages
-	$aResponseSocket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+	$gResponseSocket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 	if(file_exists(RESPONSE_SOCKET_FILE))
 	   unlink(RESPONSE_SOCKET_FILE);
-	socket_bind($aResponseSocket, RESPONSE_SOCKET_FILE);
+	socket_bind($gResponseSocket, RESPONSE_SOCKET_FILE);
 	chmod(filename: RESPONSE_SOCKET_FILE, permissions: 0666);
 
 
@@ -45,6 +62,7 @@
 	$aOldData = '';
 	$aData = '';
 
+	//Display startup message
 	echo "id: $aID\n" .
 		"event: process\n" .
 		"data: Idle (Waiting for connection)\n\n";
@@ -68,9 +86,10 @@
 			}
 			else
 			{
-				socket_listen(socket: $aResponseSocket, backlog: 1);
+				//Listen on private response socket and wait for QueueManager to connect to it
+				socket_listen(socket: $gResponseSocket, backlog: 1);
 				//Determine if response socket got activity to read
-				$aReadSockets = array($aResponseSocket);
+				$aReadSockets = array($gResponseSocket);
 				$aWriteSockets = null;
 				$aExceptSockets = null;
 				$aSockChanged = socket_select(read: $aReadSockets, write: $aWriteSockets, except: $aExceptSockets, seconds: 10);
@@ -86,7 +105,7 @@
 				}
 				elseif($aSockChanged > 0)
 				{
-					$aStatusSocket = socket_accept($aResponseSocket);
+					$aStatusSocket = socket_accept($gResponseSocket);
 					if($aStatusSocket !== false)
 					{
 						$aID++;
@@ -167,9 +186,5 @@
 		ob_flush();
 		flush();
 	}
-	
-	echo 	"id: $aID\n" .
-			"event: shutdown\n" .
-			"data: shutdown\n\n";
 	
 ?>

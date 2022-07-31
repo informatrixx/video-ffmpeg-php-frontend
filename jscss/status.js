@@ -2,7 +2,7 @@ var gEventSource;
 
 if(!!window.EventSource)
 {
-    gEventSource = new EventSource('status.php');
+    gEventSource = new EventSource('query/statuseventsream.php');
 }
 else
 {
@@ -12,13 +12,13 @@ else
 gEventSource.addEventListener('open', 
 	function(aEvent)
 	{
-		console.log('Verbindung wurde erfolgreich hergestellt.');
+		console.log('Event stream started...');
 	});
 
 gEventSource.addEventListener('message', 
 	function(aEvent)
 	{
-		console.log('Nachricht: ' + aEvent.data);
+		console.log('Message: ' + aEvent.data);
 	});
 
 gEventSource.addEventListener('progress', 
@@ -32,7 +32,7 @@ gEventSource.addEventListener('error',
 	{
 		if (aEvent.readyState === EventSource.CLOSED)
 		{
-			console.log('Fehler aufgetreten - die Verbindung wurde getrennt.');
+			console.log('Error: Connection closed.');
 		}
 	});
 

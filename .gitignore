@@ -1,7 +1,5 @@
 /config/ID
 /query/cache/*
-test
-test.php
 /quma/queue.json
 /config.json
 /run/.sock.*
