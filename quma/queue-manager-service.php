@@ -588,7 +588,7 @@
 							);
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
-					case preg_match(pattern: '@frame=\s*([\d.]+)\s+fps=\s*(\d+)\s+q=\s*([\d.]+)\s+size=\s*([\d]+\SB)\s+time=\s*([\d:.]+)\s+bitrate=\s*([\d.]+\Sbits/s)\s+speed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+					case preg_match(pattern: '@frame=\s*([\d.]+)\s+fps=\s*([\d.]+)\s+q=\s*([\d.]+)\s+size=\s*([\d]+\SB)\s+time=\s*([\d:.]+)\s+bitrate=\s*([\d.]+\Sbits/s)\s+speed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 						$aStatusArray = array(
 							'id'		=> $aQueueItem['id'],
 							'outfile'	=> $aQueueItem['settings']['outfile'],
