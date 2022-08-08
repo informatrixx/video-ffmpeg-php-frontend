@@ -27,6 +27,12 @@ gEventSource.addEventListener('progress',
 		displayProgress(aEvent.data);
 	});
 
+gEventSource.addEventListener('status', 
+	function(aEvent)
+	{
+		changeStatus(aEvent.data);
+	});
+
 gEventSource.addEventListener('error', 
 	function(aEvent)
 	{
@@ -40,30 +46,75 @@ gEventSource.addEventListener('error',
 function displayProgress(aProgressData)
 {
 	let aData = JSON.parse(aProgressData);
-	let aDataTable = document.getElementById('dataTable');
+	let aStatusContainer = document.getElementById('statusContainer');
 	
-	let aTargetTable = document.getElementById(aData.id);
-	if(aTargetTable === null)
+	let aItemContainer = document.getElementById(aData.id);
+	if(aItemContainer === null)
 	{
-		aTargetTable = document.createElement('table');
-		aTargetTable.setAttribute('id', aData.id);
-		aDataTable.appendChild(aTargetTable);
+		aItemContainer = document.createElement('div');
+		aItemContainer.setAttribute('id', aData.id);
+		aItemContainer.setAttribute('class', 'statusItem');
+		aStatusContainer.appendChild(aItemContainer);
 	}
 	
 	let aDataKeys = Object.keys(aData);
 	for(let i = 0; i < aDataKeys.length; i++)
 	{
+		let aLabelText = aDataKeys[i][0].toUpperCase() + aDataKeys[i].substring(1) + ':';
+		
 		if(aDataKeys[i] == 'id')
 			continue;
-		if(aTargetTable.getElementsByClassName(aDataKeys[i]).length == 0)
+		if(aItemContainer.getElementsByClassName(aDataKeys[i]).length == 0)
 		{
-			var aTargetTR = document.createElement('tr');
-			aTargetTR.setAttribute('class', aDataKeys[i]);
-			aTargetTable.appendChild(aTargetTR);
+			var aDataRow = document.createElement('div');
+			aDataRow.setAttribute('class', aDataKeys[i]);
+			aItemContainer.appendChild(aDataRow);
 		}
 		else
-			var aTargetTR = aTargetTable.getElementsByClassName(aDataKeys[i])[0];
-
-		aTargetTR.innerHTML = '<td>' + aDataKeys[i] + '</td><td>' + aData[aDataKeys[i]] + '</td>';
+			var aDataRow = aItemContainer.getElementsByClassName(aDataKeys[i])[0];
+		
+		aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aData[aDataKeys[i]] + '</div>';
 	}
+}
+
+function changeStatus(aStatusData)
+{
+	let aData = JSON.parse(aStatusData);
+	let aStatusContainer = document.getElementById('statusContainer');
+	
+	let aItemContainer = document.getElementById(aData.id);
+	
+	let aStatusText;
+	
+	switch(aData.status)
+	{
+		case 0: aStatusText = 'waiting'; break;
+		case 1: aStatusText = 'readyToScan'; break;
+		case 2: aStatusText = 'scanning'; break;
+		case 3: aStatusText = 'readyToConvert'; break;
+		case 4: aStatusText = 'converting'; break;
+		case 5: aStatusText = 'done'; break;
+		case 90:
+		case 91:
+		case 92:
+		case 93:
+		case 94:
+		case 95:
+			aStatusText = 'error'; 
+			break;
+		case 99: aStatusText = 'abort'; break;
+	}
+
+	
+	if(aItemContainer === null)
+	{
+		aItemContainer = document.createElement('div');
+		aItemContainer.setAttribute('id', aData.id);
+		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
+		aItemContainer.innerHTML = '<div class="outfile"><div class="label">Outfile:</div><div class="data">' + aData.outfile + '</div></div>';
+		aStatusContainer.appendChild(aItemContainer);
+	}
+	else
+		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
+	
 }
