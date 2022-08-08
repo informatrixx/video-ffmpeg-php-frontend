@@ -29,6 +29,9 @@
 			"old":	{
 				"nlmeans":	"medium",
 				"resize":	"720"
+			},
+			"series": {
+				"resize": "1080"
 			}
 		},
 		"quad": {
