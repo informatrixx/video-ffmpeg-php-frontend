@@ -159,7 +159,7 @@
 		if(file_put_contents(filename: QUEUE_FILE, data: json_encode(value: $aTempQueue, flags: JSON_PRETTY_PRINT | JSON_PARTIAL_OUTPUT_ON_ERROR )) === false)
 		{
 			_msg(message: 'Error!', fixedWidth: 6);
-			_msg(message: 'Error writing queue file to disk: ' . QUEUE_FILE, toSTDERROR: true);
+			_msg(message: 'Error writing queue file to disk: ' . QUEUE_FILE, toSTDERR: true);
 		}
 		else
 			_msg(message: 'OK', fixedWidth: 6);
@@ -234,15 +234,16 @@
 				break;
 			case 99:
 				_msg(message: 'Change queue item status to "Abort (99)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-				
-			$aStatusArray = array(
-				'id'		=> $gConvertQueue[$queueItemIndex]['id'],
-				'outfile'	=> $gConvertQueue[$queueItemIndex]['settings']['outfile'],
-				'status'	=> $newStatus,
-				);
-			statusEcho(topic: 'status', statusArray: $aStatusArray);
+				break;			
 		}
+		$aStatusArray = array(
+			'id'		=> $gConvertQueue[$queueItemIndex]['id'],
+			'outfile'	=> $gConvertQueue[$queueItemIndex]['settings']['outfile'],
+			'status'	=> $newStatus,
+			);
+		statusEcho(topic: 'status', statusArray: $aStatusArray);
+		
+		writeConvertQueue();
 	}
 	
 	
@@ -566,7 +567,7 @@
 		}
 		
 		//Check if processes have finished
-		foreach($gConvertQueue as &$aQueueItem)
+		foreach($gConvertQueue as $aItemIndex => &$aQueueItem)
 			if(isset($aQueueItem['proc']))
 			{
 				//Read process output and decide what to keep...
@@ -602,7 +603,12 @@
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
 					default:
-						//echo $aOutput;
+						$aStatusArray = array(
+							'id'		=> $aQueueItem['id'],
+							'outfile'	=> $aQueueItem['settings']['outfile'],
+							'message'	=> $aOutput
+							);
+						statusEcho(topic: 'message', statusArray: $aStatusArray);
 					break;
 				}
 				
