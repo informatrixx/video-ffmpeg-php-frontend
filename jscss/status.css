@@ -25,7 +25,7 @@ body {
 }
 
 .statusItem.readyToScan {
-	background-color: #e0fffb;
+	background-color: #cad9d7;
 }
 
 .statusItem.scanning {
@@ -33,7 +33,7 @@ body {
 }
 
 .statusItem.readyToConvert {
-	background-color: #e0e9ff;
+	background-color: #caced9;
 }
 
 .statusItem.converting {
