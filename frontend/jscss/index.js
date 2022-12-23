@@ -26,6 +26,21 @@ function showTab(aObject)
 	}
 }
 
+function toggleHiddenGroup(aObject)
+{
+	let aNextNode = aObject.nextSibling;
+	while(aNextNode && aNextNode.nodeName.toLowerCase() != 'group')
+		aNextNode = aNextNode.nextSibling;
+	
+	if(aNextNode)
+	{
+		if(aNextNode.getAttribute('class').match(/hidden/))
+			aNextNode.setAttribute('class', aNextNode.getAttribute('class').replace(/hidden/, ''));
+		else
+			aNextNode.setAttribute('class', aNextNode.getAttribute('class') + ' hidden');
+	}
+}
+
 function duplicateStream(aObject)
 {
 	function updateNodeNameIndex(aNode, aOldIndex, aNewIndex)

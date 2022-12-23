@@ -9,7 +9,9 @@
 	<?php
 		
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
-	define(constant_name: 'QUEUE_FILE', value: SCRIPT_DIR . 'quma/queue.json');
+	define(constant_name: 'QUMA_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../quma'), characters: '/') . '/');
+	
+	define(constant_name: 'QUEUE_FILE', value: QUMA_DIR . 'queue.json');
 	
 	$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
 	

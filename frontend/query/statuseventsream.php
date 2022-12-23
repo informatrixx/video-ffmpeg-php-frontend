@@ -4,17 +4,17 @@
 	header('Connection: keep-alive');
 	header('X-Accel-Buffering: no');
 
-	set_time_limit(0);
+/*	set_time_limit(0);
 	error_reporting(E_ALL);
-	ini_set('error_reporting', true);
+	ini_set('error_reporting', true);//*/
 
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
-	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../run'), characters: '/') . '/');
+	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../../run'), characters: '/') . '/');
 
 	define(constant_name: 'RANDOM_ID', value: hash('crc32', rand(1000000, 9999999)));
 	define(constant_name: 'RESPONSE_SOCKET_FILE', value: RUN_DIR . '.' . RANDOM_ID . '.sock');
 
-	define(constant_name: 'QUMA_ID', value: file_get_contents('../config/ID'));
+	define(constant_name: 'QUMA_ID', value: file_get_contents('../../config/ID'));
 
 	register_shutdown_function('shutDownFunction');
 	
@@ -49,10 +49,18 @@
 	$aQueueManagerSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
 	
 	//Create a temporary socket for the status messages
-	$gResponseSocket = socket_create(AF_UNIX, SOCK_STREAM, 0);
-	if(file_exists(RESPONSE_SOCKET_FILE))
+	if(file_exists(RESPONSE_SOCKET_FILE))	//Delete old file, if exists...
 	   unlink(RESPONSE_SOCKET_FILE);
-	socket_bind($gResponseSocket, RESPONSE_SOCKET_FILE);
+	$gResponseSocket = socket_create(domain: AF_UNIX, type: SOCK_STREAM, protocol: 0);
+	if(socket_bind($gResponseSocket, RESPONSE_SOCKET_FILE) === false)
+	{
+		echo "id: -1\n" .
+			"event: Init\n" .
+			"data: Response socket bind failed. Error: " . socket_strerror(socket_last_error()) . "\n\n";
+		ob_flush();
+		flush();
+		exit;
+	}
 	chmod(filename: RESPONSE_SOCKET_FILE, permissions: 0666);
 
 
@@ -75,7 +83,7 @@
 		if(file_exists(RUN_DIR . 'quma.sock'))
 		{
 			//Send message to socket without connection
-			if(socket_sendto(socket: $aQueueManagerSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: null, address: "../run/quma.sock") === false)
+			if(socket_sendto(socket: $aQueueManagerSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: null, address: RUN_DIR . "quma.sock") === false)
 			{
 				$aID++;
 				echo "id: $aID\n" .
@@ -128,6 +136,16 @@
 					}
 				}
 			}
+		}
+		else
+		{
+			$aID++;
+			echo "id: $aID\n" .
+				"event: connection\n" .
+				"data: Not connected to Queue Manager. Error: QUMA seems not to be running... (socket doesn't exist)\n\n";
+			ob_flush();
+			flush();
+			exit;
 		}
 		if($aInit)
 			sleep(1);

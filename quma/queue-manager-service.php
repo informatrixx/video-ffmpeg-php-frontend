@@ -9,6 +9,7 @@
 
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
 	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../run'), characters: '/') . '/');
+	define(constant_name: 'LOG_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../log'), characters: '/') . '/');
 	
 	define(constant_name: 'PID_FILE', value: RUN_DIR . pathinfo(path: __FILE__, flags: PATHINFO_FILENAME) . '.pid');
 	define(constant_name: 'CONTROL_SOCKET_FILE', value: RUN_DIR . 'quma.sock');
@@ -255,7 +256,10 @@
 	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config/static_config.json'), associative: true));
 
 	if(!file_exists(SCRIPT_DIR . '../config/ID')) //Create a unique ID if not yet set
+	{
 		file_put_contents(filename: SCRIPT_DIR . '../config/ID', data: md5(rand(123456789, 12345678900)));
+		chmod(filename: SCRIPT_DIR . '../config/ID', permissions: 0660);
+	}
 	
 	define(constant_name: 'MY_ID', value: file_get_contents(SCRIPT_DIR . '../config/ID'));
 
@@ -308,7 +312,10 @@
 								$aSockMessage = json_encode(value: addQueueItem($aControlMessage['queue_item']));
 								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
 								if(socket_sendto(socket: $aResponseSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: MSG_EOF, address: $aControlMessage['response_sock']) === false)
+								{
 									_msg(message: 'Socket response send failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+									print_r($aSockMessage);
+								}
 								if(socket_shutdown(socket: $aResponseSocket) === false)
 									_msg(message: 'Response socket shutdown failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
 								if(socket_close(socket: $aResponseSocket) === false)
@@ -447,7 +454,8 @@
 				
 				if($aItemStatus == 3)
 				{
-					$aConvertString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
+					$aFFMPEGLogSuffix = CONFIG['Debugging'] == true ? 'FFREPORT=file="' . LOG_DIR . escapeshellarg($aItemSettings['infile']) . '-%t.log":level=32' : '';
+					$aConvertString = "$aFFMPEGLogSuffix " . CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
 					$aConvertString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
 					
 					$aStreamIndex = 0;
