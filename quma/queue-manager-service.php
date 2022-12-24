@@ -454,8 +454,7 @@
 				
 				if($aItemStatus == 3)
 				{
-					$aFFMPEGLogSuffix = CONFIG['Debugging'] == true ? 'FFREPORT=file="' . LOG_DIR . escapeshellarg($aItemSettings['infile']) . '-%t.log":level=32' : '';
-					$aConvertString = "$aFFMPEGLogSuffix " . CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
+					$aConvertString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
 					$aConvertString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
 					
 					$aStreamIndex = 0;
@@ -509,6 +508,13 @@
 												case 'forced':
 													$aDisposition[$aKey] = $aDataValue != '0' ? '+' : '-';
 													break;
+												case 'b':
+													if(preg_match(pattern: '/^(\d+)k$/', subject: $aDataValue, matches: $aBitRateMatches) !== false)
+													{
+														$aBPS = $aBitRateMatches[1] * 1024;
+														$aConvertString .= " -metadata:s:$aStreamIndex BPS=$aBPS \\" . PHP_EOL;
+													}
+													break;
 												default:
 													$aConvertString .= " -$aKey:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
 													break;
@@ -538,8 +544,20 @@
 					$aConvertString .= ' -cues_to_front 1 ' . ' \\' . PHP_EOL;
 					//Filetitle and video title
 					$aConvertString .= ' -metadata ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: _STATISTICS_WRITING_APP=video-ffmpeg-php-frontend \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: ' . escapeshellarg('_STATISTICS_WRITING_DATE_UTC=' . gmdate(format: 'Y-m-d H:i:s')) . ' \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: NUMBER_OF_FRAMES= \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: NUMBER_OF_BYTES= \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: SOURCE_ID= \\' . PHP_EOL;
+					
+					//Statistic tags video
 					$aConvertString .= ' -metadata:s:v ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
-	
+					$aConvertString .= ' -metadata:s:v _STATISTICS_TAGS=DURATION \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s:v BPS= \\' . PHP_EOL;
+
+					//Statistic tags audio
+					$aConvertString .= ' -metadata:s:a _STATISTICS_TAGS=DURATION BPS\\' . PHP_EOL;
+
 					$aOutFolder = rtrim(string: $aItemSettings['outfolder'], characters: '/') . '/';
 					$aOutFile = $aItemSettings['outfile'];
 					$aConvertString .= " " . escapeshellarg("$aOutFolder$aOutFile") . PHP_EOL;
