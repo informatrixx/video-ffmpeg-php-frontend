@@ -512,7 +512,7 @@
 													if(preg_match(pattern: '/^(\d+)k$/', subject: $aDataValue, matches: $aBitRateMatches) !== false)
 													{
 														$aBPS = $aBitRateMatches[1] * 1024;
-														$aConvertString .= " -metadata:s:$aStreamIndex BPS=$aBPS \\" . PHP_EOL;
+														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
 													}
 													break;
 												default:
@@ -544,19 +544,19 @@
 					$aConvertString .= ' -cues_to_front 1 ' . ' \\' . PHP_EOL;
 					//Filetitle and video title
 					$aConvertString .= ' -metadata ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
-					$aConvertString .= ' -metadata:s: _STATISTICS_WRITING_APP=video-ffmpeg-php-frontend \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: "_STATISTICS_WRITING_APP=video-ffmpeg-php-frontend" \\' . PHP_EOL;
 					$aConvertString .= ' -metadata:s: ' . escapeshellarg('_STATISTICS_WRITING_DATE_UTC=' . gmdate(format: 'Y-m-d H:i:s')) . ' \\' . PHP_EOL;
-					$aConvertString .= ' -metadata:s: NUMBER_OF_FRAMES= \\' . PHP_EOL;
-					$aConvertString .= ' -metadata:s: NUMBER_OF_BYTES= \\' . PHP_EOL;
-					$aConvertString .= ' -metadata:s: SOURCE_ID= \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: "NUMBER_OF_FRAMES=" \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: "NUMBER_OF_BYTES=" \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s: "SOURCE_ID=" \\' . PHP_EOL;
 					
 					//Statistic tags video
 					$aConvertString .= ' -metadata:s:v ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
-					$aConvertString .= ' -metadata:s:v _STATISTICS_TAGS=DURATION \\' . PHP_EOL;
-					$aConvertString .= ' -metadata:s:v BPS= \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s:v "_STATISTICS_TAGS=DURATION" \\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s:v "BPS=" \\' . PHP_EOL;
 
 					//Statistic tags audio
-					$aConvertString .= ' -metadata:s:a _STATISTICS_TAGS=DURATION BPS\\' . PHP_EOL;
+					$aConvertString .= ' -metadata:s:a "_STATISTICS_TAGS=DURATION BPS" \\' . PHP_EOL;
 
 					$aOutFolder = rtrim(string: $aItemSettings['outfolder'], characters: '/') . '/';
 					$aOutFile = $aItemSettings['outfile'];
@@ -565,8 +565,28 @@
 					//Add itemID to scan list for identification
 					$gQueueTasks['convert'][] = $aItemID;
 					
+					if(file_exists("$aOutFolder$aOutFile"))
+						switch(CONFIG['OutputFileExists'])
+						{
+							case 'move':
+								$i = 0;
+								do
+								{
+									$i++;
+									$aMvFileName = "$aOutFile~$i";
+								} while(file_exists("$aOutFolder$aMvFileName"));
+								_msg(message: 'Output file already exists! Move...', CRF: '');
+								if(rename(from: "$aOutFolder$aOutFile", to: "$aOutFolder$aMvFileName"))
+									_msg(message: 'OK', fixedWidth: 6);
+								else
+									_msg(message: 'Error!', fixedWidth: 6);
+								break;
+						}
 					
 					_msg(message: 'Start conversion of: ' . $aQueueItem['settings']['outfile'], CRF: '');
+					
+					if(CONFIG['Debugging'])
+						file_put_contents(filename: LOG_DIR . date('Y-m-d H:i:s') . ' rsync-cmd.txt', data: $aConvertString);
 					
 					//Preparing I/O pipes
 					$aDescriptorSpec = array(

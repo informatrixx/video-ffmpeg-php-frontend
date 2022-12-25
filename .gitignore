@@ -3,6 +3,7 @@
 /quma/queue.json
 /config.json
 /run/.sock.*
+/log/*
 *#*.*#
 *.pid
 *.sock
