@@ -74,5 +74,9 @@
 		"max_convert_tasks": 1,
 		"max_scan_tasks": 5,
 		"max_unpack_tasks": 1
+	},
+	"scanfiles": {
+		"video": ["mkv", "mp4", "avi"],
+		"rar": ["rar"]
 	}
 }

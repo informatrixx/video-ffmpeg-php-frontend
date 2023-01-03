@@ -28,8 +28,19 @@
 			90, 91, 92, 93, 94, 95 => 'error',
 			99 => 'abort',
 		};
+		
 		echo "<div id='{$aQueueItem['id']}' class='statusItem $aStatusText'>";
 		echo "<div class='outfile'><div class='label'>Outfile:</div><div class='data'>{$aQueueItem['settings']['outfile']}</div></div>";
+		if(isset($aQueueItem['settings']['duration']))
+		{
+			$aDuration = $aQueueItem['settings']['duration'];
+			$aHours = str_pad(floor($aDuration / 3600), 2, "0", STR_PAD_LEFT);
+			$aSeekLeft = round($aDuration, 0) % 3600;
+			$aMinutes = str_pad(floor($aSeekLeft / 60), 2, "0", STR_PAD_LEFT);
+			$aSeconds = str_pad(floor($aSeekLeft % 60), 2, "0", STR_PAD_LEFT);
+			echo "<div class='duration'><div class='label'>Duration:</div><div class='data'>$aHours:$aMinutes:$aSeconds</div></div>";
+			echo "<div class='progress' duration='$aDuration'><div class='label'>Progress:</div><div class='data'></div></div>";
+		}
 		echo '</div>';
 	}
 	?>

@@ -18,7 +18,7 @@ gEventSource.addEventListener('open',
 gEventSource.addEventListener('message', 
 	function(aEvent)
 	{
-		console.log('Message: ' + aEvent.data);
+		//console.log('Message: ' + aEvent.data);
 	});
 
 gEventSource.addEventListener('progress', 
@@ -57,6 +57,7 @@ function displayProgress(aProgressData)
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	
+	let aTime = '';
 	let aDataKeys = Object.keys(aData);
 	for(let i = 0; i < aDataKeys.length; i++)
 	{
@@ -64,6 +65,8 @@ function displayProgress(aProgressData)
 		
 		if(aDataKeys[i] == 'id')
 			continue;
+		if(aDataKeys[i] == 'time')
+			aTime = aData[aDataKeys[i]];
 		if(aItemContainer.getElementsByClassName(aDataKeys[i]).length == 0)
 		{
 			var aDataRow = document.createElement('div');
@@ -74,6 +77,18 @@ function displayProgress(aProgressData)
 			var aDataRow = aItemContainer.getElementsByClassName(aDataKeys[i])[0];
 		
 		aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aData[aDataKeys[i]] + '</div>';
+	}
+	if(aItemContainer.getElementsByClassName('progress').length > 0 && aTime != '')
+	{
+		const aTimeRegEx = /^(\d+):(\d+):(\d+\.\d+)$/;
+		let aTimeMatches = aTime.match(aTimeRegEx);
+		let aHours = aTimeMatches[1];
+		let aMinutes = aTimeMatches[2];
+		let aSeconds = aTimeMatches[3];
+		let aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
+		let aDuration = aItemContainer.getElementsByClassName('progress')[0].getAttribute('duration');
+		let aPercent = Math.round(aTimeSeconds / aDuration * 1000) / 10;
+		aItemContainer.getElementsByClassName('progress')[0].innerHTML = '<div class="label">Progress:</div><div class="data">' + aPercent + ' %</div>';
 	}
 }
 

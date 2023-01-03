@@ -153,7 +153,6 @@
 <body><form action="query/addqueueitem.php" method="get" onsubmit="return collectFormSubmit(this)">
 <explore><?php
 		foreach($aScanFolders as $aFolderName => $aFolderPath)
-			echo "<folder><a href='?folder=" . urlencode($aFolderPath) . "'>$aFolderName</a></folder>";
 		foreach($aScanFiles as $aFileName => $aFilePath)
 		{
 			switch(pathinfo($aFileName, PATHINFO_EXTENSION))
@@ -187,6 +186,7 @@
 			$aSeconds = str_pad(floor($aSeekLeft % 60), 2, "0", STR_PAD_LEFT);
 			
 			echo "<label>Dauer:</label><text>$aHours:$aMinutes:$aSeconds</text>";
+			echo "<input type='hidden' name='duration' value='{$aProbeData['format']['duration']}' />";
 		}
 		$aVideoStreamsCount = 0;
 		$aAudioLang = array();

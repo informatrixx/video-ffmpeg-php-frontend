@@ -26,7 +26,7 @@
 		
 		unlink(RESPONSE_SOCKET_FILE);
 		
-		echo 	"id: $aID\n" .
+		echo 	"id: 32767\n" .
 				"event: shutdown\n" .
 				"data: shutdown\n\n";
 	}

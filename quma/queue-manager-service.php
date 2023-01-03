@@ -419,6 +419,9 @@
 					
 					_msg(message: 'Start scanning of: ' . $aQueueItem['settings']['outfile'], CRF: '');
 					
+					if(CONFIG['Debugging'])
+						file_put_contents(filename: LOG_DIR . 'scan_ffmpeg_' . date('Ymd-His') . '_' . $aQueueItem['settings']['outfile'] . '.sh', data: '#!/bin/bash' . PHP_EOL . $aAudioScanString);
+
 					//Preparing I/O pipes
 					$aDescriptorSpec = array(
 						0 => array('pipe', 'r'), 
@@ -497,7 +500,7 @@
 														$aFilters[10] = 'nlmeans=' . STATIC_CONFIG['video']['nlmeans'][$aDataValue]['value'];
 													break;
 												case 'crop':
-													if($aDataValue == 'auto')
+													if($aDataValue == 'auto' && !empty($aItemSettings['cropstring']))
 														$aFilters[20] = $aItemSettings['cropstring'];
 													break;
 												case 'resize':
@@ -511,7 +514,7 @@
 												case 'b':
 													if(preg_match(pattern: '/^(\d+)k$/', subject: $aDataValue, matches: $aBitRateMatches) !== false)
 													{
-														$aBPS = $aBitRateMatches[1] * 1024;
+														$aBPS = $aBitRateMatches[1] * 1000;
 														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
 													}
 													break;
@@ -586,7 +589,7 @@
 					_msg(message: 'Start conversion of: ' . $aQueueItem['settings']['outfile'], CRF: '');
 					
 					if(CONFIG['Debugging'])
-						file_put_contents(filename: LOG_DIR . date('Y-m-d H:i:s') . ' rsync-cmd.txt', data: $aConvertString);
+						file_put_contents(filename: LOG_DIR . 'convert_ffmpeg_' . date('Ymd-His') . "_$aOutFile.sh", data: '#!/bin/bash' . PHP_EOL . $aConvertString);
 					
 					//Preparing I/O pipes
 					$aDescriptorSpec = array(
