@@ -75,8 +75,14 @@
 		"max_scan_tasks": 5,
 		"max_unpack_tasks": 1
 	},
-	"scanfiles": {
-		"video": ["mkv", "mp4", "avi"],
-		"rar": ["rar"]
+	"scanmodules": {
+		"video": {
+			"file_extensions": ["mkv", "mp4", "avi", "flv", "3gp", "m2ts", "m2v", "mov", "mpeg", "ts", "vob", "wmv"],
+			"join_extensions": ["idx", "aac", "mkv", "mp4", "avi", "mp3", "srt", "m4a"]
+		},
+		"rar": {
+			"file_extensions": ["rar"],
+			"join_extensions": []
+		}
 	}
 }

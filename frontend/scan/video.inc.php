@@ -1,30 +1,5 @@
-<html>
 <?php
 
-	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents('../config.json'), associative: true));
-	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents('../config/static_config.json'), associative: true));
-	
-	define(constant_name: 'MORE_TEXT', value: '...');
-	
-	if(CONFIG['Debugging'] == true)
-	{
-		ini_set(option: 'display_errors', value: 1);
-		ini_set(option: 'display_startup_errors', value: 1);
-		error_reporting(E_ALL);
-	}
-
-
-	function humanFilesize($aBytes, $aDecimals = 2, $aCustDecimals = array("B"=>0, "K"=>0, "M"=>0))
-	{
-		$sz = 'BKMGTP';
-		$aFactor = floor((strlen($aBytes) - 1) / 3);
-		$aUnit = @$sz[$aFactor];
-		if(array_key_exists(key: $aUnit, array: $aCustDecimals))
-			$aDecimals = $aCustDecimals[$aUnit];
-		$aValue = $aBytes / pow(num: 1024, exponent: $aFactor);
-		return sprintf("%.{$aDecimals}f", $aValue) . $aUnit;
-	}
-	
 	function makeVideoConversionDecision(int $width, string $preset, ?string &$videoSizeName)
 	{
 		$aVideoSizeIndex = match(true)
@@ -78,96 +53,31 @@
 		
 		return $aResult;
 	}
+	
+	
+	
+	$aFFProbeCmd = CONFIG['Binaries']['ffprobe'] . ' -show_chapters -show_format -show_streams -print_format json -loglevel quiet ' . escapeshellarg($aInputFile);
+	
+	$aJSONProbeData = shell_exec($aFFProbeCmd);
+	$aProbeData = json_decode(json: $aJSONProbeData, associative: true);
+	
+	$aFileDuration = $aProbeData['format']['duration'];
 
-	
-	#Set scan folder
-	if(isset($_GET["folder"]))
-		$aFolder = $_GET['folder'];
-	elseif(count(CONFIG['ConvertRoots']) == 1)
-		$aFolder = array_values(CONFIG['ConvertRoots'])[0];
-	else
-		$aFolder = CONFIG['ConvertRoots'];
-	
-	$aScanFolders = array();
-	$aScanFiles = array();
-
-	#If a folder is given, scan items
-	if(is_string($aFolder))
-	{
-		$aFolder = rtrim(string: $aFolder, characters: '/') . '/';
-		$aScan = glob(pattern: "$aFolder*");
-		foreach($aScan as $aScanPath)
-		{
-			$aScanItemName = rtrim(string: str_replace(search: $aFolder, replace: '', subject: $aScanPath), characters: '/');
-			if(is_dir($aScanPath))
-				$aScanFolders[$aScanItemName] = rtrim(string: $aScanPath, characters: '/') . '/';
-			elseif(file_exists($aScanPath))
-				$aScanFiles[$aScanItemName] = $aScanPath;
-		}
-	}
-	else
-	{	//If no folder is a root array, use root items  
-		foreach(CONFIG['ConvertRoots'] as $aRootID => $aRootPath)
-			$aScanFolders[$aRootID] = rtrim(string: $aRootPath, characters: '/') . '/';
-	}
-	
-	$aProbeData = null;
-	
-	if(isset($_GET['file']))
-	{	//if a file is given, ffprobe it
-		$aInputFile = escapeshellarg($_GET['file']);
-		$aFFProbeCmd = CONFIG['Binaries']['ffprobe'] . " -show_chapters -show_format -show_streams -print_format json -loglevel quiet $aInputFile";
+	if(isset($_GET['json']))
+		echo "<pre>" . print_r(value: $aJSONProbeData, return: true) . "</pre>";
+	if(isset($_GET['raw']))
+		echo "<pre>" . print_r(value: $aProbeData, return: true) . "</pre>";
 		
-		$aJSONProbeData = shell_exec($aFFProbeCmd);
-		$aProbeData = json_decode(json: $aJSONProbeData, associative: true);
+	define(constant_name: 'DECISIONS', value: json_decode(json: file_get_contents('../config/decision_template.json'), associative: true));
+
+	if(isset($_GET['preset']) && isset(DECISIONS['presets']))
+		define(constant_name: 'CONV_PRESET', value: $_GET['preset']);
+	else
+		define(constant_name: 'CONV_PRESET', value: array_keys(DECISIONS['presets'])[0]);
+
+
 		
-		$aFileDuration = $aProbeData['format']['duration'];
-
-		if(isset($_GET['json']))
-			echo "<pre>" . print_r(value: $aJSONProbeData, return: true) . "</pre>";
-		if(isset($_GET['raw']))
-			echo "<pre>" . print_r(value: $aProbeData, return: true) . "</pre>";
-			
-		define(constant_name: 'DECISIONS', value: json_decode(json: file_get_contents('config/decision_template.json'), associative: true));
-
-		if(isset($_GET['preset']) && isset(DECISIONS['presets']))
-			define(constant_name: 'CONV_PRESET', value: $_GET['preset']);
-		else
-			define(constant_name: 'CONV_PRESET', value: array_keys(DECISIONS['presets'])[0]);
-	}
-	
-?>
-<head>
-	<title>FFMPEG - <?=$aFolder?></title>
-	<link rel="stylesheet" href="jscss/index.css">
-	<script src="jscss/query.js"></script>
-	<script src="jscss/index.js"></script>
-	<script>
-		var gFileName = "<?=$_GET['file']?>";
-		var gCropDetect = new Array();
-		var gCropMaxWidth = 0;
-		var gCropMaxHeight = 0;
-		var gPreferredCropString = "";
-	</script>
-</head>
-<body><form action="query/addqueueitem.php" method="get" onsubmit="return collectFormSubmit(this)">
-<explore><?php
-		foreach($aScanFolders as $aFolderName => $aFolderPath)
-			echo "<folder><a href='?folder=" . urlencode($aFolderPath) . "'>$aFolderName</a></folder>";
-		foreach($aScanFiles as $aFileName => $aFilePath)
-		{
-			switch(pathinfo($aFileName, PATHINFO_EXTENSION))
-			{
-				case "mkv":
-				case "mp4":
-					echo "<file><a href='scan.php?folder=" . urlencode($aFolder) . "&file=" . urlencode($aFilePath) . "'>$aFileName</a></file>";
-					break;
-				default:
-					echo "<file>$aFileName</file>";
-			}
-		}
-?></explore>
-<?php
+		
 	if(!empty($aProbeData))
 	{
 		echo "<selectContainer><selectButtons><selectButton>" . basename($_GET['file']) . "</selectButton></selectButtons>";
@@ -187,6 +97,7 @@
 			$aSeconds = str_pad(floor($aSeekLeft % 60), 2, "0", STR_PAD_LEFT);
 			
 			echo "<label>Dauer:</label><text>$aHours:$aMinutes:$aSeconds</text>";
+			echo "<input type='hidden' name='duration' value='{$aProbeData['format']['duration']}' />";
 		}
 		$aVideoStreamsCount = 0;
 		$aAudioLang = array();
@@ -591,10 +502,3 @@
 ?></selectContainer>
 </form></body>
 </html>
-
-
-
-
-<?php
-// /DataVolume/scripts/software/bin/ffprobe -show_chapters -show_format     -show_streams     -print_format json     -loglevel quiet Windfall.2022.German.Netflix.DL.720p.x265.AAC-2BA/Windfall.2022.German.Netflix.DL.720p.x265.AAC-2BA.mkv 
-?>

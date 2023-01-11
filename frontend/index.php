@@ -63,11 +63,31 @@
 <head>
 	<title>FFMPEG - <?=$aFolder?></title>
 	<link rel="stylesheet" href="jscss/index.css">
-	<script src="jscss/index.js"></script>
+	<script src="jscss/explore.js"></script>
 </head>
 <body><grid>
-<explore><?php
-		foreach($aScanFolders as $aFolderName => $aFolderPath)
+<explore>
+	<script>
+	function dummy(){}
+
+	function escapeHTML(aText)
+	{
+		var aMap = {
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#039;'
+		};
+		
+		return aText.replace(/[&<>"']/g, function(m) { return aMap[m]; });
+	}
+
+	window.addEventListener('popstate', historyEvent);
+
+	listFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? htmlspecialchars($_GET['folder']) : '';?>');</script>
+<?php
+/*		foreach($aScanFolders as $aFolderName => $aFolderPath)
 			echo "<folder><a href='?folder=" . urlencode($aFolderPath) . "'>$aFolderName</a></folder>";
 		foreach($aScanFiles as $aFileName => $aFilePath)
 		{
@@ -76,7 +96,15 @@
 			$aScanLink = false;
 			$aExtras = '';
 			if(isset($aFilePathInfo['extension']))
-				switch(true)
+				foreach(STATIC_CONFIG['scanmodules'] as $aScanModule => $aScanModuleData)
+				{
+					if(in_array(needle: $aFilePathInfo['extension'], haystack: $aScanModuleData['file_extensions']))
+					{
+						$aScanLink = true;
+					}
+					
+				}
+/*				switch(true)
 				{
 					case $aFilePathInfo['extension'] == "mkv":
 					case $aFilePathInfo['extension'] == "mp4":
@@ -107,7 +135,7 @@
 					echo '</a>';
 				echo " $aExtras</file>";
 			}
-		}
+		}//*/
 ?></explore>
 </grid></body>
 </html>
