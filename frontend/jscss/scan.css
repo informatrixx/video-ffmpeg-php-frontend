@@ -3,42 +3,15 @@ body {
 	margin: 10px auto;
 	color: #333;
 }
-body > form {
+body grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
 	grid-auto-flow: dense;	
 }
 
-green {
-	color: green;
-}
-
-red {
-	color: red;
-}
-
-explore {
-	text-align: left;
-}
 
 
-folder, file {
-	display: block;
-	padding-left: 20px;
-}
-folder {
-	background-image: url('../img/folder1-16.png');
-	background-repeat: no-repeat;
-}
-folder a, file a {
-	text-decoration: none;
-	color: #000;
-}
-folder a:hover, file a:hover {
-	color: #93B;
-}
-
-selectContainer, explore {
+selectContainer {
 	background: #F1F3F4;
 	border-color: #d5d5d5;
 	border-radius:  0px 0.5em 0.5em;
@@ -56,21 +29,29 @@ selectContainer {
 	text-align: center;	
 }
 selectButtons {
-    width: 620px;
+	width: 620px;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    top: -11px;
+}
+cropButtons {
+	width: 598px;
+	margin: 0px 10px;
+    grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+    top: -1px;
+}
+selectButtons, cropButtons {
     box-sizing: border-box;
     background: #F6F8FB;
     border-color: #d5d5d5;
     border-radius: 0px 0.5em 0.5em;
     border: 1px solid;
     position: relative;
-    top: -11px;
     left: -11px;
     min-height: 30px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     grid-auto-flow: dense;
 }
-selectButton {
+selectButton, cropButton {
 	font-family: Arial Narrow;
 	background-color: #ddd;
 	box-sizing: border-box;
@@ -84,21 +65,24 @@ selectButton input[type=checkbox] {
 	padding: 0px;
 	margin: 0px;
 }
-selectButton[active] {
+selectButton[active],
+cropButton[active] {
 	background-color: #bbb;
 }
-selectButton[attention] {
+selectButton[attention],
+cropButton[attention]{
 	color: #f00;
 	background-color: #ebb;
 }
-selectButton[seeking] {
+cropButton[seeking] {
 	font-size: 0px;
 	background-image: url('../img/loader.svg');
 	background-size: 16px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
-selectButton:hover {
+selectButton:hover,
+cropButton:hover {
 	background-color: #aaa;
 }
 
@@ -110,7 +94,7 @@ selectButton img.duplicate {
 selectContent {
 	display: grid;
 	text-align: left;
-	grid-template-columns: minmax(100px, content-width) minmax(200px, 2fr) minmax(300px, 4fr);
+	grid-template-columns: minmax(110px, max-content) minmax(190px, 2fr) minmax(280px, 4fr);
 }
 selectContent[hidden] {
 	display: none;	
@@ -122,9 +106,6 @@ selectContent img.loader {
 	height: 30px;
 	box-sizing: border-box;
 	padding: 0px;
-}
-selectContent img {
-	width: 600px;	
 }
 
 selectContent select, selectContent input[type="number"] {
@@ -147,5 +128,16 @@ selectContent label {
 }
 selectContent text {
 	grid-column: 2 / span 2;
+}
+
+selectContent cropPreviewContainer {
+	margin-top: 15px;
+	border-color: #d5d5d5;
+	border-radius:  0px 0.5em 0.5em;
+	border: 1px solid;
+}
+selectContent cropPreviewContainer img {
+	width: 596px;	
+    border-radius: 0px 0px 0.5em 0.5em ;
 }
 

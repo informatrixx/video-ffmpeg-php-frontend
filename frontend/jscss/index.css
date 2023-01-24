@@ -9,47 +9,5 @@ body > grid {
 	grid-auto-flow: dense;	
 }
 
-green {
-	color: green;
-}
-
-red {
-	color: red;
-}
 
 
-folder, file {
-	display: block;
-	padding-left: 20px;
-}
-folder {
-	background-image: url('../img/folder1-16.png');
-	background-repeat: no-repeat;
-}
-folder a, file a {
-	text-decoration: none;
-	color: #000;
-}
-folder a:hover, file a:hover {
-	color: #93B;
-}
-
-explore {
-	text-align: left;
-	background: #F1F3F4;
-	border-color: #d5d5d5;
-	border-radius:  0px 0.5em 0.5em;
-	border: 1px solid;
-	padding: 10px;
-	margin: 10px;
-	box-sizing: border-box;
-	max-width: 620px;
-	min-height: 200px;
-	height: max-content;
-	vertical-align: middle;
-	position: relative;
-}
-
-.hidden {
-	display: none;	
-}

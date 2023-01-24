@@ -1,5 +1,6 @@
 /config/ID
 /frontend/query/cache/*
+/frontend/static/*
 /quma/queue.json
 /config.json
 /run/.sock.*
