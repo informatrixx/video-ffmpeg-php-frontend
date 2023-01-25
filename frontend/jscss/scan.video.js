@@ -358,5 +358,7 @@ function cropPreviewResult()
 	if(aIndex < 10)
 		chainLoadCropPreviewQuery(aIndex + 1, aFileIndex);
 	else
-		document.getElementsByTagName('cropAutoChoice')[0].innerHTML = '(auto: ' + gPreferredCropString + ")<input type='hidden' name='cropstring' value='" + gPreferredCropString + "' />";
+		for(let i = 0; i < document.getElementsByTagName('cropAutoChoice').length; i++)
+			if(document.getElementsByTagName('cropAutoChoice')[i].getAttribute('fileIndex') == aFileIndex)
+				document.getElementsByTagName('cropAutoChoice')[i].innerHTML = '(auto: ' + gPreferredCropString + ")<input type='hidden' name='cropstring[" + document.getElementsByTagName('cropAutoChoice')[i].getAttribute('index') + "]' value='" + gPreferredCropString + "' />";
 }

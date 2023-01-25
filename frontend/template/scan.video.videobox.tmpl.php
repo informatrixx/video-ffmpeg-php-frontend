@@ -1,10 +1,24 @@
 <?php
 	header('Content-Type: text/plain; charset=utf-8');
+
+	$aETag = '"' . filemtime(__FILE__) . '"';
+
+	header('Cache-Control: max-age=86400');
+	header('ETag: ' . $aETag);
+
+	if(isset($_SERVER['HTTP_IF_NONE_MATCH']))
+	{
+		if($_SERVER['HTTP_IF_NONE_MATCH'] == $aETag)
+		{
+			header('HTTP/1.1 304 Not Modified', true, 304);
+			exit();
+		}
+	}
 	
 	require('../../shared/common.inc.php');
 	
 	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
-	define(constant_name: 'DECISIONS', value: json_decode(json: file_get_contents('../config/decision_template.json'), associative: true));
+	define(constant_name: 'DECISIONS', value: json_decode(json: file_get_contents(ROOT . 'config/decision_template.json'), associative: true));
 	
 ?>
 <selectButtons>
@@ -34,7 +48,7 @@
 	<label>Zuschneiden:</label><select name='crop[##VAR:index##]'>
 		<option value='auto' selected>Auto</option><option value='man'>Manuell</option><option value='off'>-kein Zuschneiden-</option>
 		</select>
-		<cropAutoChoice id='cropAutoChoice_##VAR:index##'></cropAutoChoice>
+		<cropAutoChoice id='cropAutoChoice_##VAR:index##' index='##VAR:index##' fileIndex='##VAR:fileIndex##'></cropAutoChoice>
 	<label>Denoise:</label><select name='nlmeans[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['video']['nlmeans'] as $aValue => $aNLMeansSettings)

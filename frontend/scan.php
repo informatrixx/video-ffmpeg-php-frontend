@@ -69,7 +69,7 @@
 	</script>
 </head>
 <body>
-<form action="query/addqueueitem.php" method="get" onsubmit="return collectFormSubmit(this)">
+<form action="query/addqueueitem.php" method="post" onsubmit="return collectFormSubmit(this)">
 <grid>
 	<explore></explore>
 	<selectContainer id='globalContainer'></selectContainer>

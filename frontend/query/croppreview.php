@@ -10,7 +10,6 @@
 	
 	$aInputFile = $_GET['file'];
 	$aSeek = escapeshellcmd($_GET['seek']);
-	$aSAR = escapeshellcmd($_GET['sar']);
 	
 	if(empty($_GET['sar']))
 	{
@@ -22,6 +21,8 @@
 		else
 			$aSAR = 1;
 	}
+	else
+		$aSAR = $_GET['sar'];
 	
 	$aHours = str_pad(floor($aSeek / 3600), 2, "0", STR_PAD_LEFT);
 	$aSeekLeft = round($aSeek, 0) % 3600;
