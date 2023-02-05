@@ -8,6 +8,12 @@ function scanFileQuery(aFile, aType)
 	newQuery.send();
 }
 
+function joinFile(aFile)
+{
+	gResultVars['fileIndex']++;
+	scanFileQuery(aFile, gScanType);
+}
+
 function showTab(aObject, aCropTab = false)
 {
 	let aIndex = aObject.getAttribute('index');
@@ -144,7 +150,7 @@ function collectFormSubmit(aForm)
 		else
 			aMatchedInput = true;
 		
-		if(aMatchedInput && (aInput.getAttribute('type') != 'checkbox' || aInput.checked))
+		if((aMatchedInput || aInput.getAttribute('nomapmatch') != null) && (aInput.getAttribute('type') != 'checkbox' || aInput.checked))
 			aParamList[aParamList.length] = aInput.name + '=' + encodeURIComponent(aInput.value);
 	}
 

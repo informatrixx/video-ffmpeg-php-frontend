@@ -61,6 +61,7 @@
 	?>
 	<script>
 		var gFileName = "<?=htmlspecialchars($_GET['file'])?>";
+		var gScanType = "<?=htmlspecialchars($_GET['type'])?>";
 
 
 		const PAGE_TITLE_PREFIX = 'SCAN - ';

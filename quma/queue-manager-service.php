@@ -380,7 +380,11 @@
 				if($aItemStatus == 1)
 				{
 					$aAudioScanString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
-					$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
+					if(is_string($aItemSettings['infile']))
+						$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
+					elseif(is_array($aItemSettings['infile']))
+						foreach($aItemSettings['infile'] as $aInFile)
+							$aAudioScanString .= ' -i ' . escapeshellarg($aInFile) . ' \\' . PHP_EOL;
 					$aAudioScanString .= '-vn -sn -dn -map_chapters -1' . ' \\' . PHP_EOL;
 					
 					$aAudioScanIndex = 0;
@@ -458,7 +462,11 @@
 				if($aItemStatus == 3)
 				{
 					$aConvertString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
-					$aConvertString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
+					if(is_string($aItemSettings['infile']))
+						$aConvertString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
+					elseif(is_array($aItemSettings['infile']))
+						foreach($aItemSettings['infile'] as $aInFile)
+							$aConvertString .= ' -i ' . escapeshellarg($aInFile) . ' \\' . PHP_EOL;
 					
 					$aStreamIndex = 0;
 					$aLoudnormIndex = 0;

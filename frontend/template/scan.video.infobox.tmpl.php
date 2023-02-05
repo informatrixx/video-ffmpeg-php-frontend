@@ -22,9 +22,9 @@
 	
 ?>
 <selectButtons>
-	<selectButton fileIndex='##VAR:fileIndex##'>##DATA:fileName##</selectButton>
+	<selectButton index='##VAR:index+##' fileIndex='##VAR:fileIndex##' onclick='showTab(this)' active>##DATA:fileName##</selectButton>
 </selectButtons>
-<selectContent fileIndex='##VAR:fileIndex##'>
+<selectContent index='##VAR:index##' fileIndex='##VAR:fileIndex##'>
 	<label>Format:</label><text>##DATA:info:formatName##</text>
 	<label>Größe:</label><text>##DATA:info:size:human##</text>
 	<label>Dauer:</label><text>##DATA:info:duration:human##</text>
@@ -53,5 +53,5 @@
 		?>
 		
 	</cropPreviewContainer>	
-	
+	<input type='hidden' name='infile[##VAR:fileIndex##]' value='##DATA:file##' nomapmatch />
 </selectContent>

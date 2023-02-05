@@ -30,3 +30,9 @@ explore folder a:hover, explore file a:hover {
 	color: #93B;
 }
 
+explore file img.join {
+	cursor: pointer;
+	top: 3px;
+	position: relative;
+	padding-right: 3px;
+}

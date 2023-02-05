@@ -64,20 +64,23 @@ function scanFileResult()
 		aScanBox.appendChild(aSubtitleContainer);
 	}
 	
-	if(gBoxTemplates["globalBox"] == '')
-		fetch('template/scan.video.globalbox.tmpl.php', 
-			{
-				method: 'GET',
-				credentials: 'include',
-				mode: 'no-cors',
-			})
-		.then((aResponse) => { return aResponse.text();})
-		.then((aData) => { 
-				gBoxTemplates["globalBox"] = aData;
-				processTemplateData(gBoxTemplates["globalBox"], aJSONData, aGlobalContainer);
-			})
-	else
-		processTemplateData(gBoxTemplates["infoBox"], aJSONData, aGlobalContainer);
+	if(gResultVars['fileIndex'] == 0)
+	{
+		if(gBoxTemplates["globalBox"] == '')
+			fetch('template/scan.video.globalbox.tmpl.php', 
+				{
+					method: 'GET',
+					credentials: 'include',
+					mode: 'no-cors',
+				})
+			.then((aResponse) => { return aResponse.text();})
+			.then((aData) => { 
+					gBoxTemplates["globalBox"] = aData;
+					processTemplateData(gBoxTemplates["globalBox"], aJSONData, aGlobalContainer);
+				})
+		else
+			processTemplateData(gBoxTemplates["infoBox"], aJSONData, aGlobalContainer);
+	}
 
 	if(gBoxTemplates["infoBox"] == '')
 		fetch('template/scan.video.infobox.tmpl.php', 
@@ -90,12 +93,14 @@ function scanFileResult()
 		.then((aData) => { 
 				gBoxTemplates["infoBox"] = aData;
 				processTemplateData(gBoxTemplates["infoBox"], aJSONData, aInfoContainer);
-				chainLoadCropPreviewQuery(1, gResultVars['fileIndex']);
+				if(aJSONData['info']['videoStreamCount'] > 0)
+					chainLoadCropPreviewQuery(1, gResultVars['fileIndex']);
 			})
 	else
 	{
 		processTemplateData(gBoxTemplates["infoBox"], aJSONData, aInfoContainer);
-		chainLoadCropPreviewQuery(1, gResultVars['fileIndex']);
+		if(aJSONData['info']['videoStreamCount'] > 0)
+			chainLoadCropPreviewQuery(1, gResultVars['fileIndex']);
 	}
 	
 	if(gBoxTemplates["videoBox"] == '')

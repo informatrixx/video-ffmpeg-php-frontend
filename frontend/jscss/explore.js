@@ -63,12 +63,17 @@ function exploreFolderResult()
 	{
 		let aFilePath = aJSONData.files[aScanFileName].path;
 		let aScanModule = aJSONData.files[aScanFileName].scan;
+		let aJoin = aJSONData.files[aScanFileName].join;
 		
 		let aNewFileElement = document.createElement('file');
+		let aJoinLink = '';
+		if(aJoin == true)
+			aJoinLink = "<img src='img/add1-16.png' class='join' onclick='joinFile(\"" + escapeHTML(aFilePath) + "\")'>";
+		
 		if(aScanModule != false)
-			aNewFileElement.innerHTML = '<a href="scan.php?folder=' + escapeHTML(aFolderName) + '&file=' + escapeHTML(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
+			aNewFileElement.innerHTML = aJoinLink + '<a href="scan.php?folder=' + escapeHTML(aFolderName) + '&file=' + escapeHTML(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
 		else
-			aNewFileElement.innerHTML = escapeHTML(aScanFileName);
+			aNewFileElement.innerHTML = aJoinLink + escapeHTML(aScanFileName);
 		
 		if("group" in aJSONData.files[aScanFileName] && aJSONData.files[aScanFileName].group.length > 0)
 		{
