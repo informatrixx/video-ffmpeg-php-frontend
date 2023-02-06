@@ -57,6 +57,11 @@
 				echo '<link rel="preload" as="fetch" href="template/scan.video.audiobox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.subtitlebox.tmpl.php">' . PHP_EOL;
 				break;
+			case 'rar' :
+				echo '<script src="' . provideStaticContent('jscss/scan.rar.js') . '"></script>' . PHP_EOL;
+				echo '<link rel="preload" as="fetch" href="template/scan.rar.globalbox.tmpl.php">' . PHP_EOL;
+				echo '<link rel="preload" as="fetch" href="template/scan.rar.filesbox.tmpl.php">' . PHP_EOL;
+				break;
 		}
 	?>
 	<script>
