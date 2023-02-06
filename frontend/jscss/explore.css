@@ -36,3 +36,7 @@ explore file img.join {
 	position: relative;
 	padding-right: 3px;
 }
+
+explore file group.hidden {
+	display: none;	
+}
