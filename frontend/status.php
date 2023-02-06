@@ -33,7 +33,9 @@
 		echo "<div class='outfile'><div class='label'>Outfile:</div><div class='data'>{$aQueueItem['settings']['outfile']}</div></div>";
 		if(isset($aQueueItem['settings']['duration']))
 		{
-			$aDuration = $aQueueItem['settings']['duration'];
+			$aDuration = 0;
+			foreach($aQueueItem['settings']['duration'] as $aDurationValue)
+				$aDuration = $aDurationValue > $aDuration ? $aDurationValue : $aDuration;
 			$aHours = str_pad(floor($aDuration / 3600), 2, "0", STR_PAD_LEFT);
 			$aSeekLeft = round($aDuration, 0) % 3600;
 			$aMinutes = str_pad(floor($aSeekLeft / 60), 2, "0", STR_PAD_LEFT);

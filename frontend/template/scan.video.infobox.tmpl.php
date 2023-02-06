@@ -54,4 +54,5 @@
 		
 	</cropPreviewContainer>	
 	<input type='hidden' name='infile[##VAR:fileIndex##]' value='##DATA:file##' nomapmatch />
+	<input type='hidden' name='duration[##VAR:fileIndex##]' value='##DATA:info:duration:seconds##' nomapmatch />
 </selectContent>

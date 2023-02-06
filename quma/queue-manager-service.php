@@ -508,8 +508,8 @@
 														$aFilters[10] = 'nlmeans=' . STATIC_CONFIG['video']['nlmeans'][$aDataValue]['value'];
 													break;
 												case 'crop':
-													if($aDataValue == 'auto' && !empty($aItemSettings['cropstring']))
-														$aFilters[20] = $aItemSettings['cropstring'];
+													if($aDataValue == 'auto' && !empty($aItemSettings['cropstring'][$aDataMapIndex]))
+														$aFilters[20] = $aItemSettings['cropstring'][$aDataMapIndex];
 													break;
 												case 'resize':
 													if($aDataValue != '0')
@@ -525,6 +525,9 @@
 														$aBPS = $aBitRateMatches[1] * 1000;
 														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
 													}
+													break;
+												case 'infile':
+												case 'cropstring':
 													break;
 												default:
 													$aConvertString .= " -$aKey:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;

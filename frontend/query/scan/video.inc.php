@@ -236,17 +236,16 @@
 	$aAudioLanguages = array_unique($aAudioLanguages);
 	$aSubtitleLanguages = array_unique($aSubtitleLanguages);
 
-	if(in_array(needle: MORE_TEXT, haystack: $aSubtitleLanguages))
+	$aSubtitlesMore = in_array(needle: MORE_TEXT, haystack: $aSubtitleLanguages);
+	$aSubtitleLanguagesOrdered = $aSubtitleLanguages;
+	$aSubtitleLanguages = array();
+	foreach($aSubtitleLanguagesOrdered as $aValue)
 	{
-		$aSubtitleLanguagesOrdered = $aSubtitleLanguages;
-		$aSubtitleLanguages = array();
-		foreach($aSubtitleLanguagesOrdered as $aValue)
-		{
-			if($aValue != MORE_TEXT)
-				$aSubtitleLanguages[] = $aValue;
-		}
-		$aSubtitleLanguages[] = MORE_TEXT;
+		if($aValue != MORE_TEXT)
+			$aSubtitleLanguages[] = $aValue;
 	}
+	if($aSubtitlesMore)
+		$aSubtitleLanguages[] = MORE_TEXT;
 	
 	$aResult = array(
 		'file' =>				$aScanFileName,
