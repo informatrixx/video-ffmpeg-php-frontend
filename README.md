@@ -30,7 +30,9 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 ## To-Do...
 #### ...a lot
 At the moment the early development goal is to make a running application that can do basic conversion to my favours (HEVC -> software encode | AAC with loudnorm filters).
-### ...converting queue-manager PHP script into a standalone executable, probably C++?
+
+#### ...converting queue-manager PHP script into a standalone executable, probably C++?
+Right now the queue-manager is a standard PHP script, that needs to be executed by PHP-cli. Maybe sooner or later I'll compile a executable...
 
 ### ...(possible) Next steps
 - Multiple language support
