@@ -76,6 +76,7 @@
 </head>
 <body>
 <form action="query/addqueueitem.php" method="post" onsubmit="return collectFormSubmit(this)">
+<input type="hidden" name="type" value="<?=htmlspecialchars($_GET['type'])?>" />
 <grid>
 	<explore></explore>
 	<selectContainer id='globalContainer'></selectContainer>

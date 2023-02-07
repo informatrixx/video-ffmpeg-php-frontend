@@ -24,20 +24,20 @@ body {
 	background-color: #bbb;
 }
 
-.statusItem.readyToScan {
+.statusItem.readyToScan, .statusItem.readyToConvert, .statusItem.readyToExtract {
 	background-color: #cad9d7;
 }
 
 .statusItem.scanning {
-	background-color: #bffff8;
-}
-
-.statusItem.readyToConvert {
 	background-color: #caced9;
 }
 
 .statusItem.converting {
 	background-color: #bfd1ff;
+}
+
+.statusItem.extracting {
+	background-color: #e6ccff;
 }
 
 .statusItem.done {

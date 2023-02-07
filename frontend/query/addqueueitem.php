@@ -27,7 +27,11 @@
 		'action' =>			'add_queue_item',	
 		'response_sock' =>	RESPONSE_SOCKET_FILE,
 		'queue_item' => 	array(
-			'status' =>		0,
+			'status' =>		match($_GET['type'])
+				{
+					'video' =>	0,	
+					'rar' =>	10,	
+				},
 			'id' => md5(json_encode(value: $_GET)),
 			'settings' =>	$_GET,
 			)

@@ -27,6 +27,12 @@ gEventSource.addEventListener('progress',
 		displayProgress(aEvent.data);
 	});
 
+gEventSource.addEventListener('extract', 
+	function(aEvent)
+	{
+		displayProgress(aEvent.data);
+	});
+
 gEventSource.addEventListener('status', 
 	function(aEvent)
 	{
@@ -76,7 +82,8 @@ function displayProgress(aProgressData)
 		else
 			var aDataRow = aItemContainer.getElementsByClassName(aDataKeys[i])[0];
 		
-		aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aData[aDataKeys[i]] + '</div>';
+		if(aData[aDataKeys[i]] != null)
+			aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aData[aDataKeys[i]] + '</div>';
 	}
 	if(aItemContainer.getElementsByClassName('progress').length > 0 && aTime != '')
 	{
@@ -103,12 +110,20 @@ function changeStatus(aStatusData)
 	
 	switch(aData.status)
 	{
-		case 0: aStatusText = 'waiting'; break;
+		case 0:
+		case 10:
+			aStatusText = 'waiting'; 
+			break;
 		case 1: aStatusText = 'readyToScan'; break;
 		case 2: aStatusText = 'scanning'; break;
 		case 3: aStatusText = 'readyToConvert'; break;
 		case 4: aStatusText = 'converting'; break;
-		case 5: aStatusText = 'done'; break;
+		case 5:
+		case 15:
+			aStatusText = 'done'; 
+			break;
+		case 11: aStatusText = 'readyToExtract'; break;
+		case 12: aStatusText = 'extracting'; break;
 		case 90:
 		case 91:
 		case 92:
@@ -126,7 +141,9 @@ function changeStatus(aStatusData)
 		aItemContainer = document.createElement('div');
 		aItemContainer.setAttribute('id', aData.id);
 		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
-		aItemContainer.innerHTML = '<div class="outfile"><div class="label">Outfile:</div><div class="data">' + aData.outfile + '</div></div>';
+		aItemContainer.innerHTML = '<div class="infile"><div class="label">Infile:</div><div class="data">' + aData.infile + '</div></div>';
+		if(aData.outfile != null)
+			aItemContainer.innerHTML += '<div class="outfile"><div class="label">Outfile:</div><div class="data">' + aData.outfile + '</div></div>';
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	else

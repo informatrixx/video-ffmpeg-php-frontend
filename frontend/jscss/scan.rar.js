@@ -61,68 +61,6 @@ function scanFileResult()
 	
 }
 
-
-function processTemplateData(aTemplateData, aJSONData, aContainer)
-{
-	let aContent = aTemplateData;
-	
-	//const aTmplRegex = /##DATA:(.+?)##/g;
-	const aTmplRegex = /##([A-Z]+):?([\w:+-]*?)(=\w*?)?##/g;
-	while ((aMatch = aTmplRegex.exec(aTemplateData)) !== null)
-	{
-		var aReplacement = '';
-		switch(aMatch[1])
-		{
-			case 'ARCHIVEFILES':
-				for(let i = 0; i < aJSONData.length; i++)
-				{
-					aReplacement += '<file>' + aJSONData[i]['fileName'] + '</file><size>' + aJSONData[i]['size']['human'] + '</size>';
-				}
-				
-			break;
-		}
-		aContent = aContent.replaceAll(aMatch[0], aReplacement);
-	}
-
-	let aSelectButtons;
-	
-	for(let i = 0; i < aContainer.children.length; i++)
-	{
-		if(aContainer.children[i].nodeName == 'SELECTBUTTONS')
-			aSelectButtons = aContainer.children[i];
-	}
-	if(aSelectButtons === undefined)
-	{
-		aSelectButtons = document.createElement('selectButtons');
-		aContainer.appendChild(aSelectButtons);
-	}
-	
-	const aButtonsRegex = /<selectButtons>(.+)<\/selectButtons>/s;
-	if((aMatch = aButtonsRegex.exec(aContent)) !== null)
-		aSelectButtons.innerHTML += aMatch[1];
-
-	const aContentRegex = /(<selectContent.+<\/selectContent>)/s;
-	if((aMatch = aContentRegex.exec(aContent)) !== null)
-		aContainer.innerHTML += aMatch[1];
-
-	let aFirstButton = true;
-	for(let i = 0; i < aContainer.getElementsByTagName('selectButton').length; i++)
-		if(aFirstButton)
-			aFirstButton = false;
-		else
-			aContainer.getElementsByTagName('selectButton')[i].removeAttribute('active');
-		
-	let aFirstContent = true;
-	for(let i = 0; i < aContainer.getElementsByTagName('selectContent').length; i++)
-		if(aFirstContent)
-			aFirstContent = false;
-		else
-		{
-			var aHiddenAttr = document.createAttribute('hidden');
-			aContainer.getElementsByTagName('selectContent')[i].setAttributeNode(aHiddenAttr);
-		}
-}
-
 function chainLoadCropPreviewQuery(aIndex, aFileIndex)
 {
 	let aCropPreviewContainer;

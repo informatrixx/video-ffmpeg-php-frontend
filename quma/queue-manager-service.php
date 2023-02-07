@@ -176,12 +176,15 @@
 			'error' =>		'',
 			);
 		
-		_msg(message: 'Adding queue item: ' . $newItem['settings']['outfile'], CRF: '');
+		if(isset($newItem['settings']['outfile']))
+			_msg(message: 'Adding queue item: ' . $newItem['settings']['outfile'], CRF: '');
+		else
+			_msg(message: 'Adding queue item: ' . $newItem['settings']['infile'], CRF: '');
 		
         //Check for duplicate item
         foreach($gConvertQueue as $aQueueItem)
         {
-        	if($newItem['settings']['outfolder'] == $aQueueItem['settings']['outfolder'] && $newItem['settings']['outfile'] == $aQueueItem['settings']['outfile'])
+        	if($newItem['settings']['outfolder'] == $aQueueItem['settings']['outfolder'] && $newItem['settings']['infile'] == $aQueueItem['settings']['infile'])
 			{
 				$aResult['error'] = 'Duplicate';
 				_msg(message: 'Duplicate', fixedWidth: 6);
@@ -209,6 +212,12 @@
 				4	converting
 				5	done
 				
+				10	waiting
+				11	ready to unrar
+				12	unrar (extracting)
+				15	unrar done
+				19  Error unrar
+				
 				9x	Error ...
 				99	Abort
 				*/
@@ -227,6 +236,18 @@
 			case 5:
 				_msg(message: 'Change queue item status to "Done (5)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
 				break;
+			case 11:
+				_msg(message: 'Change queue item status to "Ready to extract (unrar) (11)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
+				break;
+			case 12:
+				_msg(message: 'Change queue item status to "Extracting (unrar) (12)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
+				break;
+			case 15:
+				_msg(message: 'Change queue item status to "Done extracting (unrar) (15)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
+				break;
+			case 19:
+				_msg(message: 'Change queue item status to "Error extracting (unrar) (19)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
+				break;
 			case 92:
 				_msg(message: 'Change queue item status to "Error scanning (92)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
 				break;
@@ -239,7 +260,8 @@
 		}
 		$aStatusArray = array(
 			'id'		=> $gConvertQueue[$queueItemIndex]['id'],
-			'outfile'	=> $gConvertQueue[$queueItemIndex]['settings']['outfile'],
+			'infile'	=> $gConvertQueue[$queueItemIndex]['settings']['infile'],
+			'outfile'	=> isset($gConvertQueue[$queueItemIndex]['settings']['outfile']) ? $gConvertQueue[$queueItemIndex]['settings']['outfile'] : null,
 			'status'	=> $newStatus,
 			);
 		statusEcho(topic: 'status', statusArray: $aStatusArray);
@@ -280,7 +302,7 @@
 	$gQueueTasks = array(			//Array for indexes of current running tasks
 		'convert' =>	array(),
 		'scan' =>		array(),
-		'unpack' =>		array(),
+		'extract' =>	array(),
 		);
 	
 	$gStatusSockets = array();
@@ -351,6 +373,12 @@
 				4	converting
 				5	done
 				
+				10	waiting
+				11	ready to unrar
+				12	unrar (extracting)
+				15	unrar done
+				19  Error unrar
+
 				9x	error
 			*/
 			if($aItemStatus == 0)	//Fresh item
@@ -364,6 +392,11 @@
 					}
 				//..otherwise status=3
 				changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 3);
+				continue;
+			}
+			if($aItemStatus == 10)	//Fresh item (unrar)
+			{
+				changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 11);
 				continue;
 			}
 		}
@@ -626,6 +659,60 @@
 			unset($aQueueItem);
 		}
 		
+		if(count($gQueueTasks['extract']) < STATIC_CONFIG['queue']['max_extract_tasks'])
+		{
+			//Extract task slots are available, check if queue items are status 11 (ready to extract)
+			foreach($gConvertQueue as $aItemIndex => &$aQueueItem)
+			{
+				$aItemID = $aQueueItem['id'];
+				$aItemStatus = $aQueueItem['status'];
+				$aItemSettings = $aQueueItem['settings'];
+				
+				if($aItemStatus == 11)
+				{
+					$aExtractString = CONFIG['Binaries']['unrar'];
+					$aExtractString .= isset($aItemSettings['ignorepaths']) ? ' e ' : ' x ';
+					$aExtractString .= isset($aItemSettings['overwrite']) ? ' -o+ ' : ' -o- ';
+					$aExtractString .= escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
+					
+					foreach($aItemSettings['archivefile'] as $aArchiveFile)
+						$aExtractString .= escapeshellarg($aArchiveFile) . ' \\' . PHP_EOL;
+					
+					$aExtractString .= escapeshellarg(rtrim(string: $aItemSettings['outfolder'], characters: '/') . '/' ) . ' \\' . PHP_EOL;
+					$aExtractString .= '1>&2' . PHP_EOL;
+					
+					//Add itemID to scan list for identification
+					$gQueueTasks['extract'][] = $aItemID;
+					
+					_msg(message: 'Start extracting of: ' . $aItemSettings['infile'], CRF: '');
+					
+					if(CONFIG['Debugging'])
+						file_put_contents(filename: LOG_DIR . 'extract_unrar_' . date('Ymd-His') . '_' . basename($aItemSettings['infile']) . '.sh', data: '#!/bin/bash' . PHP_EOL . $aExtractString);
+					
+					//Preparing I/O pipes
+					$aDescriptorSpec = array(
+						0 => array('pipe', 'r'), 
+						1 => array('pipe', 'w'),
+						2 => array('pipe', 'w')
+						);
+					
+					$aQueueItem['proc']['ressource'] = proc_open(command: $aExtractString, descriptor_spec: $aDescriptorSpec, pipes: $aQueueItem['proc']['pipes']);
+					if(is_resource($aQueueItem['proc']['ressource']))
+					{
+						_msg(message: 'PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], fixedWidth: 12);
+						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
+						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 12);
+					}
+					else
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 19);
+				}
+				if(count($gQueueTasks['extract']) >= STATIC_CONFIG['queue']['max_extract_tasks'])
+					break;
+			}
+		}
+		
+		
 		//Check if processes have finished
 		foreach($gConvertQueue as $aItemIndex => &$aQueueItem)
 			if(isset($aQueueItem['proc']))
@@ -662,10 +749,31 @@
 							);
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
+					case preg_match(pattern: '/^(?:Extracting|[.]+)\s+(.+?)(\d+%)$/im', subject: $aOutput, matches: $aMatches) > 0:
+						$aFileName = $aMatches[1];
+						if(preg_match(pattern: '/^(.+?)\s+[\b]/m', subject: $aMatches[1], matches: $aFileNameMatches))
+							$aFileName = $aFileNameMatches[1];
+						$aStatusArray = array(
+							'id'		=> $aQueueItem['id'],
+							'infile'	=> $aQueueItem['settings']['infile'],
+							'file'	 	=> $aFileName,
+							'progress'	=> $aMatches[2],
+							);
+						statusEcho(topic: 'extract', statusArray: $aStatusArray);
+					break;
+					case $aQueueItem['settings']['type'] == 'rar' && preg_match(pattern: '/(\d+%)$/m', subject: $aOutput, matches: $aMatches) > 0:
+						$aStatusArray = array(
+							'id'		=> $aQueueItem['id'],
+							'infile'	=> $aQueueItem['settings']['infile'],
+							'progress'	=> $aMatches[1],
+							);
+						statusEcho(topic: 'extract', statusArray: $aStatusArray);
+					break;
 					default:
 						$aStatusArray = array(
 							'id'		=> $aQueueItem['id'],
-							'outfile'	=> $aQueueItem['settings']['outfile'],
+							'infile'	=> $aQueueItem['settings']['infile'],
+							'outfile'	=> isset($aQueueItem['settings']['outfile']) ? $aQueueItem['settings']['outfile'] : null,
 							'message'	=> $aOutput
 							);
 						statusEcho(topic: 'message', statusArray: $aStatusArray);
@@ -720,6 +828,11 @@
 						case 4:
 							//Conversion done...
 								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 5);
+							continue(2);
+						break;
+						case 12:
+							//Extracting done...
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 15);
 							continue(2);
 						break;
 					}

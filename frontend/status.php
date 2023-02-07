@@ -19,18 +19,22 @@
 	{
 		$aStatusText = match($aQueueItem['status'])
 		{
-			0 => 'waiting',
+			0, 10 => 'waiting',
 			1 => 'readyToScan',
 			2 => 'scanning',
 			3 => 'readyToConvert',
 			4 => 'converting',
-			5 => 'done',
-			90, 91, 92, 93, 94, 95 => 'error',
+			5, 15 => 'done',
+			11 => 'readyToExtract',
+			12 => 'extracting',
+			19, 90, 91, 92, 93, 94, 95 => 'error',
 			99 => 'abort',
 		};
 		
 		echo "<div id='{$aQueueItem['id']}' class='statusItem $aStatusText'>";
-		echo "<div class='outfile'><div class='label'>Outfile:</div><div class='data'>{$aQueueItem['settings']['outfile']}</div></div>";
+		echo "<div class='infile'><div class='label'>Infile:</div><div class='data'>{$aQueueItem['settings']['infile']}</div></div>";
+		if(isset($aQueueItem['settings']['outfile']))
+			echo "<div class='outfile'><div class='label'>Outfile:</div><div class='data'>{$aQueueItem['settings']['outfile']}</div></div>";
 		if(isset($aQueueItem['settings']['duration']))
 		{
 			$aDuration = 0;

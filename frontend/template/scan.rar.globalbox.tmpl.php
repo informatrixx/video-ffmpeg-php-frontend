@@ -24,7 +24,10 @@
 <selectButtons>
 	<selectButton>Global</selectButton>
 </selectButtons>
-<selectContent>
-	<label>Ausgabepfad:</label><input style='grid-column: span 2;' name='outfolder' value='##DATA:outfile:folder##'>
+<selectContent class='archiveGlobal'>
+	<label>Ausgabepfad:</label><input name='outfolder' value='##DATA:outfile:folder##'>
+	<label>Pfade ignorieren:</label><p><input type='checkbox' name='ignorepaths' checked></p>
+	<label>Vorhandene überschreiben:</label><p><input type='checkbox' name='overwrite' checked></p>
 	<label>Entpacken:</label><button type='submit'>Weiter...</button>
+	<input type='hidden' name='infile' value='##DATA:file##' />
 </selectContent>

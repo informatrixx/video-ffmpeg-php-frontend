@@ -99,6 +99,9 @@ selectContent {
 selectContent.archiveFiles {
 	grid-template-columns: minmax(320px, 4fr) minmax(100px, max-content);
 }
+selectContent.archiveGlobal {
+	grid-template-columns: minmax(150px, 1fr) minmax(180px, 2fr);
+}
 selectContent[hidden] {
 	display: none;	
 }
