@@ -6,6 +6,7 @@
 </head>
 <body>
 	<div id='statusContainer'>
+	<script>
 	<?php
 		
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
@@ -15,41 +16,24 @@
 	
 	$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
 	
+	
 	foreach($aConvertQueue as $aQueueItem)
 	{
-		$aStatusText = match($aQueueItem['status'])
-		{
-			0, 10 => 'waiting',
-			1 => 'readyToScan',
-			2 => 'scanning',
-			3 => 'readyToConvert',
-			4 => 'converting',
-			5, 15 => 'done',
-			11 => 'readyToExtract',
-			12 => 'extracting',
-			19, 90, 91, 92, 93, 94, 95 => 'error',
-			99 => 'abort',
-		};
+		$aProgressData = array(
+			'id' =>			$aQueueItem['id'],
+			'infile' =>		$aQueueItem['settings']['infile'],
+			'outfile' =>	$aQueueItem['settings']['outfile'],
+			'duration' =>	$aQueueItem['settings']['duration'],
+			);
+		$aStatusData = array(
+			'id' =>			$aQueueItem['id'],
+			'status' =>		$aQueueItem['status'],
+			);
 		
-		echo "<div id='{$aQueueItem['id']}' class='statusItem $aStatusText'>";
-		echo "<div class='infile'><div class='label'>Infile:</div><div class='data'>{$aQueueItem['settings']['infile']}</div></div>";
-		if(isset($aQueueItem['settings']['outfile']))
-			echo "<div class='outfile'><div class='label'>Outfile:</div><div class='data'>{$aQueueItem['settings']['outfile']}</div></div>";
-		if(isset($aQueueItem['settings']['duration']))
-		{
-			$aDuration = 0;
-			foreach($aQueueItem['settings']['duration'] as $aDurationValue)
-				$aDuration = $aDurationValue > $aDuration ? $aDurationValue : $aDuration;
-			$aHours = str_pad(floor($aDuration / 3600), 2, "0", STR_PAD_LEFT);
-			$aSeekLeft = round($aDuration, 0) % 3600;
-			$aMinutes = str_pad(floor($aSeekLeft / 60), 2, "0", STR_PAD_LEFT);
-			$aSeconds = str_pad(floor($aSeekLeft % 60), 2, "0", STR_PAD_LEFT);
-			echo "<div class='duration'><div class='label'>Duration:</div><div class='data'>$aHours:$aMinutes:$aSeconds</div></div>";
-			echo "<div class='progress' duration='$aDuration'><div class='label'>Progress:</div><div class='data'></div></div>";
-		}
-		echo '</div>';
+		echo "	displayProgress('" . json_encode(value: $aProgressData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
+		echo "	changeStatus('" . json_encode(value: $aStatusData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
 	}
-	?>
+	?></script>
 	</div>
 </body>
 </html>

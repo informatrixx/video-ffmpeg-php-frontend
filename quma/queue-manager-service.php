@@ -561,6 +561,7 @@
 													break;
 												case 'infile':
 												case 'cropstring':
+												case 'duration':
 													break;
 												default:
 													$aConvertString .= " -$aKey:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;

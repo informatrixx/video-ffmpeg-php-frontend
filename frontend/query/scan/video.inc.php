@@ -205,7 +205,7 @@
 				
 				break;
 			case 'subtitle':
-				if(array_key_exists(key: 'language', array: $aStreamData['tags']))
+				if(isset($aStreamData['tags']) && array_key_exists(key: 'language', array: $aStreamData['tags']))
 					if(in_array(needle: $aStreamData['tags']['language'], haystack: DECISIONS['subtitles']['pick']))
 						$aSubtitleLanguages[] = array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']);
 					else
@@ -217,14 +217,14 @@
 						'nameFull' =>	$aStreamData['codec_long_name'],
 						),
 					'conversionSettings' => array(
-						'convert' =>	array_key_exists(key: 'language', array: $aStreamData['tags']) && in_array(needle: $aStreamData['tags']['language'], haystack: DECISIONS['subtitles']['pick']),
+						'convert' =>	isset($aStreamData['tags']) && array_key_exists(key: 'language', array: $aStreamData['tags']) && in_array(needle: $aStreamData['tags']['language'], haystack: DECISIONS['subtitles']['pick']),
 						),
 					'disposition' => array(
 						'default' =>	$aStreamData['disposition']['default'],
 						'forced' =>		$aStreamData['disposition']['forced'],
 						),
 					'language' => array(
-						'human' =>	array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']),
+						'human' =>	isset($aStreamData['tags']) && array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']),
 						'short' =>	$aStreamData['tags']['language'],
 						),
 					'streamIndex' => $aSI,

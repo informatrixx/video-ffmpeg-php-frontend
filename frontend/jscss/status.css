@@ -9,6 +9,14 @@ body {
 	grid-auto-flow: dense;	
 }
 
+file {
+	display: block;	
+}
+
+file.hidden {
+	display: none;
+}
+
 .statusItem {
 	border: 1px solid #234;
 	border-radius: 3px;	
@@ -52,143 +60,4 @@ body {
 
 
 
-green {
-	color: green;
-}
-
-red {
-	color: red;
-}
-
-explore {
-	text-align: left;
-}
-
-
-folder, file {
-	display: block;
-	padding-left: 20px;
-}
-folder {
-	background-image: url('../img/folder1-16.png');
-	background-repeat: no-repeat;
-}
-folder a, file a {
-	text-decoration: none;
-	color: #000;
-}
-folder a:hover, file a:hover {
-	color: #93B;
-}
-
-selectContainer, explore {
-	background: #F1F3F4;
-	border-color: #d5d5d5;
-	border-radius:  0px 0.5em 0.5em;
-	border: 1px solid;
-	padding: 10px;
-	margin: 10px;
-	box-sizing: border-box;
-	max-width: 620px;
-	min-height: 200px;
-	height: max-content;
-	vertical-align: middle;
-	position: relative;
-}
-selectContainer {
-	text-align: center;	
-}
-selectButtons {
-    width: 620px;
-    box-sizing: border-box;
-    background: #F6F8FB;
-    border-color: #d5d5d5;
-    border-radius: 0px 0.5em 0.5em;
-    border: 1px solid;
-    position: relative;
-    top: -11px;
-    left: -11px;
-    min-height: 30px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    grid-auto-flow: dense;
-}
-selectButton {
-	font-family: Arial Narrow;
-	background-color: #ddd;
-	box-sizing: border-box;
-	margin: 3px;
-	font-size: 0.9em;
-	border-radius: 5px;
-	padding: 3px;
-	cursor: default;
-}
-selectButton input[type=checkbox] {
-	padding: 0px;
-	margin: 0px;
-}
-selectButton[active] {
-	background-color: #bbb;
-}
-selectButton[attention] {
-	color: #f00;
-	background-color: #ebb;
-}
-selectButton[seeking] {
-	font-size: 0px;
-	background-image: url('../img/loader.svg');
-	background-size: 16px;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-selectButton:hover {
-	background-color: #aaa;
-}
-
-selectButton img.duplicate {
-	cursor: pointer;
-	width: 16px;
-}
-
-selectContent {
-	display: grid;
-	text-align: left;
-	grid-template-columns: minmax(100px, content-width) minmax(200px, 2fr) minmax(300px, 4fr);
-}
-selectContent[hidden] {
-	display: none;	
-}
-selectContent img.loader {
-	margin-top: 50px;
-	margin-bottom: 15px;
-	width: 30px;
-	height: 30px;
-	box-sizing: border-box;
-	padding: 0px;
-}
-selectContent img {
-	width: 600px;	
-}
-
-selectContent select, selectContent input[type="number"] {
-	max-width: 150px;	
-}
-
-selectContent delimiter {
-	width: 100%;
-	height: 1px;
-	border: 1px solid #333;
-	display: block;
-	box-sizing: border-box;
-	grid-column: 1 / span 3;
-}
-selectContent p {
-	margin: 0px;
-}
-selectContent label {
-	grid-column: 1;
-}
-selectContent text {
-	grid-column: 2 / span 2;
-}
 

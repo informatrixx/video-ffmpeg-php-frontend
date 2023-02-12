@@ -28,7 +28,7 @@ gEventSource.addEventListener('progress',
 	});
 
 gEventSource.addEventListener('extract', 
-	function(aEvent)
+	function(aEvent)	
 	{
 		displayProgress(aEvent.data);
 	});
@@ -48,6 +48,23 @@ gEventSource.addEventListener('error',
 		}
 	});
 
+function statusSetData(aContainer, aDataClass, aDataValue)
+{
+	let aDataRow = aContainer.getElementsByClassName(aDataClass);
+	if(aDataRow.length == 0)
+	{
+		aDataRow = document.createElement('div');
+		aDataRow.setAttribute('class', aDataClass);
+		aContainer.appendChild(aDataRow);
+	}
+	else
+		aDataRow = aDataRow[0];
+	
+	let aLabelText = aDataClass.charAt(0).toUpperCase() + aDataClass.slice(1);
+	
+	if(aDataValue != null)
+		aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aDataValue + '</div>';
+}
 
 function displayProgress(aProgressData)
 {
@@ -69,23 +86,42 @@ function displayProgress(aProgressData)
 	{
 		let aLabelText = aDataKeys[i][0].toUpperCase() + aDataKeys[i].substring(1) + ':';
 		
-		if(aDataKeys[i] == 'id')
-			continue;
-		if(aDataKeys[i] == 'time')
-			aTime = aData[aDataKeys[i]];
-		if(aItemContainer.getElementsByClassName(aDataKeys[i]).length == 0)
+		switch(aDataKeys[i])
 		{
-			var aDataRow = document.createElement('div');
-			aDataRow.setAttribute('class', aDataKeys[i]);
-			aItemContainer.appendChild(aDataRow);
+			case 'id':
+				continue;
+			case 'time':
+				aTime = aData[aDataKeys[i]];
+				break;
+			case 'duration':
+				if(aData[aDataKeys[i]] == null)
+					break;
+
+				let aDuration = '';
+				if(typeof aData[aDataKeys[i]] === 'string')
+					aDuration = aData[aDataKeys[i]];
+				else
+					aDuration = aData[aDataKeys[i]][0];
+				
+				aItemContainer.setAttribute('duration', aDuration);
+				if(aDuration != '')
+				{
+					let aRawDuration = aDuration;
+					let aSeekLeft = Math.round(aRawDuration, 0) % 3600;
+					
+					aData[aDataKeys[i]] =	Math.floor(aRawDuration / 3600).toString().padStart(2, '0') + ':' + 
+											Math.floor(aSeekLeft / 60).toString().padStart(2, '0') + ':' +
+											Math.floor(aSeekLeft % 60).toString().padStart(2, '0');
+				}
+				else
+					break;
+			default:
+				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
+				break;
 		}
-		else
-			var aDataRow = aItemContainer.getElementsByClassName(aDataKeys[i])[0];
 		
-		if(aData[aDataKeys[i]] != null)
-			aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aData[aDataKeys[i]] + '</div>';
 	}
-	if(aItemContainer.getElementsByClassName('progress').length > 0 && aTime != '')
+	if(aItemContainer.getAttribute('duration') != null && aTime != '')
 	{
 		const aTimeRegEx = /^(\d+):(\d+):(\d+\.\d+)$/;
 		let aTimeMatches = aTime.match(aTimeRegEx);
@@ -93,9 +129,10 @@ function displayProgress(aProgressData)
 		let aMinutes = aTimeMatches[2];
 		let aSeconds = aTimeMatches[3];
 		let aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
-		let aDuration = aItemContainer.getElementsByClassName('progress')[0].getAttribute('duration');
+		let aDuration = aItemContainer.getAttribute('duration');
 		let aPercent = Math.round(aTimeSeconds / aDuration * 1000) / 10;
-		aItemContainer.getElementsByClassName('progress')[0].innerHTML = '<div class="label">Progress:</div><div class="data">' + aPercent + ' %</div>';
+		statusSetData(aItemContainer, 'progress', aPercent + ' %');
+		//aItemContainer.getElementsByClassName('progress')[0].innerHTML = '<div class="label">Progress:</div><div class="data">' + aPercent + ' %</div>';
 	}
 }
 
