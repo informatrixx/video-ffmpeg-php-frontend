@@ -199,6 +199,34 @@
         return $aResult;
 	}
 	
+	function removeQueueItem(string $itemID)
+	{
+		global $gConvertQueue;
+
+		$aResult = array(
+			'success' =>	false,
+			'error' =>		'',
+			);
+		
+		
+        //Check for existing item
+        foreach($gConvertQueue as $aQueueItemIndex => $aQueueItem)
+        {
+        	if($itemID == $aQueueItem['id'])
+			{
+				_msg(message: 'Deleting queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
+				unset($gConvertQueue[$aQueueItemIndex]);
+				$aResult['success'] = true;
+				_msg(message: 'OK', fixedWidth: 6);
+				writeConvertQueue();
+				return $aResult;
+			}
+        }
+		
+       
+        return $aResult;
+	}
+	
 	function changeQueueItemStatus(int $queueItemIndex, int $newStatus)
 	{
 		global $gConvertQueue;
@@ -352,6 +380,19 @@
 									_msg(message: 'Could not connect (' . $aControlMessage['responseSock'] . '): ' . socket_strerror(socket_last_error()), toSTDERR: true);
 								else
 									_msg(message: 'OK', fixedWidth: 6);
+							break;
+							case 'delete_queue_item':
+								$aSockMessage = json_encode(value: removeQueueItem($aControlMessage['queue_item_id']));
+								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
+								if(socket_sendto(socket: $aResponseSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: MSG_EOF, address: $aControlMessage['response_sock']) === false)
+								{
+									_msg(message: 'Socket response send failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+									print_r($aSockMessage);
+								}
+								if(socket_shutdown(socket: $aResponseSocket) === false)
+									_msg(message: 'Response socket shutdown failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
+								if(socket_close(socket: $aResponseSocket) === false)
+									_msg(message: 'Response socket closing failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
 							break;
 						}
 				}

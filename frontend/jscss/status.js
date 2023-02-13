@@ -177,6 +177,7 @@ function changeStatus(aStatusData)
 		case 5:
 		case 15:
 			aStatusText = 'done'; 
+			statusSetData(aItemContainer, 'action', '<button onclick="deleteListItem(\'' + aData.id + '\')"><img src="img/broom1-16.png" alt="cleanup"/></button>');
 			break;
 		case 11: aStatusText = 'readyToExtract'; break;
 		case 12: aStatusText = 'extracting'; break;
@@ -206,6 +207,21 @@ function changeStatus(aStatusData)
 		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
 	
 }
+
+function deleteListItem(aID)
+{
+	fetch('query/deletequeueitem.php?id=' + aID, 
+			{
+				method: 'GET',
+				credentials: 'include',
+				mode: 'no-cors',
+			})
+		.then((aResponse) => { return aResponse.json();})
+		.then((aData) => { 
+				console.log(aData);
+				if(aData.success)
+					location.reload();
+			})}
 
 
 function toggleHiddenGroup(aObject)
