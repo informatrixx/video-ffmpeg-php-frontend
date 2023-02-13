@@ -416,10 +416,27 @@
 					if(is_string($aItemSettings['infile']))
 						$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
 					elseif(is_array($aItemSettings['infile']))
-						foreach($aItemSettings['infile'] as $aInFile)
-							$aAudioScanString .= ' -i ' . escapeshellarg($aInFile) . ' \\' . PHP_EOL;
+					{
+						$aInFileIndexes = array();
+						//Only use input files for audio tracks where loudnorm scanning is necessary
+						foreach($aItemSettings['loudnorm'] as $aMapIndexLN => $aLoudNormValue)
+						{
+							if($aLoudNormValue == 'off' || !isset(STATIC_CONFIG['audio']['loudnorm'][$aLoudNormValue]))
+								continue;
+							
+							if(!preg_match(pattern: '/^(\d+):\d+$/', subject: $aItemSettings['map'][$aMapIndexLN], matches: $aMapMatches))
+								continue;
+						
+							$aInFileIndexes[] = $aMapMatches[1];
+						}
+						$aInFileIndexes = array_unique($aInFileIndexes);
+						
+						foreach($aInFileIndexes as $aInFileIndex)
+							$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile'][$aInFileIndex]) . ' \\' . PHP_EOL;
+
+					}
 					$aAudioScanString .= '-vn -sn -dn -map_chapters -1' . ' \\' . PHP_EOL;
-					
+
 					$aAudioScanIndex = 0;
 					
 					//Find all audio tracks where loudnorm scanning is necessary
@@ -438,7 +455,7 @@
 										$aAudioScanString .= "-map $aMapValue" . ' \\' . PHP_EOL;
 									}
 						}
-				
+
 						//Summarize collected audio loudnorm filter settings
 						if(count($aAudioScanFilters) > 0)
 						{
