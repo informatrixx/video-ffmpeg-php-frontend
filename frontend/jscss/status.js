@@ -1,5 +1,7 @@
 var gEventSource;
 
+function dummy(){}
+
 if(!!window.EventSource)
 {
     gEventSource = new EventSource('query/statuseventsream.php');
@@ -93,6 +95,24 @@ function displayProgress(aProgressData)
 			case 'time':
 				aTime = aData[aDataKeys[i]];
 				break;
+			case 'infile':
+				if(typeof aData[aDataKeys[i]] !== 'string')
+				{
+					if(aData[aDataKeys[i]].length > 1)
+					{
+						let aInFiles = aData[aDataKeys[i]];
+						aData[aDataKeys[i]] = '<group content="condensed"><file alwaysvisible>' + aInFiles[0] + '(<a href="javascript:dummy()" onclick="toggleHiddenGroup(this)">+' + (aInFiles.length - 1) + ' more</a>)</file>';
+						
+						for(const aInFile of aInFiles)
+							aData[aDataKeys[i]] += '<file hidden>' + aInFile + '</file>';
+						
+						aData[aDataKeys[i]] += '</group>';
+					}
+					else
+						aData[aDataKeys[i]] = aData[aDataKeys[i]][0];
+				}
+				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
+				break;
 			case 'duration':
 				if(aData[aDataKeys[i]] == null)
 					break;
@@ -113,8 +133,8 @@ function displayProgress(aProgressData)
 											Math.floor(aSeekLeft / 60).toString().padStart(2, '0') + ':' +
 											Math.floor(aSeekLeft % 60).toString().padStart(2, '0');
 				}
-				else
-					break;
+				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
+				break;
 			default:
 				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
 				break;
@@ -132,7 +152,6 @@ function displayProgress(aProgressData)
 		let aDuration = aItemContainer.getAttribute('duration');
 		let aPercent = Math.round(aTimeSeconds / aDuration * 1000) / 10;
 		statusSetData(aItemContainer, 'progress', aPercent + ' %');
-		//aItemContainer.getElementsByClassName('progress')[0].innerHTML = '<div class="label">Progress:</div><div class="data">' + aPercent + ' %</div>';
 	}
 }
 
@@ -187,3 +206,30 @@ function changeStatus(aStatusData)
 		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
 	
 }
+
+
+function toggleHiddenGroup(aObject)
+{
+	let aGroupNode = aObject.parentNode;
+	while(aGroupNode && aGroupNode.nodeName.toLowerCase() != 'group')
+		aGroupNode = aGroupNode.parentNode;
+	
+	if(aGroupNode == null)
+		return false;
+	
+	let aExpand = aGroupNode.getAttribute('content') != 'expanded';
+
+	if(aExpand)
+		aGroupNode.setAttribute('content', 'expanded');
+	else
+		aGroupNode.setAttribute('content', 'condensed');
+	
+	
+	for(const aChildNode of aGroupNode.children)
+		if(aExpand)
+			aChildNode.removeAttribute('hidden');
+		else
+			if(aChildNode.getAttribute('alwaysvisible') == null)
+				aChildNode.setAttribute('hidden', 'hidden');
+}
+
