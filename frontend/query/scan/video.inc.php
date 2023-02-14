@@ -160,6 +160,7 @@
 				
 				$aBitRate = match(true)
 				{
+					isset($aStreamData['bit_rate']) =>			$aStreamData['bit_rate'],
 					isset($aStreamData['tags']['BPS']) =>		$aStreamData['tags']['BPS'],
 					isset($aStreamData['tags']['BPS-eng']) =>	$aStreamData['tags']['BPS-eng'],
 					default => null
