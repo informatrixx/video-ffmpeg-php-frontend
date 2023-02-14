@@ -54,6 +54,13 @@ function exploreFolderResult()
 	{
 		let aFolderPath = aJSONData.folders[aScanFolderName];
 		let aNewFolderElement = document.createElement('folder');
+		if(aScanFolderName == '..')
+			aNewFolderElement.setAttribute('back', 'back');
+		if(aScanFolderName == '.')
+		{
+			aNewFolderElement.setAttribute('root', 'root');
+			aScanFolderName = '..';
+		}
 		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeHTML(aFolderPath) + '\')">' + escapeHTML(aScanFolderName) + '</a>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}

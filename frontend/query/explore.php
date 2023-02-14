@@ -36,6 +36,12 @@
 		else
 		{
 			$aFolder = rtrim(string: $aFolder, characters: '/') . '/';
+			$aParentFolder = preg_replace(pattern: '@[^/]+/$@', replacement: '', subject: $aFolder);
+			if(pathIsInConversionRoot($aParentFolder))
+				$aFoldersList['..'] = $aParentFolder;
+			elseif(!empty($_GET['folder']))
+				$aFoldersList['.'] = '';
+			
 			$aGlob = glob(pattern: "$aFolder*");
 			foreach($aGlob as $aGlobPath)
 			{

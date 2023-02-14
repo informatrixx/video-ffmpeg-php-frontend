@@ -16,11 +16,19 @@ explore {
 
 explore folder, explore file {
 	display: block;
-	padding-left: 20px;
+	padding-left: 23px;
 }
 explore folder {
-	background-image: url('../img/folder1-16.png');
+	background-image: url('../img/folder1-24.png');
 	background-repeat: no-repeat;
+	background-size: contain;
+	height: 20px;
+}
+explore folder[back] {
+	background-image: url('../img/folder2-24.png');
+}
+explore folder[root] {
+	background-image: url('../img/folder3-24.png');
 }
 explore folder a, explore file a {
 	text-decoration: none;
