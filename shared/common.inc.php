@@ -12,6 +12,26 @@
 		return sprintf("%.{$aDecimals}f", $aValue) . $aUnit;
 	}
 
+	function processStringBackspace(string $string)
+	{
+		$aSplit = mb_str_split($string);
+
+		$i = 0;
+
+		while($i < count($aSplit))
+		{
+			if($aSplit[$i] == chr(8))
+			{
+				if($i > 0)
+					$i--;
+				array_splice($aSplit, $i, 2);
+			}
+			else
+				$i++;
+		}
+		return implode($aSplit);	
+	}
+	
 	function pathIsInConversionRoot(string $aPathString)
 	{
 		$aPathString = realpath($aPathString);

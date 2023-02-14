@@ -16,7 +16,7 @@
 
 	define(constant_name: 'QUEUE_FILE', value: SCRIPT_DIR . 'queue.json');
 	
-	
+	require_once(SCRIPT_DIR . '../shared/common.inc.php');
 	
 	//Check if PID file is orphaned or an old Process is still running
 	if(file_exists(PID_FILE))
@@ -808,17 +808,20 @@
 							);
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
-					case preg_match(pattern: '/^(?:Extracting|[.]+)\s+(.+?)(\d+%)$/im', subject: $aOutput, matches: $aMatches) > 0:
-						$aFileName = $aMatches[1];
-						if(preg_match(pattern: '/^(.+?)\s+[\b]/m', subject: $aMatches[1], matches: $aFileNameMatches))
-							$aFileName = $aFileNameMatches[1];
-						$aStatusArray = array(
-							'id'		=> $aQueueItem['id'],
-							'infile'	=> $aQueueItem['settings']['infile'],
-							'file'	 	=> $aFileName,
-							'progress'	=> $aMatches[2],
-							);
-						statusEcho(topic: 'extract', statusArray: $aStatusArray);
+					case preg_match_all(pattern: '/^Extracting\s+(.+)$/im', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
+						foreach($aMatches as $aMatchSet)
+						{
+							$aMatchString = processStringBackspace(trim($aMatchSet[1]));
+							if(preg_match(pattern: '/^(?!from)(.+?)(OK|\d{1,3}%)$/i', subject: $aMatchString, matches: $aSubMatches))
+								$aFileName = trim($aSubMatches[1]);
+							$aStatusArray = array(
+								'id'		=> $aQueueItem['id'],
+								'infile'	=> $aQueueItem['settings']['infile'],
+								'file'	 	=> $aFileName,
+								'progress'	=> $aSubMatches[2],
+								);
+							statusEcho(topic: 'extract', statusArray: $aStatusArray);
+						}
 					break;
 					case $aQueueItem['settings']['type'] == 'rar' && preg_match(pattern: '/(\d+%)$/m', subject: $aOutput, matches: $aMatches) > 0:
 						$aStatusArray = array(
