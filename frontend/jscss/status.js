@@ -67,6 +67,12 @@ function statusSetData(aContainer, aDataClass, aDataValue)
 	if(aDataValue != null)
 		aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aDataValue + '</div>';
 }
+function statusRemoveData(aContainer, aDataClass)
+{
+	let aDataRow = aContainer.getElementsByClassName(aDataClass);
+	if(aDataRow.length > 0)
+		aDataRow[0].parentNode.removeChild(aDataRow[0]);
+}
 
 function displayProgress(aProgressData)
 {
@@ -177,6 +183,7 @@ function changeStatus(aStatusData)
 		case 5:
 		case 15:
 			aStatusText = 'done'; 
+			statusRemoveData(aItemContainer, 'progress');
 			statusSetData(aItemContainer, 'action', '<button onclick="deleteListItem(\'' + aData.id + '\')"><img src="img/broom1-16.png" alt="cleanup"/></button>');
 			break;
 		case 11: aStatusText = 'readyToExtract'; break;
