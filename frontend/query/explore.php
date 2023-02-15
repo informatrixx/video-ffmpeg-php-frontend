@@ -35,7 +35,7 @@
 		}
 		else
 		{
-			$aFolder = rtrim(string: $aFolder, characters: '/') . '/';
+			$aFolder = globEscapeString($aFolder);
 			$aParentFolder = preg_replace(pattern: '@[^/]+/$@', replacement: '', subject: $aFolder);
 			if(pathIsInConversionRoot($aParentFolder))
 				$aFoldersList['..'] = $aParentFolder;
@@ -43,6 +43,7 @@
 				$aFoldersList['.'] = '';
 			
 			$aGlob = glob(pattern: "$aFolder*");
+			
 			foreach($aGlob as $aGlobPath)
 			{
 				$aItemName = rtrim(string: str_replace(search: $aFolder, replace: '', subject: $aGlobPath), characters: '/');

@@ -49,6 +49,10 @@ function exploreFolderResult()
 	aExploreBox.innerHTML = '';
 	
 	
+	let aHistoryParam = aJSONData.history;
+	let aJoinParam = '';
+	if(aJSONData.join != false)
+		aJoinParam = escapeHTML(aJSONData.join);
 	
 	for(aScanFolderName in aJSONData.folders)
 	{
@@ -61,7 +65,7 @@ function exploreFolderResult()
 			aNewFolderElement.setAttribute('root', 'root');
 			aScanFolderName = '..';
 		}
-		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeHTML(aFolderPath) + '\')">' + escapeHTML(aScanFolderName) + '</a>';
+		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeHTML(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeHTML(aJoinParam) + '\')">' + escapeHTML(aScanFolderName) + '</a>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}
 

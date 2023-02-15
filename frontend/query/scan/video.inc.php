@@ -156,7 +156,8 @@
 				
 				break;
 			case 'audio':
-				$aAudioLanguages[] = array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']);
+				if(isset($aStreamData['tags']['language']))
+					$aAudioLanguages[] = array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']);
 				
 				$aBitRate = match(true)
 				{
@@ -186,7 +187,7 @@
 						'nameFull' =>	$aStreamData['codec_long_name'],
 						'profile' =>	$aStreamData['profile'],
 						),
-					'conversionSettings' => makeAudioConversionDecision(language: $aStreamData['tags']['language'], preset: CONV_PRESET, channels: $aStreamData['channels']),
+					'conversionSettings' => makeAudioConversionDecision(language: isset($aStreamData['tags']['language']) ? $aStreamData['tags']['language'] : 'default', preset: CONV_PRESET, channels: $aStreamData['channels']),
 					'disposition' => array(
 						'default' =>	$aStreamData['disposition']['default'],
 						'forced' =>		$aStreamData['disposition']['forced'],
@@ -272,7 +273,7 @@
 			),
 		'streams' => array(
 			'audio' =>				$aAudioStreams,
-			'subtitle' =>			$aSubtitleStreams,
+			'subtitle' =>			isset($aSubtitleStreams) ? $aSubtitleStreams : null,
 			'video' =>				$aVideoStreams,
 			),
 		);

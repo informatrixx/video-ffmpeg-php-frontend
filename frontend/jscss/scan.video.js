@@ -143,10 +143,12 @@ function scanFileResult()
 		.then((aResponse) => { return aResponse.text();})
 		.then((aData) => { 
 				gBoxTemplates["subtitleBox"] = aData;
-				aJSONData['streams']['subtitle'].forEach((aSubtitleStream) => processTemplateData(gBoxTemplates["subtitleBox"], aSubtitleStream, aSubtitleContainer));
+				if(aJSONData['streams']['subtitle'] != null)
+					aJSONData['streams']['subtitle'].forEach((aSubtitleStream) => processTemplateData(gBoxTemplates["subtitleBox"], aSubtitleStream, aSubtitleContainer));
 			})
 	else
-		aJSONData['streams']['subtitle'].forEach((aSubtitleStream) => processTemplateData(gBoxTemplates["subtitleBox"], aSubtitleStream, aSubtitleContainer));
+		if(aJSONData['streams']['subtitle'] != null)
+			aJSONData['streams']['subtitle'].forEach((aSubtitleStream) => processTemplateData(gBoxTemplates["subtitleBox"], aSubtitleStream, aSubtitleContainer));
 
 }
 
@@ -192,53 +194,56 @@ function cropPreviewResult()
 	if(aCropPreviewContainer.hasAttribute('sar') == false)
 		aCropPreviewContainer.setAttribute('sar', aSAR);
 		
-	if(gCropMaxWidth < aJSONData.crop.width)
+	if(aJSONData.crop != null)
 	{
-		gCropMaxWidth = aJSONData.crop.width * 1;
-		gPreferredCropString = aJSONData.crop.string;
-	}
-	if(gCropMaxHeight < aJSONData.crop.height)
-	{
-		gCropMaxHeight = aJSONData.crop.height * 1;
-		gPreferredCropString = aJSONData.crop.string;
-	}
+		if(gCropMaxWidth < aJSONData.crop.width)
+		{
+			gCropMaxWidth = aJSONData.crop.width * 1;
+			gPreferredCropString = aJSONData.crop.string;
+		}
+		if(gCropMaxHeight < aJSONData.crop.height)
+		{
+			gCropMaxHeight = aJSONData.crop.height * 1;
+			gPreferredCropString = aJSONData.crop.string;
+		}
 	
-	for(var i = 0; i < aCropPreviewContainer.getElementsByTagName('selectContent').length; i++)
-		if(aCropPreviewContainer.getElementsByTagName('selectContent')[i].getAttribute('index') == aIndex)
-		{
-			if(i == 0)
-				aCropPreviewContainer.getElementsByTagName('selectContent')[i].removeAttribute('hidden')
-			aCropPreviewContainer.getElementsByTagName('selectContent')[i].innerHTML = "<img src='query/" + aJSONData.file + "'>";
-			break;
-		}
-	gCropDetect[aJSONData.index] = [aJSONData.crop.width * 1, aJSONData.crop.height * 1];
+		for(var i = 0; i < aCropPreviewContainer.getElementsByTagName('selectContent').length; i++)
+			if(aCropPreviewContainer.getElementsByTagName('selectContent')[i].getAttribute('index') == aIndex)
+			{
+				if(i == 0)
+					aCropPreviewContainer.getElementsByTagName('selectContent')[i].removeAttribute('hidden')
+				aCropPreviewContainer.getElementsByTagName('selectContent')[i].innerHTML = "<img src='query/" + aJSONData.file + "'>";
+				break;
+			}
+		gCropDetect[aJSONData.index] = [aJSONData.crop.width * 1, aJSONData.crop.height * 1];
 
-	for(var i = 0; i < aCropPreviewContainer.getElementsByTagName('cropButton').length; i++)
-		if(aCropPreviewContainer.getElementsByTagName('cropButton')[i].getAttribute('index') == aIndex)
-			aCropPreviewContainer.getElementsByTagName('cropButton')[i].innerHTML = aSeekHuman;
-
-	for(var i = 1; i <= aIndex; i++)
-	{
-		if((gCropDetect[i][0] + 2) < gCropMaxWidth || (gCropDetect[i][1] + 2) < gCropMaxHeight)
+		for(var i = 0; i < aCropPreviewContainer.getElementsByTagName('cropButton').length; i++)
+			if(aCropPreviewContainer.getElementsByTagName('cropButton')[i].getAttribute('index') == aIndex)
+				aCropPreviewContainer.getElementsByTagName('cropButton')[i].innerHTML = aSeekHuman;
+	
+		for(var i = 1; i <= aIndex; i++)
 		{
-			for(var j = 0; j < aCropPreviewContainer.getElementsByTagName('cropButton').length; j++)
-				if(aCropPreviewContainer.getElementsByTagName('cropButton')[j].getAttribute('index') == i)
-				{
-					aCropPreviewContainer.getElementsByTagName('cropButton')[j].removeAttribute("seeking");
-					var aAttentionAttr = document.createAttribute('attention');
-					aCropPreviewContainer.getElementsByTagName('cropButton')[j].setAttributeNode(aAttentionAttr);
-					break;
-				}		
-		}
-		else
-		{
-			for(var j = 0; j < aCropPreviewContainer.getElementsByTagName('cropButton').length; j++)
-				if(aCropPreviewContainer.getElementsByTagName('cropButton')[j].getAttribute('index') == i)
-				{
-					aCropPreviewContainer.getElementsByTagName('cropButton')[j].removeAttribute("seeking");
-					aCropPreviewContainer.getElementsByTagName('cropButton')[j].removeAttribute("attention");
-					break;
-				}		
+			if((gCropDetect[i][0] + 2) < gCropMaxWidth || (gCropDetect[i][1] + 2) < gCropMaxHeight)
+			{
+				for(var j = 0; j < aCropPreviewContainer.getElementsByTagName('cropButton').length; j++)
+					if(aCropPreviewContainer.getElementsByTagName('cropButton')[j].getAttribute('index') == i)
+					{
+						aCropPreviewContainer.getElementsByTagName('cropButton')[j].removeAttribute("seeking");
+						var aAttentionAttr = document.createAttribute('attention');
+						aCropPreviewContainer.getElementsByTagName('cropButton')[j].setAttributeNode(aAttentionAttr);
+						break;
+					}		
+			}
+			else
+			{
+				for(var j = 0; j < aCropPreviewContainer.getElementsByTagName('cropButton').length; j++)
+					if(aCropPreviewContainer.getElementsByTagName('cropButton')[j].getAttribute('index') == i)
+					{
+						aCropPreviewContainer.getElementsByTagName('cropButton')[j].removeAttribute("seeking");
+						aCropPreviewContainer.getElementsByTagName('cropButton')[j].removeAttribute("attention");
+						break;
+					}		
+			}
 		}
 	}
 	

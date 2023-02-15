@@ -74,6 +74,13 @@
 		return false;
 	}
 	
+	function globEscapeString(string $path)
+	{
+		$path = rtrim(string: $path, characters: '/') . '/';
+		$path = preg_replace(pattern: '/([?\[\]*])/', replacement: '\\\$1', subject: $path);
+		return $path;
+	}
+	
 	//Define path constants
 	define(constant_name: 'ROOT', value: rtrim(string: realpath(__DIR__ . '/..'), characters: '/') . '/');					//absolute root for scripts
 	define(constant_name: 'REL_PATH', value: str_replace(search: ROOT, replace: '', subject: $_SERVER['SCRIPT_FILENAME']));	//current relative path of the main script (url)
