@@ -12,6 +12,9 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 - Video denoise filter usage (NLMeans)
 - Audio volume normalization filter usage (Loudnorm)
 - Dolby Pro Logic II audio encoding
+- Extracting RAR files
+- Joining separate subtitle files into the video container
+
 
 ### (Current) Output codecs:
 - x265/HEVC (Video)
@@ -23,8 +26,9 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 - ffmpeg (N-109758-gbdc76f467f)
 - x265/HEVC encoder (3.5+1-f0c1022b6)
 - fdk-aac Frauenhofer AAC Codec (2.0.2)
+- Unrar (6.12)
 - JavaScript capable WebBrowser (I am simply using Chrome for testing)
-- Ubuntu Linux (22.04)
+- Ubuntu Linux (22.10)
 - *I am sometimes using a Debian environment as well, so dependencies are not yet named or very loose*
 
 ## To-Do...
