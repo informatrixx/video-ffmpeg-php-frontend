@@ -16,12 +16,20 @@
 		error_reporting(E_ALL);
 	}
 
+	#Set scan folder
+	$aFolder = '';
+	$aFolderString = ' HOME ';
+	if(isset($_GET['folder']) && !empty($_GET['folder']))
+	{
+		$aFolder = $_GET['folder'];
+		$aFolderString = $aFolder;
+	}
 ?>
 <head>
 	<title>FFMPEG - <?=$aFolder?></title>
-	<link rel="stylesheet" href="<?= provideStaticContent('jscss/index.css')?>">
-	<link rel="stylesheet" href="<?= provideStaticContent('jscss/explore.css')?>">
-	<script src="<?= provideStaticContent('jscss/explore.js')?>"></script>
+	<link rel="stylesheet" href="<?= provideStaticContent('css/index.css')?>">
+	<link rel="stylesheet" href="<?= provideStaticContent('css/explore.css')?>">
+	<script src="<?= provideStaticContent('js/explore.js')?>"></script>
 	<script>
 		const PAGE_TITLE_PREFIX = 'FFMPEG - ';
 		
@@ -37,7 +45,7 @@
 	
 	window.addEventListener('popstate', historyEvent);
 
-	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? htmlspecialchars($_GET['folder']) : '';?>', false);
+	exploreFolderQuery('<?=htmlspecialchars($aFolder);?>', false);
 	
 </script>
 </html>
