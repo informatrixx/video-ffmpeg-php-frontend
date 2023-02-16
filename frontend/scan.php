@@ -42,15 +42,15 @@
 <html>
 <head>
 	<title>SCAN - <?=htmlspecialchars(basename($_GET['file']))?></title>
-	<link rel="stylesheet" href="<?= provideStaticContent('jscss/scan.css')?>">
-	<link rel="stylesheet" href="<?= provideStaticContent('jscss/explore.css')?>">
-	<script src="<?= provideStaticContent('jscss/scan.js')?>"></script>
-	<script src="<?= provideStaticContent('jscss/explore.js')?>"></script>
+	<link rel="stylesheet" href="<?= provideStaticContent('css/scan.css')?>">
+	<link rel="stylesheet" href="<?= provideStaticContent('css/explore.css')?>">
+	<script src="<?= provideStaticContent('js/scan.js')?>"></script>
+	<script src="<?= provideStaticContent('js/explore.js')?>"></script>
 	<?php
 		switch($_GET['type'])
 		{
 			case 'video' :
-				echo '<script src="' . provideStaticContent('jscss/scan.video.js') . '"></script>' . PHP_EOL;
+				echo '<script src="' . provideStaticContent('js/scan.video.js') . '"></script>' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.globalbox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.infobox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.videobox.tmpl.php">' . PHP_EOL;
@@ -58,7 +58,7 @@
 				echo '<link rel="preload" as="fetch" href="template/scan.video.subtitlebox.tmpl.php">' . PHP_EOL;
 				break;
 			case 'rar' :
-				echo '<script src="' . provideStaticContent('jscss/scan.rar.js') . '"></script>' . PHP_EOL;
+				echo '<script src="' . provideStaticContent('js/scan.rar.js') . '"></script>' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.rar.globalbox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.rar.filesbox.tmpl.php">' . PHP_EOL;
 				break;

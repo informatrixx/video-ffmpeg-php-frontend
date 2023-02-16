@@ -175,8 +175,9 @@
 				
 				$aAudioStreams[] = array(
 					'bitrate' => array(
-						'bps' =>	$aBitRate,
-						'human' =>	round($aBitRate / 1024, 0) . ' KB/s',
+						'bps' =>		$aBitRate,
+						'human' =>		round($aBitRate / 1024, 0) . ' KB/s',
+						'humanShort' =>	round($aBitRate / 1024, 0) . 'K/s',
 						),
 					'channels' => array(
 						'count' =>	$aStreamData['channels'],
@@ -184,8 +185,9 @@
 						),
 					'codec' => array(
 						'name' =>		$aStreamData['codec_name'],
+						'nameUC' =>		strtoupper($aStreamData['codec_name']),
 						'nameFull' =>	$aStreamData['codec_long_name'],
-						'profile' =>	$aStreamData['profile'],
+						'profile' =>	isset($aStreamData['profile']) ? $aStreamData['profile'] : null,
 						),
 					'conversionSettings' => makeAudioConversionDecision(language: isset($aStreamData['tags']['language']) ? $aStreamData['tags']['language'] : 'default', preset: CONV_PRESET, channels: $aStreamData['channels']),
 					'disposition' => array(
@@ -193,8 +195,9 @@
 						'forced' =>		$aStreamData['disposition']['forced'],
 						),
 					'language' => array(
-						'human' =>	array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']),
-						'short' =>	$aStreamData['tags']['language'],
+						'human' =>		array_key_exists(key: $aStreamData['tags']['language'], array: STATIC_CONFIG['languages']) ? STATIC_CONFIG['languages'][$aStreamData['tags']['language']] : strtoupper($aStreamData['tags']['language']),
+						'short' =>		$aStreamData['tags']['language'],
+						'shortUC' =>	strtoupper($aStreamData['tags']['language']),
 						),
 					'sampleRate' => $aStreamData['sample_rate'],
 					'size' => array(
@@ -202,7 +205,7 @@
 						'human' =>	isset($aSizeInBytes) ? humanFilesize($aSizeInBytes) . 'B' : null,
 						),
 					'streamIndex' => $aSI,
-					'title' => isset($aStreamData['title']) ? $aStreamData['title'] : null,
+					'title' => isset($aStreamData['tags']['title']) ? $aStreamData['tags']['title'] : null,
 					);
 				
 				break;

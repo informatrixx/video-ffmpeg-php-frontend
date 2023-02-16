@@ -1,18 +1,24 @@
 <html>
 <head>
 	<title>Status</title>
-	<link rel="stylesheet" href="jscss/status.css">
-	<script src="jscss/status.js"></script>
+	<?php
+
+	require('../shared/common.inc.php');
+	require('../shared/cache-gen.inc.php');
+	
+	define(constant_name: 'QUMA_DIR', value: ROOT . '/quma/');
+	define(constant_name: 'QUEUE_FILE', value: QUMA_DIR . 'queue.json');
+	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
+
+	?>
+	<link rel="stylesheet" href="<?= provideStaticContent('css/status.css')?>">
+	<script src="<?= provideStaticContent('js/status.js')?>"></script>
 </head>
 <body>
 	<div id='statusContainer'>
 	<script>
 	<?php
 		
-	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
-	define(constant_name: 'QUMA_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../quma'), characters: '/') . '/');
-	
-	define(constant_name: 'QUEUE_FILE', value: QUMA_DIR . 'queue.json');
 	
 	$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
 	

@@ -156,7 +156,7 @@ function displayProgress(aProgressData)
 		let aSeconds = aTimeMatches[3];
 		let aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
 		let aDuration = aItemContainer.getAttribute('duration');
-		let aPercent = Math.round(aTimeSeconds / aDuration * 1000) / 10;
+		let aPercent = Math.round(aTimeSeconds / aDuration * 100);
 		statusSetData(aItemContainer, 'progress', aPercent + ' %');
 	}
 }
