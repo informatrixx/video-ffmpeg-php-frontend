@@ -13,6 +13,7 @@
 	?>
 	<link rel="stylesheet" href="<?= provideStaticContent('css/status.css')?>">
 	<script src="<?= provideStaticContent('js/status.js')?>"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 	<div id='statusContainer'>

@@ -50,26 +50,41 @@ gEventSource.addEventListener('error',
 		}
 	});
 
-function statusSetData(aContainer, aDataClass, aDataValue)
+function statusSetData(aContainer, aDataID, aDataValue)
 {
-	let aDataRow = aContainer.getElementsByClassName(aDataClass);
-	if(aDataRow.length == 0)
+	const aDataElements = aContainer.getElementsByTagName('data');
+	let aDataElement = null;
+	for(let i = 0; i < aDataElements.length; i++)
+		if(aDataElements[i].getAttribute('dataID') == aDataID)
+		{
+			aDataElement = aDataElements[i];
+			break;
+		}
+		
+	let aLabel;
+	
+	if(aDataElement == null)
 	{
-		aDataRow = document.createElement('div');
-		aDataRow.setAttribute('class', aDataClass);
-		aContainer.appendChild(aDataRow);
+		aLabel = document.createElement('label');
+		aContainer.appendChild(aLabel);
+		aDataElement = document.createElement('data');
+		aDataElement.setAttribute('dataID', aDataID);
+		aContainer.appendChild(aDataElement);
 	}
 	else
-		aDataRow = aDataRow[0];
+		aLabel = aDataElement.previousElementSibling;
 	
-	let aLabelText = aDataClass.charAt(0).toUpperCase() + aDataClass.slice(1);
+	let aLabelText = aDataID.charAt(0).toUpperCase() + aDataID.slice(1);
 	
 	if(aDataValue != null)
-		aDataRow.innerHTML = '<div class="label">' + aLabelText + '</div><div class="data">' + aDataValue + '</div>';
+	{
+		aLabel.innerHTML = aLabelText;
+		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+	}
 }
-function statusRemoveData(aContainer, aDataClass)
+function statusRemoveData(aContainer, aDataID)
 {
-	let aDataRow = aContainer.getElementsByClassName(aDataClass);
+	let aDataRow = aContainer.getElementsByTagName(aDataID);
 	if(aDataRow.length > 0)
 		aDataRow[0].parentNode.removeChild(aDataRow[0]);
 }
@@ -82,9 +97,8 @@ function displayProgress(aProgressData)
 	let aItemContainer = document.getElementById(aData.id);
 	if(aItemContainer === null)
 	{
-		aItemContainer = document.createElement('div');
+		aItemContainer = document.createElement('statusItemContainer');
 		aItemContainer.setAttribute('id', aData.id);
-		aItemContainer.setAttribute('class', 'statusItem');
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	
@@ -202,16 +216,16 @@ function changeStatus(aStatusData)
 	
 	if(aItemContainer === null)
 	{
-		aItemContainer = document.createElement('div');
+		aItemContainer = document.createElement('statusItemContainer');
 		aItemContainer.setAttribute('id', aData.id);
-		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
-		aItemContainer.innerHTML = '<div class="infile"><div class="label">Infile:</div><div class="data">' + aData.infile + '</div></div>';
+		aItemContainer.setAttribute('class', aStatusText);
+		aItemContainer.innerHTML = '<label>Infile:</label><data dataID="infile">' + aData.infile + '</data>';
 		if(aData.outfile != null)
-			aItemContainer.innerHTML += '<div class="outfile"><div class="label">Outfile:</div><div class="data">' + aData.outfile + '</div></div>';
+			aItemContainer.innerHTML += '<label>Outfile:</label><data dataID="outfile">' + aData.outfile + '</data>';
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	else
-		aItemContainer.setAttribute('class', 'statusItem ' + aStatusText);
+		aItemContainer.setAttribute('class', aStatusText);
 	
 }
 
