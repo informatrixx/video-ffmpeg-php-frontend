@@ -76,7 +76,8 @@
 	"queue": {
 		"max_convert_tasks": 1,
 		"max_scan_tasks": 5,
-		"max_extract_tasks": 1
+		"max_extract_tasks": 1,
+		"procNiceLevel": 15
 	},
 	"scanModules": {
 		"video": {

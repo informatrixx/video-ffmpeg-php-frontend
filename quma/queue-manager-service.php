@@ -527,7 +527,15 @@
 					$aQueueItem['proc']['ressource'] = proc_open(command: $aAudioScanString, descriptor_spec: $aDescriptorSpec, pipes: $aQueueItem['proc']['pipes']);
 					if(is_resource($aQueueItem['proc']['ressource']))
 					{
-						_msg(message: 'PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], fixedWidth: 12);
+						$aPID = proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'];
+						_msg(message: "PID: $aPID" , fixedWidth: 12);
+
+						_msg(message: "Setting nice level (prio) of #$aPID -> " . STATIC_CONFIG['queue']['procNiceLevel'], CRF: '');
+						if(pcntl_setpriority(priority: STATIC_CONFIG['queue']['procNiceLevel'], process_id: $aPID))
+							_msg(message: 'OK', fixedWidth: 6);
+								else
+							_msg(message: 'Error!', fixedWidth: 6);
+							
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
 						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 2);
@@ -704,7 +712,15 @@
 					$aQueueItem['proc']['ressource'] = proc_open(command: $aConvertString, descriptor_spec: $aDescriptorSpec, pipes: $aQueueItem['proc']['pipes']);
 					if(is_resource($aQueueItem['proc']['ressource']))
 					{
-						_msg(message: 'PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], fixedWidth: 12);
+						$aPID = proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'];
+						_msg(message: "PID: $aPID" , fixedWidth: 12);
+
+						_msg(message: "Setting nice level (prio) of #$aPID -> " . STATIC_CONFIG['queue']['procNiceLevel'], CRF: '');
+						if(pcntl_setpriority(priority: STATIC_CONFIG['queue']['procNiceLevel'], process_id: $aPID))
+							_msg(message: 'OK', fixedWidth: 6);
+								else
+							_msg(message: 'Error!', fixedWidth: 6);
+						
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
 						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 4);
