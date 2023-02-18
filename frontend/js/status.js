@@ -137,6 +137,24 @@ function statusAddAction(aContainer, aAction)
 	aTargetAction.innerHTML = '<button onclick="listItemAction(\'' + aID + '\', \'' + aAction + '\')"><img src="img/' + aImage + '" alt="' + aAction + '"/></button>'
 }
 
+function statusRemoveAction(aContainer, aAction)
+{
+	let aActionElements = aContainer.getElementsByTagName('actions');
+	if(aActionElements.length == 0)
+		return false;
+	
+	let aActionElement = aActionElements[0].getElementsByTagName(aAction)[0];
+
+	if(aActionElement == null)
+		return false;
+	
+	
+	aActionElement.remove();
+	return true;
+}
+
+
+
 function displayProgress(aProgressData)
 {
 	let aData = JSON.parse(aProgressData);
@@ -312,13 +330,30 @@ function listItemAction(aID, aAction)
 				mode: 'no-cors',
 			})
 		.then((aResponse) => { return aResponse.json();})
-		.then((aData) => { 
-				console.log(aData);
+		.then((aData) => {
 				if(aData.success)
-					location.reload();
+					listItemActionResult(aData, aID, aAction);
 			})
 }
 
+function listItemActionResult(aData, aID, aAction)
+{
+	let aStatusItemContainer = document.getElementById(aID);
+	switch(aAction)
+	{
+		case 'delete':
+			aStatusItemContainer.remove();
+			break;
+		case 'pause':
+			statusRemoveAction(aStatusItemContainer, 'pause');
+			statusAddAction(aStatusItemContainer, 'resume');
+			break;
+		case 'resume':
+			statusRemoveAction(aStatusItemContainer, 'resume');
+			statusAddAction(aStatusItemContainer, 'pause');
+			break;
+	}
+}
 
 function toggleHiddenGroup(aObject)
 {

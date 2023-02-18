@@ -61,6 +61,9 @@ statusItemContainer.readyToConvert,
 statusItemContainer.readyToExtract {
 	background-color: #cad9d7;
 }
+statusItemContainer.suspended {
+	background-color: #d8cad8;
+}
 
 statusItemContainer.scanning {
 	background-color: #caced9;
