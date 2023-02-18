@@ -238,8 +238,8 @@
 		}
 	}	
 
-	$aAudioLanguages = array_unique($aAudioLanguages);
-	$aSubtitleLanguages = array_unique($aSubtitleLanguages);
+	$aAudioLanguages = array_values(array_unique($aAudioLanguages));
+	$aSubtitleLanguages = array_values(array_unique($aSubtitleLanguages));
 
 	$aSubtitlesMore = in_array(needle: MORE_TEXT, haystack: $aSubtitleLanguages);
 	$aSubtitleLanguagesOrdered = $aSubtitleLanguages;
