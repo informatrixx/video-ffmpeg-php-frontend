@@ -4,29 +4,49 @@
 	header('X-Accel-Buffering: no');
 	
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
-	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../../run'), characters: '/') . '/');
+	define(constant_name: 'ROOT', value: rtrim(string: realpath(SCRIPT_DIR . '../..'), characters: '/') . '/');					//absolute root for scripts
+	define(constant_name: 'RUN_DIR', value: ROOT . 'run/');
 
 	define(constant_name: 'RESPONSE_SOCKET_FILE', value: tempnam(directory: RUN_DIR, prefix: '.sock.'));
 
-	define(constant_name: 'QUMA_ID', value: file_get_contents('../../config/ID'));
-	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents('../../config.json'), associative: true));
-	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents('../../config/static_config.json'), associative: true));
+	define(constant_name: 'QUMA_ID', value: file_get_contents(ROOT . 'config/ID'));
+	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config.json'), associative: true));
+	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
 
 	$aResult = array(
 		'success' =>	false,
 		'error' => 		'',
+		'action' =>		$_GET['action'],
+		'id' =>			$_GET['id'],
 		);
 
 	
-	/* To-Do: Data Integrity checking!!! */
-
+	// Data Integrity checking 
+	if(!preg_match('/[0-9a-f]{32}/i', $_GET['id']))
+	{
+		$aResult['error'] = "Invalid ID: {$_GET['id']}";
+		echo json_encode(value: $aResult);
+		exit;
+	}
+	switch($_GET['action'])
+	{
+		case 'delete':
+		case 'pause':
+		case 'resume':
+			$aAction = 'queueItem:' . $_GET['action'];
+			break;
+		default:
+			$aResult['error'] = "Invalid action: {$_GET['action']}";
+			echo json_encode(value: $aResult);
+			exit;			
+	}
 	
 	//Prepare message data
 	$aSockMessageData = array(
 		'qumaID' =>			QUMA_ID,
-		'action' =>			'delete_queue_item',	
-		'response_sock' =>	RESPONSE_SOCKET_FILE,
-		'queue_item_id' => 	$_GET['id'],
+		'action' =>			$aAction,	
+		'responseSock' =>	RESPONSE_SOCKET_FILE,
+		'queueItemID' => 	$_GET['id'],
 		);
 	
 	//Prepare temporary response socket

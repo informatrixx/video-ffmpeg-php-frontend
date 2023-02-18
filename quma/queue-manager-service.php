@@ -222,7 +222,59 @@
 				return $aResult;
 			}
         }
+       
+        $aResult['error'] = "Cannot delete: Item (ID {$aQueueItem['id']}) doesn't exist...";
+        return $aResult;
+	}
+	
+	function pauseQueueItem(string $itemID, bool $doResume = false)
+	{
+		global $gConvertQueue;
+
+		$aResult = array(
+			'success' =>	false,
+			'error' =>		'',
+			);
+
+		$aSignal = $doResume ? SIGCONT : SIGSTOP;
 		
+        //Check for existing item
+        foreach($gConvertQueue as $aQueueItemIndex => $aQueueItem)
+        {
+        	$aOldStatus = $aQueueItem['status'];
+        	if($itemID == $aQueueItem['id'] && ($aOldStatus == 2 ||  $aOldStatus == 4 || $aOldStatus == 82 ||  $aOldStatus == 84))
+			{
+				if($doResume == false)
+					_msg(message: 'Pausing queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
+				else
+					_msg(message: 'Resuming queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
+				
+				//Getting sub PIDs
+				$aSubPIDs = preg_split('/\s+/', shell_exec('ps -o pid --no-heading --ppid ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid']));
+				$aSignalResult = true;
+				
+				foreach($aSubPIDs as $aSubPID)
+					if(is_numeric($aSubPID))
+						if(!posix_kill(process_id: $aSubPID, signal: $aSignal))
+						{
+							_msg(message: "Error (PID: $aSubPID)", fixedWidth: 6);
+							$aSignalResult = false;
+						}
+					
+				if($aSignalResult)
+				{
+					$aResult['success'] = true;
+					_msg(message: 'OK', fixedWidth: 6);
+					if($doResume == false)
+						changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: "8$aOldStatus");
+					else
+						changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: ltrim(string: $aOldStatus, characters: '8'));
+					return $aResult;
+				}
+			}
+        }
+		
+        $aResult['error'] = "Cannot pause/resume: Item (ID {$aQueueItem['id']}) doesn't exist...";
        
         return $aResult;
 	}
@@ -245,6 +297,8 @@
 				12	unrar (extracting)
 				15	unrar done
 				19  Error unrar
+				
+				8x	Pause ...
 				
 				9x	Error ...
 				99	Abort
@@ -290,6 +344,7 @@
 			'id'		=> $gConvertQueue[$queueItemIndex]['id'],
 			'infile'	=> $gConvertQueue[$queueItemIndex]['settings']['infile'],
 			'outfile'	=> isset($gConvertQueue[$queueItemIndex]['settings']['outfile']) ? $gConvertQueue[$queueItemIndex]['settings']['outfile'] : null,
+			'size'		=> isset($gConvertQueue[$queueItemIndex]['result']) && isset($gConvertQueue[$queueItemIndex]['result']['fileSize']) ? $gConvertQueue[$queueItemIndex]['result']['fileSize'] : null,
 			'status'	=> $newStatus,
 			);
 		statusEcho(topic: 'status', statusArray: $aStatusArray);
@@ -381,14 +436,20 @@
 								else
 									_msg(message: 'OK', fixedWidth: 6);
 							break;
-							case 'delete_queue_item':
-								$aSockMessage = json_encode(value: removeQueueItem($aControlMessage['queue_item_id']));
-								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
-								if(socket_sendto(socket: $aResponseSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: MSG_EOF, address: $aControlMessage['response_sock']) === false)
+							case 'queueItem:delete':
+							case 'queueItem:pause':
+							case 'queueItem:resume':
+								
+								$aSockMessage = match($aControlMessage['action'])
 								{
+									'queueItem:delete'	=> json_encode(value: removeQueueItem($aControlMessage['queueItemID'])),
+									'queueItem:pause'	=> json_encode(value: pauseQueueItem(itemID: $aControlMessage['queueItemID'], doResume: false)),
+									'queueItem:resume'	=> json_encode(value: pauseQueueItem(itemID: $aControlMessage['queueItemID'], doResume: true)),
+								};
+								
+								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
+								if(socket_sendto(socket: $aResponseSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: MSG_EOF, address: $aControlMessage['responseSock']) === false)
 									_msg(message: 'Socket response send failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
-									print_r($aSockMessage);
-								}
 								if(socket_shutdown(socket: $aResponseSocket) === false)
 									_msg(message: 'Response socket shutdown failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
 								if(socket_close(socket: $aResponseSocket) === false)
@@ -905,7 +966,10 @@
 						break;
 						case 4:
 							//Conversion done...
-								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 5);
+							$aQueueItem['result'] = array(
+								'fileSize' =>	filesize($aQueueItem['settings']['outfolder'] . $aQueueItem['settings']['outfile']),
+								);
+							changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 5);
 							continue(2);
 						break;
 						case 12:

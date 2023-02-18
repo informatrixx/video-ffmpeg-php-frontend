@@ -82,11 +82,59 @@ function statusSetData(aContainer, aDataID, aDataValue)
 		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
 	}
 }
+
 function statusRemoveData(aContainer, aDataID)
 {
 	let aDataRow = aContainer.getElementsByTagName(aDataID);
 	if(aDataRow.length > 0)
 		aDataRow[0].parentNode.removeChild(aDataRow[0]);
+}
+
+function statusAddAction(aContainer, aAction)
+{
+	const aID = aContainer.getAttribute('id');
+	let aActionElements = aContainer.getElementsByTagName('actions');
+	let aActionElement = null;
+	
+	if(aActionElements.length == 0)
+	{
+		let aLabel = document.createElement('label');
+		aLabel.innerHTML = 'Action';
+		aContainer.appendChild(aLabel);
+		aActionElement = document.createElement('actions');
+		aContainer.appendChild(aActionElement);
+	}
+	else
+		aActionElement = aActionElements[0];
+	
+	let aTargetActions = aActionElement.getElementsByTagName(aAction);
+	let aTargetAction = null;
+	
+	if(aTargetActions.length == 0)
+	{
+		aTargetAction = document.createElement(aAction);
+		aActionElement.appendChild(aTargetAction);
+	}
+	else
+		aTargetAction = aTargetActions[0];
+	
+	let aImage;
+	
+	switch(aAction)
+	{
+		case 'delete':
+			aImage = 'broom1-16.png';
+			break;
+		case 'pause':
+			aImage = 'pause1-16.png';
+			break;
+		case 'resume':
+			aImage = 'play1-16.png';
+			break;
+		default:
+			return false;
+	}
+	aTargetAction.innerHTML = '<button onclick="listItemAction(\'' + aID + '\', \'' + aAction + '\')"><img src="img/' + aImage + '" alt="' + aAction + '"/></button>'
 }
 
 function displayProgress(aProgressData)
@@ -189,19 +237,40 @@ function changeStatus(aStatusData)
 		case 0:
 		case 10:
 			aStatusText = 'waiting'; 
+			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 1: aStatusText = 'readyToScan'; break;
-		case 2: aStatusText = 'scanning'; break;
-		case 3: aStatusText = 'readyToConvert'; break;
-		case 4: aStatusText = 'converting'; break;
+		case 1: 
+			aStatusText = 'readyToScan';
+			statusAddAction(aItemContainer, 'delete');
+			break;
+		case 2:
+			aStatusText = 'scanning';
+			statusAddAction(aItemContainer, 'pause');
+			break;
+		case 3:
+			aStatusText = 'readyToConvert';
+			statusAddAction(aItemContainer, 'delete');
+			break;
+		case 4: 
+			aStatusText = 'converting';
+			statusAddAction(aItemContainer, 'pause');
+			break;
 		case 5:
 		case 15:
 			aStatusText = 'done'; 
 			statusRemoveData(aItemContainer, 'progress');
-			statusSetData(aItemContainer, 'action', '<button onclick="deleteListItem(\'' + aData.id + '\')"><img src="img/broom1-16.png" alt="cleanup"/></button>');
+			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 11: aStatusText = 'readyToExtract'; break;
+		case 11:
+			aStatusText = 'readyToExtract';
+			statusAddAction(aItemContainer, 'delete');
+			break;
 		case 12: aStatusText = 'extracting'; break;
+		case 82: 
+		case 84: 
+			aStatusText = 'suspended';
+			statusAddAction(aItemContainer, 'resume');
+			break;
 		case 90:
 		case 91:
 		case 92:
@@ -209,8 +278,12 @@ function changeStatus(aStatusData)
 		case 94:
 		case 95:
 			aStatusText = 'error'; 
+			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 99: aStatusText = 'abort'; break;
+		case 99: 
+			aStatusText = 'abort';
+			statusAddAction(aItemContainer, 'delete');
+			break;
 	}
 
 	
@@ -222,6 +295,7 @@ function changeStatus(aStatusData)
 		aItemContainer.innerHTML = '<label>Infile:</label><data dataID="infile">' + aData.infile + '</data>';
 		if(aData.outfile != null)
 			aItemContainer.innerHTML += '<label>Outfile:</label><data dataID="outfile">' + aData.outfile + '</data>';
+		aItemContainer.innerHTML += '<label>Action:</label><actions></actions>'
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	else
@@ -229,9 +303,9 @@ function changeStatus(aStatusData)
 	
 }
 
-function deleteListItem(aID)
+function listItemAction(aID, aAction)
 {
-	fetch('query/deletequeueitem.php?id=' + aID, 
+	fetch('query/queueitemaction.php?id=' + aID + '&action=' + aAction, 
 			{
 				method: 'GET',
 				credentials: 'include',
@@ -242,7 +316,8 @@ function deleteListItem(aID)
 				console.log(aData);
 				if(aData.success)
 					location.reload();
-			})}
+			})
+}
 
 
 function toggleHiddenGroup(aObject)
