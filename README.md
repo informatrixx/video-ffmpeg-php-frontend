@@ -23,7 +23,7 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 ## Current dependencies (Software I am using for development)
 - nginx (1.22.0)
 - PHP 8 (8.2.2)
-  - necessary modules/functions: 
+  - necessary PHP 8 modules/functions:
   - CURL (php8.2-curl)
   - IMAGICK (php8.2-imagick)
   - MBString (php8.2-mbstring)
