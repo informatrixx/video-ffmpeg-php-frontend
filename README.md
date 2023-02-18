@@ -23,10 +23,17 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 ## Current dependencies (Software I am using for development)
 - nginx (1.22.0)
 - PHP 8 (8.2.2)
+  - necessary modules/functions: 
+  - CURL (php8.2-curl)
+  - IMAGICK (php8.2-imagick)
+  - MBString (php8.2-mbstring)
+  - POSIX functions
+  - PCNTL functions
 - ffmpeg (N-109758-gbdc76f467f)
 - x265/HEVC encoder (3.5+1-f0c1022b6)
 - fdk-aac Frauenhofer AAC Codec (2.0.2)
 - Unrar (6.12)
+- ImageMagick (6.9.11-60)
 - JavaScript capable WebBrowser (I am simply using Chrome for testing)
 - Ubuntu Linux (22.10)
 - *I am sometimes using a Debian environment as well, so dependencies are not yet named or very loose*
