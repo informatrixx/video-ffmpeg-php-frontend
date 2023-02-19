@@ -121,12 +121,14 @@
 		},
 		"profiles": {
 			"mono": {
+				"codec":		"libfdk_aac",
 				"profile":		"aac_he_v2",
 				"bitrate":		"48k",
 				"samplerate":	48000,
 				"channels":		1
 			},
 			"stereo": {
+				"codec":		"libfdk_aac",
 				"profile":		"aac_he",
 				"bitrate":		"96k",
 				"samplerate":	48000,
@@ -137,6 +139,7 @@
 				}
 			},
 			"dpl": {
+				"codec":		"libfdk_aac",
 				"profile":		"aac_he",
 				"bitrate":		"192k",
 				"samplerate":	48000,
@@ -147,6 +150,7 @@
 				}
 			},
 			"5.1": {
+				"codec":		"libfdk_aac",
 				"profile":		"main",
 				"bitrate":		"512k",
 				"samplerate":	44100,
@@ -158,6 +162,7 @@
 				}
 			},
 			"7.1": {
+				"codec":		"libfdk_aac",
 				"profile":		"main",
 				"bitrate":		"640k",
 				"samplerate":	44100,

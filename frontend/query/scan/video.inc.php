@@ -46,6 +46,7 @@
 		$aResult['loudnorm'] = $aLangChoice['loudnorm'];
 		if(isset($aLangChoice['preset']))
 			$preset = $aLangChoice['preset'];
+		$aResult['codec'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['codec']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['codec'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['codec'];
 		$aResult['profile'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['profile']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['profile'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['profile'];
 		$aResult['bitrate'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['bitrate']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['bitrate'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['bitrate'];
 		$aResult['samplerate'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['samplerate']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['samplerate'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['samplerate'];

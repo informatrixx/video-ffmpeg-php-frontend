@@ -154,7 +154,7 @@ function collectFormSubmit(aForm)
 		let aMatchedInput = false;
 		if((aNameMatch = aNameRegex.exec(aInput.name)) !== null)
 		{
-			if(aMapList.includes(aNameMatch[1]))
+			if(aMapList.includes(aNameMatch[1]) && aInput.style.visibility != 'hidden')
 				aMatchedInput = true;
 		}
 		else
@@ -172,14 +172,18 @@ function collectFormSubmit(aForm)
 		let aMatchedSelect = false;
 		if((aNameMatch = aNameRegex.exec(aSelect.name)) !== null)
 		{
-			if(aMapList.includes(aNameMatch[1]))
+			if(aMapList.includes(aNameMatch[1]) && aSelect.style.visibility != 'hidden')
 				aMatchedSelect = true;
 		}
 		else
 			aMatchedSelect = true;
 		
 		if(aMatchedSelect)
+		{
 			aParamList[aParamList.length] = aSelect.name + '=' + aSelect.value;
+			if(aSelect.options[aSelect.selectedIndex].getAttribute('moreParams') != null)
+				aParamList[aParamList.length] = aSelect.options[aSelect.selectedIndex].getAttribute('moreParams');
+		}
 	}
 
 	aParamList.forEach(element => console.log(element));

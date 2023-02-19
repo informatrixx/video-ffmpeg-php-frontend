@@ -33,10 +33,26 @@
 		}
 	},
 	"audio": {
-		"profile": {
-			"default":		"Main (LC)",	
-			"aac_he":		"HE-AAC",	
-			"aac_he_v2":	"HE-AACv2"	
+		"codecs": {
+			"libfdk_aac": {
+				"name": "Fraunhofer FDK AAC",
+				"profile": {
+					"default":		"Main (LC)",	
+					"aac_he":		"HE-AAC",	
+					"aac_he_v2":	"HE-AACv2"
+				}
+			},
+			"copy":	{
+				"name": "-Copy-"
+			},
+			"aac": {
+				"name": "Advanced Audio Coding (AAC)",
+				"profile": {
+					"aac_low":			"Main (LC)",	
+					"mpeg2_aac_low":	"PNS",	
+					"aac_ltp":			"LTP"
+				}
+			}
 		},
 		"channels": {
 			"1":	"Mono",

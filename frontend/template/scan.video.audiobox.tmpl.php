@@ -28,33 +28,41 @@
 </selectButtons>
 <selectContent index='##VAR:index##' streamindex='##DATA:streamIndex##' audio>
 	<label>Sprache:</label><text>##DATA:language:human##</text>
-	<label>Codec:</label><text>##DATA:codec:nameFull## ##DATA:codec:profile##</text>
-	<label>Ziel Codec:</label><p>AAC</p><select name='profile[##VAR:index##]'>
-		<?php
-		foreach(STATIC_CONFIG['audio']['profile'] as $aValue => $aText)
-			echo "<option value='$aValue' ##SELECT:conversionSettings:profile=$aValue##>$aText</option>";
-		?>
-		</select>
 	<label>Größe:</label><text>##DATA:size:human##</text>
+	<delimiter></delimiter>
 	<label>Titel:</label><input style='grid-column: span 2;' name='title[##VAR:index##]' value='##DATA:title##'>
-	<label>Kanäle:</label><p>##DATA:channels:layout##</p><select name='ac[##VAR:index##]'>
+	<label>Codec:</label><select name='c[##VAR:index##]' onchange='selectAudioCodec(this)'>
+		<?php
+		foreach(STATIC_CONFIG['audio']['codecs'] as $aCodecValue => $aCodecData)
+		{
+			echo "<optgroup label='{$aCodecData['name']}'>";
+			if(isset($aCodecData['profile']))
+				foreach($aCodecData['profile'] as $aProfileValue => $aText)
+					echo "<option value='$aCodecValue' moreParams='profile[##VAR:index##]=$aProfileValue' ##SELECT:conversionSettings:profile=$aProfileValue##>$aText</option>";
+			else
+				echo "<option value='$aCodecValue' ##SELECT:conversionSettings:codec=$aCodecValue##>{$aCodecData['name']}</option>";
+			echo "</optgroup>";
+		}
+		?>
+		</select><p>##DATA:codec:nameFull## ##DATA:codec:profile##</p>
+	<label>Kanäle:</label><select name='ac[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['audio']['channels'] as $aValue => $aText)
 			echo "<option value='$aValue' ##SELECT:conversionSettings:channels=$aValue##>$aText</option>";
 		?>
-		</select>
-	<label>Bitrate:</label><p>##DATA:bitrate:human##</p><select name='b[##VAR:index##]'>
+		</select><p>##DATA:channels:layout##</p>
+	<label>Bitrate:</label><select name='b[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['audio']['bitrate'] as $aValue)
 			echo "<option value='$aValue' ##SELECT:conversionSettings:bitrate=$aValue##>$aValue</option>";	
 		?>
-		</select>
-	<label>Samplerate:</label><p>##DATA:sampleRate##</p><select name='ar[##VAR:index##]'>
+		</select><p>##DATA:bitrate:human##</p>
+	<label>Samplerate:</label><select name='ar[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['audio']['samplerate'] as $aValue)
 			echo "<option value='$aValue' ##SELECT:conversionSettings:samplerate=$aValue##>$aValue</option>";	
 		?>
-		</select>
+		</select><p>##DATA:sampleRate##</p>
 	<label>Loudnorm:</label><select name='loudnorm[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['audio']['loudnorm'] as $aValue => $aLNData)

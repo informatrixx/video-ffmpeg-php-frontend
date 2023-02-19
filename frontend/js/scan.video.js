@@ -171,7 +171,13 @@ function chainLoadCropPreviewQuery(aIndex, aFileIndex)
 	
 	var newQuery = new XMLHttpRequest();
 	newQuery.addEventListener("load", cropPreviewResult);
-	newQuery.open("GET", "query/croppreview.php?file=" + gFileName + "&seek=" + aSeek + "&index=" + aIndex + aSARString + "&fileIndex=" + aFileIndex);
+	
+	let aInFileInputs = document.getElementsByName('infile[' + aFileIndex + ']');
+	let aScanFile = gFileName;
+	if(aInFileInputs.length > 0)
+		aScanFile = aInFileInputs[0].value;
+	
+	newQuery.open("GET", "query/croppreview.php?file=" + aScanFile + "&seek=" + aSeek + "&index=" + aIndex + aSARString + "&fileIndex=" + aFileIndex);
 	newQuery.send();	
 }
 
@@ -253,4 +259,36 @@ function cropPreviewResult()
 		for(let i = 0; i < document.getElementsByTagName('cropAutoChoice').length; i++)
 			if(document.getElementsByTagName('cropAutoChoice')[i].getAttribute('fileIndex') == aFileIndex)
 				document.getElementsByTagName('cropAutoChoice')[i].innerHTML = '(auto: ' + gPreferredCropString + ")<input type='hidden' name='cropstring[" + document.getElementsByTagName('cropAutoChoice')[i].getAttribute('index') + "]' value='" + gPreferredCropString + "' />";
+}
+
+function selectAudioCodec(aObject)
+{
+	let aVisibility;
+	if(aObject.value == 'copy')
+		aVisibility = 'hidden'
+	else
+		aVisibility = 'visible';
+		
+	let aContentContainer = aObject.parentNode;
+	while(aContentContainer.nodeName.toUpperCase() != 'SELECTCONTENT')
+	{
+		aContentContainer = aContentContainer.parentNode;
+		if(aContentContainer.nodeName.toUpperCase() == 'BODY')
+			return false;
+	}
+	
+	let aIndex = aContentContainer.getAttribute('index');
+	
+	for(let i = 0; i < aContentContainer.children.length; i++)
+	{
+		switch(aContentContainer.children[i].name)
+		{
+			case 'ac[' + aIndex + ']':
+			case 'b[' + aIndex + ']':
+			case 'ar[' + aIndex + ']':
+			case 'loudnorm[' + aIndex + ']':
+				aContentContainer.children[i].style.visibility = aVisibility;
+				break;
+		}
+	}
 }
