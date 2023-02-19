@@ -680,8 +680,6 @@
 					//Video codec settings x265
 					$aConvertString .= ' -c:v libx265' . ' \\' . PHP_EOL;
 					$aConvertString .= ' -x265-params "level-idc=5:deblock=false:sao=false:b-intra=false"' . ' \\' . PHP_EOL;
-					//Audio codec fdk AAC
-					$aConvertString .= ' -c:a libfdk_aac' . ' \\' . PHP_EOL;
 					//Subtitles just copy (if mapped)
 					$aConvertString .= ' -c:s copy' . ' \\' . PHP_EOL;
 					$aConvertString .= ' -reserve_index_space 100k ' . ' \\' . PHP_EOL;
