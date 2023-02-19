@@ -33,6 +33,7 @@
 		case 'delete':
 		case 'pause':
 		case 'resume':
+		case 'retry':
 			$aAction = 'queueItem:' . $_GET['action'];
 			break;
 		default:

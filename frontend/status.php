@@ -27,11 +27,20 @@
 	
 	foreach($aConvertQueue as $aQueueItem)
 	{
+		if(isset($aQueueItem['result']) && isset($aQueueItem['result']['fileSize']))
+			$aSizeArray = array(
+				'human'	=> humanFilesize($aQueueItem['result']['fileSize']) . 'B',
+				'bytes'	=> $aQueueItem['result']['fileSize'],
+				);
+		else
+			$aSizeArray = null;
+			
 		$aProgressData = array(
-			'id' =>			$aQueueItem['id'],
-			'infile' =>		$aQueueItem['settings']['infile'],
-			'outfile' =>	$aQueueItem['settings']['outfile'],
-			'duration' =>	$aQueueItem['settings']['duration'],
+			'id'		=> $aQueueItem['id'],
+			'infile'	=> $aQueueItem['settings']['infile'],
+			'outfile'	=> $aQueueItem['settings']['outfile'],
+			'duration'	=> $aQueueItem['settings']['duration'],
+			'size'		=> $aSizeArray,
 			);
 		$aStatusData = array(
 			'id' =>			$aQueueItem['id'],

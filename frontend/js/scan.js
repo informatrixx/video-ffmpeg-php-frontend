@@ -1,5 +1,15 @@
 var gXHRData = new Array();
 
+function escapeQuotes(aText)
+{
+	var aMap = {
+		'"': '\\x22',
+		"'": '\\x27'
+	};
+	
+	return aText.replace(/[&<>"']/g, function(m) { return aMap[m]; });
+}
+
 function scanFileQuery(aFile, aType)
 {
 	let newQuery = new XMLHttpRequest();
@@ -201,10 +211,19 @@ function processTemplateData(aTemplateData, aJSONData, aContainer)
 							aDataNode = null;
 					});
 				
-				if(typeof aDataNode !== 'object')
-					aReplacement = aDataNode;
-				else if(aDataNode != null)
-					aReplacement = aDataNode.join(', ');
+				switch(typeof aDataNode)
+				{
+					case 'string':
+						aReplacement = escapeHTML(aDataNode);
+						break;
+					case 'number':
+						aReplacement = aDataNode;
+						break;
+					case 'object':
+						if(aDataNode != null)
+							aReplacement = escapeHTML(aDataNode.join(', '));
+					break;
+				}
 			break;
 			case 'VAR':
 				var aVarName = aMatch[2];

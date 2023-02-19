@@ -86,7 +86,9 @@
 	define(constant_name: 'REL_PATH', value: str_replace(search: ROOT, replace: '', subject: $_SERVER['SCRIPT_FILENAME']));	//current relative path of the main script (url)
 	define(constant_name: 'REL_ROOT', value: str_replace(search: REL_PATH, replace: '', subject: $_SERVER['SCRIPT_NAME']));	//relative root from client side
 	define(constant_name: 'FE_ROOT', value: REL_ROOT . 'frontend/');														//relative frontend root from client side
-	define(constant_name: 'SCRIPT_PATH', value: rtrim(string: str_replace(search: pathinfo(path: $_SERVER['SCRIPT_FILENAME'], flags: PATHINFO_BASENAME), replace: '', subject: $_SERVER['SCRIPT_FILENAME']), characters: '/') . '/');	//absolute path of the current script													//relative frontend root from client side
+	define(constant_name: 'SCRIPT_PATH', value: rtrim(string: str_replace(search: pathinfo(path: $_SERVER['SCRIPT_FILENAME'], flags: PATHINFO_BASENAME), replace: '', subject: $_SERVER['SCRIPT_FILENAME']), characters: '/') . '/');	//absolute path of the main (executed) script
+	define(constant_name: 'RUN_DIR', value: ROOT . '/run/');		//absolute path for PID & socket files
+	define(constant_name: 'LOG_DIR', value: ROOT . '/log/');		//absolute path for logs
 	
 	
 ?>

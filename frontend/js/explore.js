@@ -8,6 +8,23 @@ function escapeHTML(aText)
 		"'": '&#039;'
 	};
 	
+	try {
+		return aText.replace(/[&<>"']/g, function(m) { return aMap[m]; });
+	}
+	catch (error) {
+	  console.error(error);
+	  alert(typeof aText);
+	  alert(aText);
+	}
+}
+
+function escapeQuotes(aText)
+{
+	var aMap = {
+		'"': '\\x22',
+		"'": '\\x27'
+	};
+	
 	return aText.replace(/[&<>"']/g, function(m) { return aMap[m]; });
 }
 
@@ -65,7 +82,7 @@ function exploreFolderResult()
 			aNewFolderElement.setAttribute('root', 'root');
 			aScanFolderName = '..';
 		}
-		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeHTML(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeHTML(aJoinParam) + '\')">' + escapeHTML(aScanFolderName) + '</a>';
+		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')">' + escapeHTML(aScanFolderName) + '</a>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}
 
@@ -79,7 +96,7 @@ function exploreFolderResult()
 		let aNewFileElement = document.createElement('file');
 		let aJoinLink = '';
 		if(aJoin == true)
-			aJoinLink = "<img src='img/add1-16.png' class='join' onclick='joinFile(\"" + escapeHTML(aFilePath) + "\")'>";
+			aJoinLink = "<img src='img/add1-16.png' class='join' onclick='joinFile(\"" + escapeQuotes(aFilePath) + "\")'>";
 		
 		if(aScanModule != false)
 			aNewFileElement.innerHTML = aJoinLink + '<a href="scan.php?folder=' + escapeHTML(aFolderName) + '&file=' + escapeHTML(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
@@ -101,7 +118,7 @@ function exploreFolderResult()
 function historyEvent(aEvent)
 {
 	if(aEvent.state != null && "folder" in aEvent.state)
-		exploreFolderQuery(aEvent.state.folder, false);
+		exploreFolderQuery(escapeQuotes(aEvent.state.folder), false);
 }
 
 function toggleHiddenGroup(aObject)

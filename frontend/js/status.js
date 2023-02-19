@@ -131,10 +131,16 @@ function statusAddAction(aContainer, aAction)
 		case 'resume':
 			aImage = 'play1-16.png';
 			break;
+		case 'retry':
+			aImage = 'retry1-16.png';
+			break;
 		default:
 			return false;
 	}
-	aTargetAction.innerHTML = '<button onclick="listItemAction(\'' + aID + '\', \'' + aAction + '\')"><img src="img/' + aImage + '" alt="' + aAction + '"/></button>'
+	aTargetAction.innerHTML = '<button onclick="queueItemAction(\'' + aID + '\', \'' + aAction + '\', this)"><img src="img/' + aImage + '" alt="' + aAction + '"/></button>'
+	
+	for(let i = 0; i < aTargetActions.length; i++)
+		aTargetActions[i].disabled = false;
 }
 
 function statusRemoveAction(aContainer, aAction)
@@ -187,10 +193,10 @@ function displayProgress(aProgressData)
 					if(aData[aDataKeys[i]].length > 1)
 					{
 						let aInFiles = aData[aDataKeys[i]];
-						aData[aDataKeys[i]] = '<group content="condensed"><file alwaysvisible>' + aInFiles[0] + '(<a href="javascript:dummy()" onclick="toggleHiddenGroup(this)">+' + (aInFiles.length - 1) + ' more</a>)</file>';
+						aData[aDataKeys[i]] = '<group content="condensed"><file>' + aInFiles[0] + '</file>';
 						
 						for(const aInFile of aInFiles)
-							aData[aDataKeys[i]] += '<file hidden>' + aInFile + '</file>';
+							aData[aDataKeys[i]] += '<file more>' + aInFile + '</file>';
 						
 						aData[aDataKeys[i]] += '</group>';
 					}
@@ -198,6 +204,11 @@ function displayProgress(aProgressData)
 						aData[aDataKeys[i]] = aData[aDataKeys[i]][0];
 				}
 				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
+				break;
+			case 'size':
+				if(aData[aDataKeys[i]] == null)
+					continue;
+				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]].human);
 				break;
 			case 'duration':
 				if(aData[aDataKeys[i]] == null)
@@ -248,81 +259,75 @@ function changeStatus(aStatusData)
 	
 	let aItemContainer = document.getElementById(aData.id);
 	
-	let aStatusText;
-	
-	switch(aData.status)
-	{
-		case 0:
-		case 10:
-			aStatusText = 'waiting'; 
-			statusAddAction(aItemContainer, 'delete');
-			break;
-		case 1: 
-			aStatusText = 'readyToScan';
-			statusAddAction(aItemContainer, 'delete');
-			break;
-		case 2:
-			aStatusText = 'scanning';
-			statusAddAction(aItemContainer, 'pause');
-			break;
-		case 3:
-			aStatusText = 'readyToConvert';
-			statusAddAction(aItemContainer, 'delete');
-			break;
-		case 4: 
-			aStatusText = 'converting';
-			statusAddAction(aItemContainer, 'pause');
-			break;
-		case 5:
-		case 15:
-			aStatusText = 'done'; 
-			statusRemoveData(aItemContainer, 'progress');
-			statusAddAction(aItemContainer, 'delete');
-			break;
-		case 11:
-			aStatusText = 'readyToExtract';
-			statusAddAction(aItemContainer, 'delete');
-			break;
-		case 12: aStatusText = 'extracting'; break;
-		case 82: 
-		case 84: 
-			aStatusText = 'suspended';
-			statusAddAction(aItemContainer, 'resume');
-			break;
-		case 90:
-		case 91:
-		case 92:
-		case 93:
-		case 94:
-		case 95:
-			aStatusText = 'error'; 
-			statusAddAction(aItemContainer, 'delete');
-			break;
-		case 99: 
-			aStatusText = 'abort';
-			statusAddAction(aItemContainer, 'delete');
-			break;
-	}
-
-	
 	if(aItemContainer === null)
 	{
 		aItemContainer = document.createElement('statusItemContainer');
 		aItemContainer.setAttribute('id', aData.id);
-		aItemContainer.setAttribute('class', aStatusText);
-		aItemContainer.innerHTML = '<label>Infile:</label><data dataID="infile">' + aData.infile + '</data>';
+		aItemContainer.setAttribute('status', aData.status);
+		aItemContainer.innerHTML = '<label>Infile:</label><data dataID="infile"><span>' + aData.infile + '</span></data>';
 		if(aData.outfile != null)
 			aItemContainer.innerHTML += '<label>Outfile:</label><data dataID="outfile">' + aData.outfile + '</data>';
 		aItemContainer.innerHTML += '<label>Action:</label><actions></actions>'
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	else
-		aItemContainer.setAttribute('class', aStatusText);
-	
+		aItemContainer.setAttribute('status', aData.status);
+
+	switch(aData.status)
+	{
+		case 0:
+		case 10:
+			statusAddAction(aItemContainer, 'delete');
+			break;
+		case 1: 
+			statusAddAction(aItemContainer, 'delete');
+			break;
+		case 2:
+			statusAddAction(aItemContainer, 'pause');
+			statusRemoveAction(aItemContainer, 'delete');
+			break;
+		case 3:
+			statusAddAction(aItemContainer, 'delete');
+			statusRemoveAction(aItemContainer, 'pause');
+			break;
+		case 4: 
+			statusAddAction(aItemContainer, 'pause');
+			statusRemoveAction(aItemContainer, 'delete');
+			break;
+		case 5:
+		case 15:
+			statusRemoveData(aItemContainer, 'progress');
+			statusAddAction(aItemContainer, 'delete');
+			break;
+		case 11:
+			statusAddAction(aItemContainer, 'delete');
+			break;
+		case 12:
+			break;
+		case 91: 
+		case 93: 
+			statusAddAction(aItemContainer, 'resume');
+			break;
+		case 82:
+		case 84:
+		case 92:
+		case 94:
+		case 991:
+			statusRemoveAction(aItemContainer, 'pause');
+			statusAddAction(aItemContainer, 'delete');
+			statusAddAction(aItemContainer, 'retry');
+			break;
+	}
 }
 
-function listItemAction(aID, aAction)
+function queueItemAction(aID, aAction, aObject)
 {
+	let aItemContainer = document.getElementById(aID);
+	let aActionElements = aItemContainer.getElementsByTagName('actions');
+	
+	for(let i = 0; i < aActionElements[0].length; i++)
+		aActionElements[0][i].disabled = true;
+	
 	fetch('query/queueitemaction.php?id=' + aID + '&action=' + aAction, 
 			{
 				method: 'GET',
@@ -332,11 +337,11 @@ function listItemAction(aID, aAction)
 		.then((aResponse) => { return aResponse.json();})
 		.then((aData) => {
 				if(aData.success)
-					listItemActionResult(aData, aID, aAction);
+					queueItemActionResult(aData, aID, aAction);
 			})
 }
 
-function listItemActionResult(aData, aID, aAction)
+function queueItemActionResult(aData, aID, aAction)
 {
 	let aStatusItemContainer = document.getElementById(aID);
 	switch(aAction)
@@ -351,6 +356,10 @@ function listItemActionResult(aData, aID, aAction)
 		case 'resume':
 			statusRemoveAction(aStatusItemContainer, 'resume');
 			statusAddAction(aStatusItemContainer, 'pause');
+			break;
+		case 'retry':
+			statusRemoveAction(aStatusItemContainer, 'retry');
+			statusAddAction(aStatusItemContainer, 'delete');
 			break;
 	}
 }

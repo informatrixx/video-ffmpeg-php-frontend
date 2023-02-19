@@ -8,15 +8,13 @@
 
 
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
-	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../run'), characters: '/') . '/');
-	define(constant_name: 'LOG_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../log'), characters: '/') . '/');
-	
+	require_once(SCRIPT_DIR . '../shared/common.inc.php');
+
 	define(constant_name: 'PID_FILE', value: RUN_DIR . pathinfo(path: __FILE__, flags: PATHINFO_FILENAME) . '.pid');
 	define(constant_name: 'CONTROL_SOCKET_FILE', value: RUN_DIR . 'quma.sock');
 
 	define(constant_name: 'QUEUE_FILE', value: SCRIPT_DIR . 'queue.json');
 	
-	require_once(SCRIPT_DIR . '../shared/common.inc.php');
 	
 	//Check if PID file is orphaned or an old Process is still running
 	if(file_exists(PID_FILE))
@@ -36,7 +34,7 @@
 		foreach($gConvertQueue as &$aQueueItem)
 			if(isset($aQueueItem['proc']))
 			{
-				$aQueueItem['status'] = 99;
+				$aQueueItem['status'] = '8' . $aQueueItem['status'];
 				_msg(message: 'Child PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], CRF: '');
 				proc_terminate(process: $aQueueItem['proc']['ressource']);
 				sleep(1);
@@ -199,7 +197,7 @@
         return $aResult;
 	}
 	
-	function removeQueueItem(string $itemID)
+	function deleteQueueItem(string $itemID)
 	{
 		global $gConvertQueue;
 
@@ -227,6 +225,35 @@
         return $aResult;
 	}
 	
+	function retryQueueItem(string $itemID)
+	{
+		global $gConvertQueue;
+
+		$aResult = array(
+			'success' =>	false,
+			'error' =>		'',
+			);
+		
+		
+        //Check for existing item
+        foreach($gConvertQueue as $aQueueItemIndex => $aQueueItem)
+        {
+        	$aOldStatus = $aQueueItem['status'];
+        	if($itemID == $aQueueItem['id'] && ($aOldStatus == 82 ||  $aOldStatus == 84 || $aOldStatus == 92 ||  $aOldStatus == 94))
+			{
+				_msg(message: 'Resetting queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
+				changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: (int)ltrim(string: $aOldStatus, characters: '89') - 1);
+				$aResult['success'] = true;
+				_msg(message: 'OK', fixedWidth: 6);
+				writeConvertQueue();
+				return $aResult;
+			}
+        }
+       
+        $aResult['error'] = "Cannot reset: Item (ID {$aQueueItem['id']}) doesn't exist...";
+        return $aResult;
+	}
+	
 	function pauseQueueItem(string $itemID, bool $doResume = false)
 	{
 		global $gConvertQueue;
@@ -242,7 +269,7 @@
         foreach($gConvertQueue as $aQueueItemIndex => $aQueueItem)
         {
         	$aOldStatus = $aQueueItem['status'];
-        	if($itemID == $aQueueItem['id'] && ($aOldStatus == 2 ||  $aOldStatus == 4 || $aOldStatus == 82 ||  $aOldStatus == 84))
+        	if($itemID == $aQueueItem['id'] && ($aOldStatus == 2 ||  $aOldStatus == 4 || $aOldStatus == 91 ||  $aOldStatus == 93))
 			{
 				if($doResume == false)
 					_msg(message: 'Pausing queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
@@ -266,9 +293,9 @@
 					$aResult['success'] = true;
 					_msg(message: 'OK', fixedWidth: 6);
 					if($doResume == false)
-						changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: "8$aOldStatus");
+						changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: '9' . ((int)$aOldStatus - 1));
 					else
-						changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: ltrim(string: $aOldStatus, characters: '8'));
+						changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: (int)ltrim(string: $aOldStatus, characters: '9') + 1);
 					return $aResult;
 				}
 			}
@@ -283,63 +310,13 @@
 	{
 		global $gConvertQueue;
 		$gConvertQueue[$queueItemIndex]['status'] = $newStatus;
-		switch($newStatus)
-		{
-			/*	0	waiting
-				1	ready to scan
-				2	scanning
-				3	ready to convert / scan done
-				4	converting
-				5	done
-				
-				10	waiting
-				11	ready to unrar
-				12	unrar (extracting)
-				15	unrar done
-				19  Error unrar
-				
-				8x	Pause ...
-				
-				9x	Error ...
-				99	Abort
-				*/
-			case 1:
-				_msg(message: 'Change queue item status to "Ready to scan (1)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 2:
-				_msg(message: 'Change queue item status to "Scanning (2)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 3:
-				_msg(message: 'Change queue item status to "Ready to convert (3)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 4:
-				_msg(message: 'Change queue item status to "Converting (4)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 5:
-				_msg(message: 'Change queue item status to "Done (5)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 11:
-				_msg(message: 'Change queue item status to "Ready to extract (unrar) (11)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
-				break;
-			case 12:
-				_msg(message: 'Change queue item status to "Extracting (unrar) (12)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
-				break;
-			case 15:
-				_msg(message: 'Change queue item status to "Done extracting (unrar) (15)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
-				break;
-			case 19:
-				_msg(message: 'Change queue item status to "Error extracting (unrar) (19)": ' . $gConvertQueue[$queueItemIndex]['settings']['infile']);
-				break;
-			case 92:
-				_msg(message: 'Change queue item status to "Error scanning (92)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 94:
-				_msg(message: 'Change queue item status to "Error converting (94)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;
-			case 99:
-				_msg(message: 'Change queue item status to "Abort (99)": ' . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
-				break;			
-		}
+		
+		if(!defined('QUMA_STATUS_CODES'))
+			define(constant_name: 'QUMA_STATUS_CODES', value: json_decode(json: file_get_contents(ROOT . '/shared/quma-status-codes.json'), associative: true));
+
+		if(isset(QUMA_STATUS_CODES[$newStatus]))
+			_msg(message: 'Change queue item status to "' . QUMA_STATUS_CODES[$newStatus] . " ($newStatus)\": " . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
+		
 		$aStatusArray = array(
 			'id'		=> $gConvertQueue[$queueItemIndex]['id'],
 			'infile'	=> $gConvertQueue[$queueItemIndex]['settings']['infile'],
@@ -357,16 +334,16 @@
 	
 	/*	SCRIPT BODY	*/
 	
-	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config.json'), associative: true));
-	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(SCRIPT_DIR . '../config/static_config.json'), associative: true));
+	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config.json'), associative: true));
+	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
 
-	if(!file_exists(SCRIPT_DIR . '../config/ID')) //Create a unique ID if not yet set
+	if(!file_exists(ROOT . 'config/ID')) //Create a unique ID if not yet set
 	{
-		file_put_contents(filename: SCRIPT_DIR . '../config/ID', data: md5(rand(123456789, 12345678900)));
-		chmod(filename: SCRIPT_DIR . '../config/ID', permissions: 0660);
+		file_put_contents(filename: ROOT . 'config/ID', data: md5(rand(123456789, 12345678900)));
+		chmod(filename: ROOT . 'config/ID', permissions: 0660);
 	}
 	
-	define(constant_name: 'MY_ID', value: file_get_contents(SCRIPT_DIR . '../config/ID'));
+	define(constant_name: 'MY_ID', value: file_get_contents(ROOT . 'config/ID'));
 
 	
 	
@@ -413,20 +390,7 @@
 					if(isset($aControlMessage['action']))
 						switch($aControlMessage['action'])
 						{
-							case 'add_queue_item':
-								$aSockMessage = json_encode(value: addQueueItem($aControlMessage['queue_item']));
-								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
-								if(socket_sendto(socket: $aResponseSocket, data: $aSockMessage, length: strlen($aSockMessage), flags: MSG_EOF, address: $aControlMessage['response_sock']) === false)
-								{
-									_msg(message: 'Socket response send failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
-									print_r($aSockMessage);
-								}
-								if(socket_shutdown(socket: $aResponseSocket) === false)
-									_msg(message: 'Response socket shutdown failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
-								if(socket_close(socket: $aResponseSocket) === false)
-									_msg(message: 'Response socket closing failed: ' . socket_strerror(socket_last_error()), toSTDERR: true);
-							break;
-							case 'add_status_socket':
+							case 'addStatusSocket':
 								_msg(message: 'Got status client request...', CRF: '');
 								$gStatusSockets[$aControlMessage['randomID']] = socket_create(AF_UNIX, SOCK_STREAM, 0);
 								 
@@ -439,12 +403,16 @@
 							case 'queueItem:delete':
 							case 'queueItem:pause':
 							case 'queueItem:resume':
+							case 'queueItem:add':
+							case 'queueItem:retry':
 								
 								$aSockMessage = match($aControlMessage['action'])
 								{
-									'queueItem:delete'	=> json_encode(value: removeQueueItem($aControlMessage['queueItemID'])),
+									'queueItem:delete'	=> json_encode(value: deleteQueueItem(itemID: $aControlMessage['queueItemID'])),
 									'queueItem:pause'	=> json_encode(value: pauseQueueItem(itemID: $aControlMessage['queueItemID'], doResume: false)),
 									'queueItem:resume'	=> json_encode(value: pauseQueueItem(itemID: $aControlMessage['queueItemID'], doResume: true)),
+									'queueItem:add'		=> json_encode(value: addQueueItem(newItem: $aControlMessage['queueItem'])),
+									'queueItem:retry'	=> json_encode(value: retryQueueItem(itemID: $aControlMessage['queueItemID'])),
 								};
 								
 								$aResponseSocket = socket_create(AF_UNIX, SOCK_DGRAM, 0);
@@ -481,7 +449,8 @@
 				15	unrar done
 				19  Error unrar
 
-				9x	error
+				8x	Abort
+				9x	Error / Pause
 			*/
 			if($aItemStatus == 0)	//Fresh item
 			{
@@ -872,13 +841,30 @@
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
 					case preg_match(pattern: '@frame=\s*([\d.]+)\s+fps=\s*([\d.]+)\s+q=\s*([\d.]+)\s+size=\s*([\d]+\SB)\s+time=\s*([\d:.]+)\s+bitrate=\s*([\d.]+\Sbits/s)\s+speed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+						if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches[4], matches: $aSizeMatches))
+						{
+							$aSizeFactor = match(strtolower($aSizeMatches[2]))
+							{
+								'b'	 => 1,
+								'kb' => 1024,
+								'mb' => 1024 * 1024,
+								'gb' => 1024 * 1024 * 1024,
+							};
+							$aSizeBytes = $aSizeMatches[1] * $aSizeFactor;
+						}
+						else
+							$aSizeBytes = 0;
+							
 						$aStatusArray = array(
 							'id'		=> $aQueueItem['id'],
 							'outfile'	=> $aQueueItem['settings']['outfile'],
 							'frame' 	=> $aMatches[1],
 							'fps'		=> $aMatches[2],
 							'q'			=> $aMatches[3],
-							'size'		=> $aMatches[4],
+							'size'		=> array(
+								'human'	=> humanFilesize($aSizeBytes) . 'B',
+								'bytes'	=> $aSizeBytes,
+								),
 							'time'		=> $aMatches[5],
 							'bitrate'	=> $aMatches[6],
 							'speed'		=> $aMatches[7],
@@ -961,7 +947,7 @@
 							if(isset($aQueueItem['loudnorm_scan']))
 								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 3);
 							else
-								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: "9$aItemStatus");
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 92);
 							continue(2);
 						break;
 						case 4:

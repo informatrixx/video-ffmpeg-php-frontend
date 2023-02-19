@@ -1,10 +1,12 @@
 body {
-	font-family: Arial Narrow sans-serif;
 	margin: 10px auto;
 	color: #333;
 }
+
 #statusContainer {
 	max-width: 600px;
+	font-family: "Tahoma", sans-serif;
+	font-size: 10pt;
 }
 
 file {
@@ -38,6 +40,12 @@ data > span {
 	z-index: 1;
 	width: 100%;
 }
+data > span info {
+	display: inline;	
+}
+data > span file[more] {
+	display: none;	
+}
 data > span:hover {
 	text-overflow: normal;
 	white-space: normal;
@@ -51,39 +59,48 @@ data > span:hover {
 	left: -1px;
 	border-radius: 3px;	
 }
+data > span:hover file[more] {
+	display: block;
+}
 
-statusItemContainer.waiting {
+statusItemContainer[status="10"],
+statusItemContainer[status="0"] {
 	background-color: #bbb;
 }
 
-statusItemContainer.readyToScan,
-statusItemContainer.readyToConvert,
-statusItemContainer.readyToExtract {
+statusItemContainer[status="1"],
+statusItemContainer[status="3"],
+statusItemContainer[status="11"] {
 	background-color: #cad9d7;
 }
-statusItemContainer.suspended {
-	background-color: #d8cad8;
-}
 
-statusItemContainer.scanning {
+statusItemContainer[status="2"] {
 	background-color: #caced9;
 }
 
-statusItemContainer.converting {
+statusItemContainer[status="4"] {
 	background-color: #bfd1ff;
 }
 
-statusItemContainer.extracting {
+statusItemContainer[status="12"] {
 	background-color: #e6ccff;
 }
 
-statusItemContainer.done {
+statusItemContainer[status="5"],
+statusItemContainer[status="15"] {
 	background-color: #dbffe5;
 }
-statusItemContainer.error {
+statusItemContainer[status="91"],
+statusItemContainer[status="93"] {
+	background-color: #d8cad8;
+}
+
+statusItemContainer[status="92"],
+statusItemContainer[status="94"] {
 	background-color: #ffe5db;
 }
-statusItemContainer.abort {
+statusItemContainer[status="82"],
+statusItemContainer[status="84"] {
 	background-color: #fcc;
 }
 

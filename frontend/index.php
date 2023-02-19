@@ -45,7 +45,7 @@
 	
 	window.addEventListener('popstate', historyEvent);
 
-	exploreFolderQuery('<?=htmlspecialchars($aFolder);?>', false);
+	exploreFolderQuery('<?=urlencode($aFolder);?>', true, false);
 	
 </script>
 </html>

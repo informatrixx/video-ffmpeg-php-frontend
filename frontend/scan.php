@@ -65,8 +65,8 @@
 		}
 	?>
 	<script>
-		var gFileName = "<?=htmlspecialchars($_GET['file'])?>";
-		var gScanType = "<?=htmlspecialchars($_GET['type'])?>";
+		var gFileName = "<?=urlencode($_GET['file'])?>";
+		var gScanType = "<?=urlencode($_GET['type'])?>";
 
 
 		const PAGE_TITLE_PREFIX = 'SCAN - ';
@@ -87,8 +87,8 @@
 	
 	window.addEventListener('popstate', historyEvent);
 
-	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? htmlspecialchars($_GET['folder']) : '';?>', false, gFileName);
-	scanFileQuery(gFileName, "<?=htmlspecialchars($_GET['type']);?>");
+	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? urlencode($_GET['folder']) : '';?>', false, gFileName);
+	scanFileQuery(gFileName, "<?=urlencode($_GET['type']);?>");
 
 </script>
 </html>

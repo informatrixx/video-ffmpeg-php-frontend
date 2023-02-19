@@ -4,9 +4,6 @@
 	header('Connection: keep-alive');
 	header('X-Accel-Buffering: no');
 
-/*	set_time_limit(0);
-	error_reporting(E_ALL);
-	ini_set('error_reporting', true);//*/
 
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
 	define(constant_name: 'RUN_DIR', value: rtrim(string: realpath(SCRIPT_DIR . '../../run'), characters: '/') . '/');
@@ -17,6 +14,8 @@
 	define(constant_name: 'QUMA_ID', value: file_get_contents('../../config/ID'));
 
 	register_shutdown_function('shutDownFunction');
+	
+	ini_set('max_execution_time', 0);
 	
 	function shutDownFunction()
 	{
@@ -39,7 +38,7 @@
 	$aSockMessageData = array(
 		'qumaID'		=> QUMA_ID,
 		'randomID'		=> RANDOM_ID,	
-		'action'		=> 'add_status_socket',	
+		'action'		=> 'addStatusSocket',	
 		'responseSock' => RESPONSE_SOCKET_FILE
 		);
 	
