@@ -831,17 +831,11 @@
 						foreach($aMatches as $aScanIndex => $aLoudnormJSON)
 							$aQueueItem['loudnorm_scan'][$aScanIndex] = json_decode(json: $aLoudnormJSON[1], associative: true);
 					break;
-					case preg_match(pattern: '@size=N/A\s+time=([\d:.]+)\sbitrate=N/A\sspeed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
-						$aStatusArray = array(
-							'id'		=> $aQueueItem['id'],
-							'outfile'	=> $aQueueItem['settings']['outfile'],
-							'time' 		=> $aMatches[1],
-							'speed'		=> $aMatches[2],
-							);
-						statusEcho(topic: 'progress', statusArray: $aStatusArray);
-					break;
-					case preg_match(pattern: '@frame=\s*([\d.]+)\s+fps=\s*([\d.]+)\s+q=\s*([\d.]+)\s+size=\s*([\d]+\SB)\s+time=\s*([\d:.]+)\s+bitrate=\s*([\d.]+\Sbits/s)\s+speed=\s*([\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
-						if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches[4], matches: $aSizeMatches))
+					case preg_match(pattern: '@frame=\s*(?<frame>[\d.]+)\s+fps=\s*(?<fps>[\d.]+)\s+q=\s*(?<q>[\d.]+)\s+size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+					case preg_match(pattern: '@size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+					case preg_match(pattern: '@size=N/A\s+time=(?<time>[\d:.]+)\sbitrate=N/A\sspeed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+						if(isset($aMatches['size']))
+						if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches['size'], matches: $aSizeMatches))
 						{
 							$aSizeFactor = match(strtolower($aSizeMatches[2]))
 							{
@@ -853,21 +847,21 @@
 							$aSizeBytes = $aSizeMatches[1] * $aSizeFactor;
 						}
 						else
-							$aSizeBytes = 0;
+							$aSizeBytes = null;
 							
 						$aStatusArray = array(
 							'id'		=> $aQueueItem['id'],
 							'outfile'	=> $aQueueItem['settings']['outfile'],
-							'frame' 	=> $aMatches[1],
-							'fps'		=> $aMatches[2],
-							'q'			=> $aMatches[3],
+							'frame' 	=> !empty($aMatches['frame']) ? $aMatches['frame'] : null,
+							'fps'		=> !empty($aMatches['fps']) ? $aMatches['fps'] : null,
+							'q'			=> !empty($aMatches['q']) ? $aMatches['q'] : null,
 							'size'		=> array(
 								'human'	=> humanFilesize($aSizeBytes) . 'B',
 								'bytes'	=> $aSizeBytes,
 								),
-							'time'		=> $aMatches[5],
-							'bitrate'	=> $aMatches[6],
-							'speed'		=> $aMatches[7],
+							'time'		=> !empty($aMatches['time']) ? $aMatches['time'] : null,
+							'bitrate'	=> !empty($aMatches['bitrate']) ? $aMatches['bitrate'] : null,
+							'speed'		=> !empty($aMatches['speed']) ? $aMatches['speed'] : null,
 							);
 						statusEcho(topic: 'progress', statusArray: $aStatusArray);
 					break;
