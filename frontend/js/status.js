@@ -193,12 +193,12 @@ function displayProgress(aProgressData)
 					if(aData[aDataKeys[i]].length > 1)
 					{
 						let aInFiles = aData[aDataKeys[i]];
-						aData[aDataKeys[i]] = '<group content="condensed"><file>' + aInFiles[0] + '</file>';
+						aData[aDataKeys[i]] = aInFiles[0];
 						
+						aData[aDataKeys[i]] += '<more>';
 						for(const aInFile of aInFiles)
-							aData[aDataKeys[i]] += '<file more>' + aInFile + '</file>';
-						
-						aData[aDataKeys[i]] += '</group>';
+							aData[aDataKeys[i]] += '<file>' + aInFile + '</file>';
+						aData[aDataKeys[i]] += '</more>';
 					}
 					else
 						aData[aDataKeys[i]] = aData[aDataKeys[i]][0];
@@ -273,7 +273,8 @@ function changeStatus(aStatusData)
 	else
 		aItemContainer.setAttribute('status', aData.status);
 
-	switch(aData.status)
+	
+	switch(parseInt(aData.status, 10))
 	{
 		case 0:
 		case 10:
@@ -289,6 +290,8 @@ function changeStatus(aStatusData)
 		case 3:
 			statusAddAction(aItemContainer, 'delete');
 			statusRemoveAction(aItemContainer, 'pause');
+			statusRemoveData(aItemContainer, 'progress');
+			statusRemoveData(aItemContainer, 'speed');
 			break;
 		case 4: 
 			statusAddAction(aItemContainer, 'pause');
