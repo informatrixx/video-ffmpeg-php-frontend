@@ -276,6 +276,30 @@ function processTemplateData(aTemplateData, aJSONData, aContainer)
 				if(aDataNode > 0)
 					aReplacement = 'checked';
 			break;
+			case 'BUILD':
+				var aDataNode = aJSONData;
+				var aKeyArray = aMatch[2].split(':');
+				
+				aKeyArray.forEach((aKeyIndex) => {
+						if(aDataNode != null && aKeyIndex in aDataNode) 
+							aDataNode = aDataNode[aKeyIndex];
+						else
+							aDataNode = null;
+					});
+				
+				aReplacement = '';
+				if(aDataNode != null)
+					Object.keys(aDataNode).forEach((aDataName) => {
+						aReplacement += '<label>' + aDataName.charAt(0).toUpperCase() + aDataName.slice(1) + ':</label><select built name="' + aDataName + '[' + gResultVars['index'] + ']">';
+						var aOptions = aDataNode[aDataName];
+						Object.keys(aOptions).forEach((aOptionKey) => {
+							if(aJSONData['conversionSettings'][aDataName] != null && aJSONData['conversionSettings'][aDataName] == aOptionKey)
+								var aSelected = ' selected="selected"';
+							aReplacement += '<option value="' + aOptionKey + '"' + aSelected + '>' + aOptions[aOptionKey] + '</option>';
+						});
+						aReplacement += '</select>';
+					});
+			break;
 			case 'ARCHIVEFILES':
 				for(let i = 0; i < aJSONData.length; i++)
 				{

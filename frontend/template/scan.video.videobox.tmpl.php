@@ -30,14 +30,25 @@
 	<label>Codec:</label><text>##DATA:codec:nameFull##</text>
 	<label>Anzeige:</label><text>##DATA:displayAspectRatio##</text>
 	<delimiter></delimiter>
-	<label>Codec:</label><text>##DATA:codec:name##</text>
-	<label>Qualität:</label><input type='number' name='crf[##VAR:index##]' min='0' max='51' value='##DATA:conversionSettings:crf##'>
-	<label>Voreinstellung:</label><select name='preset[##VAR:index##]'>
+	<label>Codec/Mode:</label><select name='c[##VAR:index##]' onchange='selectVideoCodec(this)'>
 		<?php
-		foreach(STATIC_CONFIG['video']['presets'] as $aValue => $aText)
-			echo "<option value='$aValue' ##SELECT:conversionSettings:preset=$aValue##>$aText</option>";
+		foreach(STATIC_CONFIG['video']['codecs'] as $aCodecValue => $aCodecData)
+		{
+			echo "<optgroup label='{$aCodecData['name']}'>";
+			if(isset($aCodecData['modes']))
+				foreach($aCodecData['modes'] as $aModeValue => $aModeData)
+				{
+					$aMoreParams = isset($aCodecData['moreParams']) ? "moreParams='moreParams=" . urlencode($aCodecData['moreParams']) . "'" : '';
+					echo "<option value='$aCodecValue' $aMoreParams ##SELECT:conversionSettings:codecMode={$aCodecValue}_$aModeValue##>{$aModeData['name']}</option>";
+				}
+			else
+				echo "<option value='$aCodecValue' ##SELECT:conversionSettings:codecMode={$aCodecValue}_$aModeValue##>{$aCodecData['name']}</option>";
+			echo "</optgroup>";
+		}
 		?>
 		</select>
+	<label>##DATA:conversionSettings:modeSettings:settingsName##:</label><p built><input type='number' name='##DATA:conversionSettings:modeSettings:param##[##VAR:index##]' min='##DATA:conversionSettings:modeSettings:min##' max='##DATA:conversionSettings:modeSettings:max##' value='##DATA:conversionSettings:modeSettings:value##'>##DATA:conversionSettings:modeSettings:unit##</p>
+	##BUILD:conversionSettings:codecSettings##
 	<label>Größe ändern:</label><select name='resize[##VAR:index##]'>
 		<option value='0' ##SELECT:conversionSettings:resize=0##>-Original-</option>
 		<?php

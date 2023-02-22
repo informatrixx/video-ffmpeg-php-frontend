@@ -653,7 +653,12 @@
 													{
 														$aBPS = $aBitRateMatches[1] * 1000;
 														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
+														$aConvertString .= " -b:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
 													}
+													break;
+												case 'tune':
+													if($aDataValue != 0)
+														$aConvertString .= " -tune:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
 													break;
 												case 'infile':
 												case 'cropstring':
@@ -677,13 +682,13 @@
 
 							$aStreamIndex++;
 					}
-					//Video codec settings x265
-					$aConvertString .= ' -c:v libx265' . ' \\' . PHP_EOL;
-					$aConvertString .= ' -x265-params "level-idc=5:deblock=false:sao=false:b-intra=false"' . ' \\' . PHP_EOL;
+					//If moreParams are given
+					$aConvertString .= $aItemSettings['moreParams'] . ' \\' . PHP_EOL;
 					//Subtitles just copy (if mapped)
 					$aConvertString .= ' -c:s copy' . ' \\' . PHP_EOL;
 					$aConvertString .= ' -reserve_index_space 100k ' . ' \\' . PHP_EOL;
 					$aConvertString .= ' -cues_to_front 1 ' . ' \\' . PHP_EOL;
+					
 					//Filetitle and video title
 					$aConvertString .= ' -metadata ' . escapeshellarg("title={$aItemSettings['filetitle']}") . ' \\' . PHP_EOL;
 					$aConvertString .= ' -metadata:s: "_STATISTICS_WRITING_APP=video-ffmpeg-php-frontend" \\' . PHP_EOL;
@@ -832,20 +837,23 @@
 					case preg_match(pattern: '@frame=\s*(?<frame>[\d.]+)\s+fps=\s*(?<fps>[\d.]+)\s+q=\s*(?<q>[\d.]+)\s+size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=N/A\s+time=(?<time>[\d:.]+)\sbitrate=N/A\sspeed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+						$aSize = null;
 						if(isset($aMatches['size']))
-						if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches['size'], matches: $aSizeMatches))
-						{
-							$aSizeFactor = match(strtolower($aSizeMatches[2]))
+							if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches['size'], matches: $aSizeMatches))
 							{
-								'b'	 => 1,
-								'kb' => 1024,
-								'mb' => 1024 * 1024,
-								'gb' => 1024 * 1024 * 1024,
-							};
-							$aSizeBytes = $aSizeMatches[1] * $aSizeFactor;
-						}
-						else
-							$aSizeBytes = null;
+								$aSizeFactor = match(strtolower($aSizeMatches[2]))
+								{
+									'b'	 => 1,
+									'kb' => 1024,
+									'mb' => 1024 * 1024,
+									'gb' => 1024 * 1024 * 1024,
+								};
+								$aSizeBytes = $aSizeMatches[1] * $aSizeFactor;
+								$aSize = array(
+									'human'	=> humanFilesize($aSizeBytes) . 'B',
+									'bytes'	=> $aSizeBytes,
+									);
+							}
 							
 						$aStatusArray = array(
 							'id'		=> $aQueueItem['id'],
@@ -853,10 +861,7 @@
 							'frame' 	=> !empty($aMatches['frame']) ? $aMatches['frame'] : null,
 							'fps'		=> !empty($aMatches['fps']) ? $aMatches['fps'] : null,
 							'q'			=> !empty($aMatches['q']) ? $aMatches['q'] : null,
-							'size'		=> array(
-								'human'	=> humanFilesize($aSizeBytes) . 'B',
-								'bytes'	=> $aSizeBytes,
-								),
+							'size'		=> $aSize,
 							'time'		=> !empty($aMatches['time']) ? $aMatches['time'] : null,
 							'bitrate'	=> !empty($aMatches['bitrate']) ? $aMatches['bitrate'] : null,
 							'speed'		=> !empty($aMatches['speed']) ? $aMatches['speed'] : null,

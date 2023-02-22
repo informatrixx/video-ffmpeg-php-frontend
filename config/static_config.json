@@ -1,20 +1,113 @@
 {
 	"video": {
-		"presets": {
-			"ultrafast":	"Ultrafast",	
-			"superfast":	"Superfast",	
-			"veryfast":		"Veryfast",	
-			"faster":		"Faster",	
-			"fast":			"Fast",	
-			"medium":		"Medium",	
-			"slow":			"Slow",	
-			"slower":		"Slower",	
-			"veryslow":		"Veryslow",	
-			"placebo":		"Placebo"	
+		"codecs":{
+			"libx265": {
+				"name": "x265 H.265/HEVC",
+				"modes": {
+					"crf": {
+						"name": "x265 Constant Quality (CRF)",
+						"settingsName": "Quality",
+						"param": "crf",
+						"min": 0,
+						"max": 51
+					},
+					"cbr": {
+						"name": "x265 Constant Bitrate (CBR)",
+						"settingsName": "Target Bitrate",
+						"param": "b",
+						"paramUnit": "k",
+						"unit": "kbit/s",
+						"min": 250,
+						"max": 100000
+					}
+				},
+				"settings": {
+					"profile": {
+						"main":				"Main",
+						"mainstillpicture":	"Main Still Picture", 
+						"main10":			"Main (10-bit)", 
+						"main10-intra":		"Main (10-bit) Intra", 
+						"main12":			"Main (12-bit)", 
+						"main12-intra":		"Main (12-bit) Intra"
+					},
+					"preset": {	
+						"ultrafast":	"Ultrafast",
+						 "superfast":	"Superfast",
+						 "veryfast":	"Veryfast",
+						 "faster":		"Faster",
+						 "fast":		"Fast",
+						 "medium":		"Medium",
+						 "slow":		"Slow",
+						 "slower":		"Slower",
+						 "veryslow":	"Veryslow"
+					},
+					"tune": { 
+						"0":				"",
+						 "grain":			"Grain",
+						 "zero-latency":	"Zero-latency",
+						 "fast-decode":		"Fast-decode",
+						 "animation":		"Animation"
+					}
+				},
+				"moreParams": "-x265-params 'level-idc=5:deblock=false:sao=false:b-intra=false'"
+			},
+			"copy": {
+				"name": "-Copy-"
+			},
+			"libx264": {
+				"name": "x264 H.264/MPEG-4 AVC",
+				"modes": {
+					"crf": {
+						"name": "x264 Constant Quality (CRF)",
+						"settingsName": "Quality",
+						"param": "crf",
+						"min": 0,
+						"max": 51
+					},
+					"cbr": {
+						"name": "x264 Constant Bitrate (CBR)",
+						"settingsName": "Target Bitrate",
+						"param": "b",
+						"paramUnit": "k",
+						"unit": "kbit/s",
+						"min": 250,
+						"max": 100000
+					}
+				},
+				"settings": {
+					"profile": {
+						"baseline":	"Baseline",
+						"main":		"Main",
+						"high":		"High",
+						"high10":	"High (10-bit)"
+					},
+					"preset": {	
+						"ultrafast":	"Ultrafast",
+						 "superfast":	"Superfast",
+						 "veryfast":	"Veryfast",
+						 "faster":		"Faster",
+						 "fast":		"Fast",
+						 "medium":		"Medium",
+						 "slow":		"Slow",
+						 "slower":		"Slower",
+						 "veryslow":	"Veryslow"
+					},
+					"tune": { 
+						"0":			"",
+						 "film":		"Film",
+						 "grain":		"Grain",
+						 "stillimage":	"Still Image",
+						 "zerolatency":	"Zero-latency",
+						 "fastdecode":	"Fast-decode",
+						 "animation":	"Animation"
+					}
+				},
+				"moreParams": "-x264-params 'level-idc=5:deblock=false:sao=false:b-intra=false'"
+			}
 		},
 		"nlmeans": {
 			"off": {
-				"name":		"-kein Entrauschen-",
+				"name":		"",
 				"value":	0,
 				"default":	true
 			},

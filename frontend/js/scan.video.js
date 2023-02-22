@@ -292,3 +292,36 @@ function selectAudioCodec(aObject)
 		}
 	}
 }
+
+function selectVideoCodec(aObject)
+{
+	let aVisibility;
+	if(aObject.value == 'copy')
+		aVisibility = 'hidden'
+	else
+		aVisibility = 'visible';
+	
+	let aContentContainer = aObject.parentNode;
+	while(aContentContainer.nodeName.toUpperCase() != 'SELECTCONTENT')
+	{
+		aContentContainer = aContentContainer.parentNode;
+		if(aContentContainer.nodeName.toUpperCase() == 'BODY')
+			return false;
+	}
+	
+	let aIndex = aContentContainer.getAttribute('index');
+	
+	for(let i = 0; i < aContentContainer.children.length; i++)
+	{
+		if(aContentContainer.children[i].getAttribute('built') != null)
+			aContentContainer.children[i].style.visibility = aVisibility;
+		switch(aContentContainer.children[i].name)
+		{
+			case 'resize[' + aIndex + ']':
+			case 'crop[' + aIndex + ']':
+			case 'nlmeans[' + aIndex + ']':
+				aContentContainer.children[i].style.visibility = aVisibility;
+				break;
+		}
+	}
+}

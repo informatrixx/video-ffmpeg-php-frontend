@@ -16,7 +16,15 @@
 		
 		$videoSizeName = DECISIONS['video'][$aVideoSizeIndex]['name'];
 		
-		$aResult['crf'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['crf']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['crf'] : DECISIONS['video'][$aVideoSizeIndex]['crf'];
+		$aResult['codec'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['codec']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['codec'] : DECISIONS['video'][$aVideoSizeIndex]['codec'];
+		$aResult['mode'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['mode']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['mode'] : DECISIONS['video'][$aVideoSizeIndex]['mode'];
+		$aResult['codecMode'] = $aResult['codec'] . '_' . $aResult['mode'];
+		$aResult['codecSettings'] = isset(STATIC_CONFIG['video']['codecs'][$aResult['codec']]['settings']) ? STATIC_CONFIG['video']['codecs'][$aResult['codec']]['settings'] : null;
+
+		if(isset(STATIC_CONFIG['video']['codecs'][$aResult['codec']]) && isset(STATIC_CONFIG['video']['codecs'][$aResult['codec']]['modes'][$aResult['mode']]))
+				$aResult['modeSettings'] = STATIC_CONFIG['video']['codecs'][$aResult['codec']]['modes'][$aResult['mode']];
+		$aResult['modeSettings']['value'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['setting']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['setting'] : DECISIONS['video'][$aVideoSizeIndex]['setting'];
+
 		$aResult['preset'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['preset']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['preset'] : DECISIONS['video'][$aVideoSizeIndex]['preset'];
 		$aResult['crop'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['crop']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['crop'] : DECISIONS['video'][$aVideoSizeIndex]['crop'];
 		$aResult['resize'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['crop']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['resize'] : DECISIONS['video'][$aVideoSizeIndex]['resize'];

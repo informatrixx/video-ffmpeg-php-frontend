@@ -10,7 +10,9 @@
 		"8k": {
 			"name":		"8K Full-UHD",
 			"width":	7680,
-			"crf":		25,
+			"codec":	"libx265",
+			"mode":		"crf",
+			"setting":	25,
 			"preset":	"slow",
 			"crop":		"auto",
 			"resize":	"4k",
@@ -22,7 +24,9 @@
 		"4k": {
 			"name":		"4K UHD",
 			"width":	3840,
-			"crf":		24,
+			"codec":	"libx265",
+			"mode":		"crf",
+			"setting":	24,
 			"preset":	"slow",
 			"crop":		"auto",
 			"resize":	false,
@@ -37,7 +41,9 @@
 		"quad": {
 			"name":		"Quad HD",
 			"width":	2560,
-			"crf":		24,
+			"codec":	"libx265",
+			"mode":		"crf",
+			"setting":	24,
 			"preset":	"slow",
 			"crop":		"auto",
 			"resize":	"1080",
@@ -49,12 +55,16 @@
 		"1080": {
 			"name":		"Full HD",
 			"width":	1920,
-			"crf":		23,
+			"codec":	"libx265",
+			"mode":		"crf",
+			"setting":	23,
 			"preset":	"slow",
 			"crop":		"auto",
 			"resize":	false,
 			"high": {
-				"crf":	22
+				"codec":	"libx265",
+				"mode":		"crf",
+				"setting":	22
 			},
 			"old": {
 				"nlmeans":	"medium",
@@ -64,7 +74,9 @@
 		"720": {
 			"name":		"HD 720p",
 			"width":	1280,
-			"crf":		22,
+			"codec":	"libx265",
+			"mode":		"crf",
+			"setting":	22,
 			"preset":	"slow",
 			"crop":		"auto",
 			"resize":	false,
@@ -75,7 +87,9 @@
 		"sd": {
 			"name":		"SD",
 			"width":	540,
-			"crf":		22,
+			"codec":	"libx265",
+			"mode":		"crf",
+			"setting":	22,
 			"preset":	"slow",
 			"crop":		"auto",
 			"nlmeans":	"light",
