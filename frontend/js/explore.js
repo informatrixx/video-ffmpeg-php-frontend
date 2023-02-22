@@ -28,6 +28,18 @@ function escapeQuotes(aText)
 	return aText.replace(/[&<>"']/g, function(m) { return aMap[m]; });
 }
 
+function explorerScrollTo(aID)
+{
+	aID = aID.toLowerCase();
+
+	const aTarget = document.getElementById('explore_' + aID);
+	if(aTarget == null)
+		return false;
+	
+	const aTop = document.getElementById('explore_' + aID).offsetTop;
+	window.scrollTo(0, aTop);
+}
+
 function exploreFolderQuery(aFolder, aUpdateHistory = true, aModuleJoin = false)
 {
 	let newQuery = new XMLHttpRequest();
@@ -71,18 +83,32 @@ function exploreFolderResult()
 	if(aJSONData.join != false)
 		aJoinParam = escapeHTML(aJSONData.join);
 	
+	let aAlphaChar = '';
+	
 	for(aScanFolderName in aJSONData.folders)
 	{
 		let aFolderPath = aJSONData.folders[aScanFolderName];
+		
+		let aAnchorHash = '';
+		if(aAlphaChar != aScanFolderName.charAt(0).toLowerCase())
+		{
+			aAlphaChar = aScanFolderName.charAt(0).toLowerCase();
+			aAnchorHash = 'id="explore_' + aAlphaChar + '"';
+		}
+		
 		let aNewFolderElement = document.createElement('folder');
 		if(aScanFolderName == '..')
+		{
 			aNewFolderElement.setAttribute('back', 'back');
+			aAnchorHash = 'id="explore_top"';
+		}			
 		if(aScanFolderName == '.')
 		{
 			aNewFolderElement.setAttribute('root', 'root');
 			aScanFolderName = '..';
+			aAnchorHash = '';
 		}
-		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')">' + escapeHTML(aScanFolderName) + '</a>';
+		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}
 
@@ -113,6 +139,14 @@ function exploreFolderResult()
 		}
 		aExploreBox.appendChild(aNewFileElement);
 	}
+	
+	explorerScrollTo('top');
+	
+	document.addEventListener("keypress", function onPress(event) {
+			const aRegEx = /[a-zA-Z0-9]/;
+			if (aRegEx.test(event.key))
+				explorerScrollTo(event.key);
+		});
 }
 
 function historyEvent(aEvent)
