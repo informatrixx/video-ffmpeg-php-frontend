@@ -17,8 +17,26 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 
 
 ### (Current) Output codecs:
-- x265/HEVC (Video)
-- AAC/HE-AAC/HE-AACv2 (Audio)
+- Video encoding:
+  - x265/HEVC (libx265)
+    - CRF (quality) or CBR (constant bitrate) mode
+    - Profiles: Main (8-bit), Main Still Picture, Main (10-bit), Main (10-bit) Intra, Main (12-bit), Main (12-bit) Intra
+    - Tune: Grain, Zero-Latency, Fast Decode, Animation
+  - x264/AVC (libx264)
+    - CRF (quality) or CBR (constant bitrate) mode
+    - Profiles: Baseline, Main, High, High (10-bit)
+    - Tune: Film, Grain, Zero-Latency, Fast Decode, Animation
+  - Copy
+- Audio encoding:
+  - Fraunhofer FDK AAC (libfdk_aac)
+    - Main (LC)
+    - HE-AAC
+    - HE-AACv2
+  - AAC (aac)
+    - Main (LC)
+    - PNS
+    - LTP
+  - Copy
 
 ## Current dependencies (Software I am using for development)
 - nginx (1.22.0)
@@ -31,6 +49,7 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
   - PCNTL functions
 - ffmpeg (N-109758-gbdc76f467f)
 - x265/HEVC encoder (3.5+1-f0c1022b6)
+- x264/AVC encoder (0.164.13)
 - fdk-aac Frauenhofer AAC Codec (2.0.2)
 - Unrar (6.12)
 - ImageMagick (6.9.11-60)
@@ -43,12 +62,10 @@ A PHP frontend to be run on a web server, with the purpose to convert video clip
 At the moment the early development goal is to make a running application that can do basic conversion to my favours (HEVC -> software encode | AAC with loudnorm filters).
 
 #### ...converting queue-manager PHP script into a standalone executable, probably C++?
-Right now the queue-manager is a standard PHP script, that needs to be executed by PHP-cli. Maybe sooner or later I'll compile a executable...
+Right now the queue-manager is a PHP script, that needs to be executed by PHP-cli. Maybe sooner or later I'll compile a executable...
 
 ### ...(possible) Next steps
 - Multiple language support
-- Multiple audio and video codec support
-- Picking and combining multiple input files
 - Installation scripts
 
 ## Installation/Configuration
