@@ -56,13 +56,13 @@
 		?>
 		</select>
 	<label>Zuschneiden:</label><select name='crop[##VAR:index##]'>
-		<option value='auto' selected>Auto</option><option value='man'>Manuell</option><option value='off'>-kein Zuschneiden-</option>
+		<option value='auto' selected>Auto</option><option value='man'>Manuell</option><option value='0'>-kein Zuschneiden-</option>
 		</select>
 		<cropAutoChoice id='cropAutoChoice_##VAR:index##' index='##VAR:index##' fileIndex='##VAR:fileIndex##'></cropAutoChoice>
 	<label>Denoise:</label><select name='nlmeans[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['video']['nlmeans'] as $aValue => $aNLMeansSettings)
-			echo "<option value='$aValue' ##SELECT:conversionSettings:nlmeans=$aValue##>{$aNLMeansSettings['name']}</option>";
+			echo "<option value='{$aNLMeansSettings['value']}' ##SELECT:conversionSettings:nlmeans={$aNLMeansSettings['value']}##>{$aNLMeansSettings['name']}</option>";
 		?>
 		</select>
 </selectContent>

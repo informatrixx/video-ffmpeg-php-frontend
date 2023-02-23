@@ -519,7 +519,7 @@
 							//Iterate through all given settings, which are not "map" informations
 							if($aKey != 'map' && is_array($aData)) 
 								foreach($aData as $aDataMapIndex => $aDataValue)
-									if($aDataMapIndex == $aMapIndex && $aKey == 'loudnorm' && $aDataValue != 'off' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
+									if($aDataMapIndex == $aMapIndex && $aKey == 'loudnorm' && $aDataValue != '0' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
 									{
 										$aLoudNormData = STATIC_CONFIG['audio']['loudnorm'][$aDataValue];
 										$aAudioScanFilters[10] = "loudnorm=I={$aLoudNormData['I']}:TP={$aLoudNormData['TP']}:LRA={$aLoudNormData['LRA']}:print_format=json";
@@ -881,8 +881,8 @@
 							$aStatusArray = array(
 								'id'		=> $aQueueItem['id'],
 								'infile'	=> $aQueueItem['settings']['infile'],
-								'file'	 	=> $aFileName,
-								'progress'	=> $aSubMatches[2],
+								'file'	 	=> isset($aFileName) ? $aFileName : null,
+								'progress'	=> isset($aSubMatches[2]) ? $aSubMatches[2] : null,
 								);
 							statusEcho(topic: 'extract', statusArray: $aStatusArray);
 						}
