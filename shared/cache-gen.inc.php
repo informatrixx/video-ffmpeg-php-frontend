@@ -16,7 +16,7 @@
 		
 		if(file_exists($aStaticOutFileName))
 			return $aRelativeOutFileName;
-		elseif(STATIC_CONFIG['caching']['minify']['useToptalAPI'])
+		elseif(STATIC_CONFIG['caching']['minify']['useToptalAPI'] && ($aPathInfo['extension'] == 'js' || $aPathInfo['extension'] == 'css'))
 		{
 			$aCMD = '/usr/bin/php -r "require(' . escapeshellarg(__FILE__) . '); standaloneMinifyToptalAPI(' . escapeshellarg($aAbsoluteFileName) . ', ' . escapeshellarg($aStaticOutFileName) . ');"';
 			exec("exec nohup setsid $aCMD > /dev/null 2>&1 &");

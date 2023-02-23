@@ -9,7 +9,8 @@
 						"settingsName": "Quality",
 						"param": "crf",
 						"min": 0,
-						"max": 51
+						"max": 51,
+						"default": 22
 					},
 					"cbr": {
 						"name": "x265 Constant Bitrate (CBR)",
@@ -18,28 +19,30 @@
 						"paramUnit": "k",
 						"unit": "kbit/s",
 						"min": 250,
-						"max": 100000
+						"max": 100000,
+						"default": 1500
 					}
 				},
 				"settings": {
-					"profile": {
-						"main":				"Main",
-						"mainstillpicture":	"Main Still Picture", 
-						"main10":			"Main (10-bit)", 
-						"main10-intra":		"Main (10-bit) Intra", 
-						"main12":			"Main (12-bit)", 
-						"main12-intra":		"Main (12-bit) Intra"
-					},
 					"preset": {	
 						"ultrafast":	"Ultrafast",
 						 "superfast":	"Superfast",
 						 "veryfast":	"Veryfast",
 						 "faster":		"Faster",
 						 "fast":		"Fast",
-						 "medium":		"Medium",
+						 "medium":		["Medium"],
 						 "slow":		"Slow",
 						 "slower":		"Slower",
 						 "veryslow":	"Veryslow"
+					},
+					"profile": {
+						"0":				"",
+						"main":				"Main",
+						"mainstillpicture":	"Main Still Picture", 
+						"main10":			"Main (10-bit)", 
+						"main10-intra":		"Main (10-bit) Intra", 
+						"main12":			"Main (12-bit)", 
+						"main12-intra":		"Main (12-bit) Intra"
 					},
 					"tune": { 
 						"0":				"",
@@ -62,7 +65,8 @@
 						"settingsName": "Quality",
 						"param": "crf",
 						"min": 0,
-						"max": 51
+						"max": 51,
+						"default": 22
 					},
 					"cbr": {
 						"name": "x264 Constant Bitrate (CBR)",
@@ -71,26 +75,28 @@
 						"paramUnit": "k",
 						"unit": "kbit/s",
 						"min": 250,
-						"max": 100000
+						"max": 100000,
+						"default": 2500
 					}
 				},
 				"settings": {
-					"profile": {
-						"baseline":	"Baseline",
-						"main":		"Main",
-						"high":		"High",
-						"high10":	"High (10-bit)"
-					},
-					"preset": {	
+					"preset": {
 						"ultrafast":	"Ultrafast",
 						 "superfast":	"Superfast",
 						 "veryfast":	"Veryfast",
 						 "faster":		"Faster",
 						 "fast":		"Fast",
 						 "medium":		"Medium",
-						 "slow":		"Slow",
+						 "slow":		["Slow"],
 						 "slower":		"Slower",
 						 "veryslow":	"Veryslow"
+					},
+					"profile": {
+						"0":		"",
+						"baseline":	"Baseline",
+						"main":		"Main",
+						"high":		"High",
+						"high10":	"High (10-bit)"
 					},
 					"tune": { 
 						"0":			"",
@@ -169,8 +175,8 @@
 				"TP":	-1.5,
 				"LRA":	11
 			},
-			"off": {
-				"name":	"-keine Loudnorm-"
+			"0": {
+				"name":	""
 			}
 		}
 	},

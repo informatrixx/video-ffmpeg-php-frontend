@@ -30,7 +30,7 @@
 	<label>Codec:</label><text>##DATA:codec:nameFull##</text>
 	<label>Anzeige:</label><text>##DATA:displayAspectRatio##</text>
 	<delimiter></delimiter>
-	<label>Codec/Mode:</label><select name='c[##VAR:index##]' onchange='selectVideoCodec(this)'>
+	<label>Codec/Mode:</label><select style='grid-column: span 2; max-width: 80%; width: 250px' name='c[##VAR:index##]' onchange='selectVideoCodec(this)'>
 		<?php
 		foreach(STATIC_CONFIG['video']['codecs'] as $aCodecValue => $aCodecData)
 		{
@@ -39,7 +39,7 @@
 				foreach($aCodecData['modes'] as $aModeValue => $aModeData)
 				{
 					$aMoreParams = isset($aCodecData['moreParams']) ? "moreParams='moreParams=" . urlencode($aCodecData['moreParams']) . "'" : '';
-					echo "<option value='$aCodecValue' $aMoreParams ##SELECT:conversionSettings:codecMode={$aCodecValue}_$aModeValue##>{$aModeData['name']}</option>";
+					echo "<option value='$aCodecValue' $aMoreParams mode='$aModeValue' ##SELECT:conversionSettings:codecMode={$aCodecValue}_$aModeValue##>{$aModeData['name']}</option>";
 				}
 			else
 				echo "<option value='$aCodecValue' ##SELECT:conversionSettings:codecMode={$aCodecValue}_$aModeValue##>{$aCodecData['name']}</option>";
@@ -47,10 +47,9 @@
 		}
 		?>
 		</select>
-	<label>##DATA:conversionSettings:modeSettings:settingsName##:</label><p built><input type='number' name='##DATA:conversionSettings:modeSettings:param##[##VAR:index##]' min='##DATA:conversionSettings:modeSettings:min##' max='##DATA:conversionSettings:modeSettings:max##' value='##DATA:conversionSettings:modeSettings:value##'>##DATA:conversionSettings:modeSettings:unit##</p>
-	##BUILD:conversionSettings:codecSettings##
+	##BUILDVIDEOSETTINGS:conversionSettings##
 	<label>Größe ändern:</label><select name='resize[##VAR:index##]'>
-		<option value='0' ##SELECT:conversionSettings:resize=0##>-Original-</option>
+		<option value='0' ##SELECT:conversionSettings:resize=0##></option>
 		<?php
 		foreach(DECISIONS['video'] as $aValue => $aVideoData)
 			echo "<option value='$aValue' ##SELECT:conversionSettings:resize=$aValue##>{$aVideoData['name']}</option>";

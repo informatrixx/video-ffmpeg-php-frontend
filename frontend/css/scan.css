@@ -96,6 +96,9 @@ selectContent {
 	text-align: left;
 	grid-template-columns: minmax(110px, max-content) minmax(190px, 2fr) minmax(280px, 4fr);
 }
+selectContent[subtitle] {
+	grid-template-columns: minmax(110px, max-content) minmax(320px, 4fr) minmax(30px, 30px);
+}
 selectContent.archiveFiles {
 	grid-template-columns: minmax(320px, 4fr) minmax(100px, max-content);
 }

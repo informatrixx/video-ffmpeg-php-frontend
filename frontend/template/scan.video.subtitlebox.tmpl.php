@@ -26,11 +26,11 @@
 		<input type='checkbox' name='map[##VAR:index##]' value='##VAR:fileIndex##:##DATA:streamIndex##' ##CHECK:conversionSettings:convert##> ##DATA:language:short## ##DATA:title##
 	</selectButton>
 </selectButtons>
-<selectContent index='##VAR:index##' streamindex='##DATA:streamIndex##' audio>
+<selectContent index='##VAR:index##' fileindex='##VAR:fileIndex##' streamindex='##DATA:streamIndex##' subtitle>
 	<label>Sprache:</label><text>##DATA:language:human##</text>
 	<label>Codec:</label><text>##DATA:codec:nameFull##</text>
 	<label>Größe:</label><text>##DATA:size:human##</text>
-	<label>Titel:</label><input style='grid-column: span 2;' name='title[##VAR:index##]' value='##DATA:title##'>
+	<label>Titel:</label><input name='title[##VAR:index##]' value='##DATA:title##'><button type="button" onclick='autoTitle(this, "subtitle")'><img src='img/note1-16.png' alt='Auto-Name'/></button>
 	<label>Default:</label><input type='checkbox' name='default[##VAR:index##]' value='1' ##CHECK:disposition:default##>
 	<label>Forced:</label><input type='checkbox' name='forced[##VAR:index##]' value='1' ##CHECK:disposition:forced##>
 </selectContent>

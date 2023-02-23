@@ -99,7 +99,7 @@
 	"audio": {
 		"choices": {
 			"ger" : {
-				"loudnorm":	"off",
+				"loudnorm":	"0",
 				"8":		"7.1",
 				"7":		"5.1",
 				"6":		"5.1",
@@ -122,7 +122,7 @@
 				"1":		"mono"
 			},
 			"default" : {
-				"loudnorm":	"off",
+				"loudnorm":	"0",
 				"8":		"7.1",
 				"7":		"5.1",
 				"6":		"5.1",
@@ -185,6 +185,7 @@
 		}
 	},
 	"subtitles": {
-		"pick": ["ger", "eng"]	
+		"pick": ["ger", "eng"],
+		"autoNaming": "##INDEX## - ##LANG:human## ##FORCED=(Forced)##"
 	}
 }

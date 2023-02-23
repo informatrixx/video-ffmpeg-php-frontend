@@ -615,7 +615,7 @@
 												$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("title=$aDataValue") . ' \\' . PHP_EOL;
 												break;
 											case 'loudnorm':
-												if($aDataValue != 'off' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
+												if($aDataValue != '0' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
 												{
 													$aLNData = STATIC_CONFIG['audio']['loudnorm'][$aDataValue];
 													$aLNScan = $aQueueItem['loudnorm_scan'][$aLoudnormIndex++];
@@ -633,7 +633,7 @@
 												}
 												break;
 												case 'nlmeans':
-													if($aDataValue != 'off')
+													if($aDataValue != '0')
 														$aFilters[10] = 'nlmeans=' . STATIC_CONFIG['video']['nlmeans'][$aDataValue]['value'];
 													break;
 												case 'crop':
@@ -655,6 +655,10 @@
 														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
 														$aConvertString .= " -b:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
 													}
+													break;
+												case 'profile':
+													if($aDataValue != 0)
+														$aConvertString .= " -profile:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
 													break;
 												case 'tune':
 													if($aDataValue != 0)
