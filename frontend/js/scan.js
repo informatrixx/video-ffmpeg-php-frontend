@@ -69,6 +69,8 @@ function duplicateStream(aObject)
 		var aReplace = '$1[' + aNewIndex + ']';
 		if(aNode.getAttribute('name') != null)
 			aNode.setAttribute('name', aNode.getAttribute('name').replace(aRegex, aReplace));
+		if(aNode.getAttribute('moreParams') != null)
+			aNode.setAttribute('moreParams', aNode.getAttribute('moreParams').replace(aRegex, aReplace));
 		if(aNode.children != null)
 		{
 			for(var i = 0; i < aNode.children.length; i++)
