@@ -42,15 +42,16 @@
 <html>
 <head>
 	<title>SCAN - <?=htmlspecialchars(basename($_GET['file']))?></title>
-	<link rel="stylesheet" href="<?= provideStaticContent('css/scan.css')?>">
-	<link rel="stylesheet" href="<?= provideStaticContent('css/explore.css')?>">
-	<script src="<?= provideStaticContent('js/scan.js')?>"></script>
-	<script src="<?= provideStaticContent('js/explore.js')?>"></script>
+	<link rel="stylesheet" href="<?= provideStaticFile('css/scan.css')?>">
+	<link rel="stylesheet" href="<?= provideStaticFile('css/explore.css')?>">
+	<script src="<?= provideStaticFile('js/scan.js')?>"></script>
+	<script src="<?= provideStaticFile('js/explore.js')?>"></script>
+	<script src="<?= provideStaticFile('js/quma-status-codes.js')?>"></script>
 	<?php
 		switch($_GET['type'])
 		{
 			case 'video' :
-				echo '<script src="' . provideStaticContent('js/scan.video.js') . '"></script>' . PHP_EOL;
+				echo '<script src="' . provideStaticFile('js/scan.video.js') . '"></script>' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.globalbox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.infobox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.video.videobox.tmpl.php">' . PHP_EOL;
@@ -59,7 +60,7 @@
 				echo '<link rel="preload" as="fetch" href="query/getcodecsettings.php">' . PHP_EOL;
 				break;
 			case 'rar' :
-				echo '<script src="' . provideStaticContent('js/scan.rar.js') . '"></script>' . PHP_EOL;
+				echo '<script src="' . provideStaticFile('js/scan.rar.js') . '"></script>' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.rar.globalbox.tmpl.php">' . PHP_EOL;
 				echo '<link rel="preload" as="fetch" href="template/scan.rar.filesbox.tmpl.php">' . PHP_EOL;
 				break;
@@ -88,7 +89,7 @@
 	
 	window.addEventListener('popstate', historyEvent);
 
-	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? urlencode($_GET['folder']) : '';?>', false, gFileName);
+	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? urlencode($_GET['folder']) : '';?>', true, gFileName);
 	scanFileQuery(gFileName, "<?=urlencode($_GET['type']);?>");
 
 </script>

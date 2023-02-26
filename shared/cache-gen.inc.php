@@ -2,15 +2,13 @@
 
 	define(constant_name: 'THIS_MTIME', value: filemtime(__FILE__));
 
-	function provideStaticContent(string $fileName)
+	function provideStaticFile(string $fileName)
 	{
 		$aAbsoluteFileName = SCRIPT_PATH . $fileName;
-		
-		$aMTime = THIS_MTIME > filemtime($aAbsoluteFileName) ? THIS_MTIME : filemtime($aAbsoluteFileName);
-		$aFileContent = file_get_contents($aAbsoluteFileName);
-		$aHash = md5("$aFileContent$aMTime");
+		$aHash = md5(THIS_MTIME . filemtime($aAbsoluteFileName));
 		$aPathInfo = pathinfo(path: $aAbsoluteFileName);
 		$aHashedFileName = "{$aPathInfo['filename']}-$aHash.{$aPathInfo['extension']}";
+		
 		$aStaticOutFileName = ROOT . "frontend/static/$aHashedFileName";
 		$aRelativeOutFileName = FE_ROOT . "static/$aHashedFileName";
 		
@@ -23,11 +21,11 @@
 			return "$fileName?hash=$aHash";
 		}
 		else
-			file_put_contents(filename: $aStaticOutFileName, data: $aFileContent);
+			file_put_contents(filename: $aStaticOutFileName, data: file_get_contents($aAbsoluteFileName));
 		
 		return $aRelativeOutFileName;
 	}
-	
+
 	function standaloneMinifyToptalAPI(string $inFile, string $outFile)
 	{
 		$aExtension = pathinfo(path: $inFile, flags: PATHINFO_EXTENSION);

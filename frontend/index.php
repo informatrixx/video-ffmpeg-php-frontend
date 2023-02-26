@@ -27,9 +27,9 @@
 ?>
 <head>
 	<title>FFMPEG - <?=$aFolder?></title>
-	<link rel="stylesheet" href="<?= provideStaticContent('css/index.css')?>">
-	<link rel="stylesheet" href="<?= provideStaticContent('css/explore.css')?>">
-	<script src="<?= provideStaticContent('js/explore.js')?>"></script>
+	<link rel="stylesheet" href="<?= provideStaticFile('css/index.css')?>">
+	<link rel="stylesheet" href="<?= provideStaticFile('css/explore.css')?>">
+	<script src="<?= provideStaticFile('js/explore.js')?>"></script>
 	<script>
 		const PAGE_TITLE_PREFIX = 'FFMPEG - ';
 		

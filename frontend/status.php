@@ -12,8 +12,9 @@
 	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
 
 	?>
-	<link rel="stylesheet" href="<?= provideStaticContent('css/status.css')?>">
-	<script src="<?= provideStaticContent('js/status.js')?>"></script>
+	<link rel="stylesheet" href="<?= provideStaticFile('css/status.css')?>">
+	<script src="<?= provideStaticFile('js/status.js')?>"></script>
+	<script src="<?= provideStaticFile('js/quma-status-codes.js')?>"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
