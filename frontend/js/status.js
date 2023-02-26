@@ -271,50 +271,50 @@ function changeStatus(aStatusData)
 		aStatusContainer.appendChild(aItemContainer);
 	}
 	else
-		aItemContainer.setAttribute('status', aData.status);
+		aItemContainer.setAttribute('status', QUMA_CODE_STATUS[aData.status]);
 
 	
 	switch(parseInt(aData.status, 10))
 	{
-		case 0:
-		case 10:
+		case QUMA_STATUS_WAITING:
+		case QUMA_STATUS_UNRAR_WAITING:
 			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 1: 
+		case QUMA_STATUS_SCAN_READY: 
 			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 2:
+		case QUMA_STATUS_SCAN:
 			statusAddAction(aItemContainer, 'pause');
 			statusRemoveAction(aItemContainer, 'delete');
 			break;
-		case 3:
+		case QUMA_STATUS_CONVERT_READY:
 			statusAddAction(aItemContainer, 'delete');
 			statusRemoveAction(aItemContainer, 'pause');
 			statusRemoveData(aItemContainer, 'progress');
 			statusRemoveData(aItemContainer, 'speed');
 			break;
-		case 4: 
+		case QUMA_STATUS_CONVERT: 
 			statusAddAction(aItemContainer, 'pause');
 			statusRemoveAction(aItemContainer, 'delete');
 			break;
-		case 5:
-		case 15:
+		case QUMA_STATUS_CONVERT_DONE:
+		case QUMA_STATUS_UNRAR_DONE:
 			statusRemoveData(aItemContainer, 'progress');
 			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 11:
+		case QUMA_STATUS_UNRAR_READY:
 			statusAddAction(aItemContainer, 'delete');
 			break;
-		case 12:
+		case QUMA_STATUS_UNRAR:
 			break;
-		case 91: 
-		case 93: 
+		case QUMA_STATUS_SCAN_PAUSE: 
+		case QUMA_STATUS_CONVERT_PAUSE: 
 			statusAddAction(aItemContainer, 'resume');
 			break;
-		case 82:
-		case 84:
-		case 92:
-		case 94:
+		case QUMA_STATUS_SCAN_ABORT:
+		case QUMA_STATUS_CONVERT_ABORT:
+		case QUMA_STATUS_SCAN_ERROR:
+		case QUMA_STATUS_CONVERT_ERROR:
 		case 991:
 			statusRemoveAction(aItemContainer, 'pause');
 			statusAddAction(aItemContainer, 'delete');

@@ -9,6 +9,7 @@
 
 	define(constant_name: 'SCRIPT_DIR', value: rtrim(string: __DIR__, characters: '/') . '/');
 	require_once(SCRIPT_DIR . '../shared/common.inc.php');
+	require_once(ROOT . 'shared/quma-status-codes.inc.php');
 
 	define(constant_name: 'PID_FILE', value: RUN_DIR . pathinfo(path: __FILE__, flags: PATHINFO_FILENAME) . '.pid');
 	define(constant_name: 'CONTROL_SOCKET_FILE', value: RUN_DIR . 'quma.sock');
@@ -239,7 +240,7 @@
         foreach($gConvertQueue as $aQueueItemIndex => $aQueueItem)
         {
         	$aOldStatus = $aQueueItem['status'];
-        	if($itemID == $aQueueItem['id'] && ($aOldStatus == 82 ||  $aOldStatus == 84 || $aOldStatus == 92 ||  $aOldStatus == 94))
+        	if($itemID == $aQueueItem['id'] && ($aOldStatus == QUMA_STATUS_SCAN_ABORT ||  $aOldStatus == QUMA_STATUS_CONVERT_ABORT || $aOldStatus == QUMA_STATUS_SCAN_ERROR ||  $aOldStatus == QUMA_STATUS_CONVERT_ERROR))
 			{
 				_msg(message: 'Resetting queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
 				changeQueueItemStatus(queueItemIndex: $aQueueItemIndex, newStatus: (int)ltrim(string: $aOldStatus, characters: '89') - 1);
@@ -269,7 +270,7 @@
         foreach($gConvertQueue as $aQueueItemIndex => $aQueueItem)
         {
         	$aOldStatus = $aQueueItem['status'];
-        	if($itemID == $aQueueItem['id'] && ($aOldStatus == 2 ||  $aOldStatus == 4 || $aOldStatus == 91 ||  $aOldStatus == 93))
+        	if($itemID == $aQueueItem['id'] && ($aOldStatus == QUMA_STATUS_SCAN ||  $aOldStatus == QUMA_STATUS_CONVERT || $aOldStatus == QUMA_STATUS_SCAN_PAUSE ||  $aOldStatus == QUMA_STATUS_CONVERT_PAUSE))
 			{
 				if($doResume == false)
 					_msg(message: 'Pausing queue item: ' . $aQueueItem['settings']['outfile'], CRF: '');
@@ -311,11 +312,8 @@
 		global $gConvertQueue;
 		$gConvertQueue[$queueItemIndex]['status'] = $newStatus;
 		
-		if(!defined('QUMA_STATUS_CODES'))
-			define(constant_name: 'QUMA_STATUS_CODES', value: json_decode(json: file_get_contents(ROOT . '/shared/quma-status-codes.json'), associative: true));
-
-		if(isset(QUMA_STATUS_CODES[$newStatus]))
-			_msg(message: 'Change queue item status to "' . QUMA_STATUS_CODES[$newStatus] . " ($newStatus)\": " . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
+		if(isset(QUMA_TEXT_STATUS[$newStatus]))
+			_msg(message: 'Change queue item status to "' . QUMA_TEXT_STATUS[$newStatus] . " ($newStatus)\": " . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
 		
 		$aStatusArray = array(
 			'id'		=> $gConvertQueue[$queueItemIndex]['id'],
@@ -452,22 +450,22 @@
 				8x	Abort
 				9x	Error / Pause
 			*/
-			if($aItemStatus == 0)	//Fresh item
+			if($aItemStatus == QUMA_STATUS_WAITING)	//Fresh item
 			{
 				//If at least one audio stream is going to be normalized, put item to status=1
 				foreach($aItemSettings['loudnorm'] as $aLoudnorm)
-					if($aLoudnorm != 'off')
+					if($aLoudnorm != '0')
 					{
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 1);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN_READY);
 						continue(2);
 					}
 				//..otherwise status=3
-				changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 3);
+				changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_CONVERT_READY);
 				continue;
 			}
-			if($aItemStatus == 10)	//Fresh item (unrar)
+			if($aItemStatus == QUMA_STATUS_UNRAR_WAITING)	//Fresh item (unrar)
 			{
-				changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 11);
+				changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_UNRAR_READY);
 				continue;
 			}
 		}
@@ -481,9 +479,10 @@
 				$aItemStatus = $aQueueItem['status'];
 				$aItemSettings = $aQueueItem['settings'];
 				
-				if($aItemStatus == 1)
+				if($aItemStatus == QUMA_STATUS_SCAN_READY || $aItemStatus == QUMA_STATUS_SCAN_CHILD_READY)
 				{
 					$aAudioScanString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
+					
 					if(is_string($aItemSettings['infile']))
 						$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
 					elseif(is_array($aItemSettings['infile']))
@@ -492,7 +491,7 @@
 						//Only use input files for audio tracks where loudnorm scanning is necessary
 						foreach($aItemSettings['loudnorm'] as $aMapIndexLN => $aLoudNormValue)
 						{
-							if($aLoudNormValue == 'off' || !isset(STATIC_CONFIG['audio']['loudnorm'][$aLoudNormValue]))
+							if($aLoudNormValue == '0' || !isset(STATIC_CONFIG['audio']['loudnorm'][$aLoudNormValue]))
 								continue;
 							
 							if(!preg_match(pattern: '/^(\d+):\d+$/', subject: $aItemSettings['map'][$aMapIndexLN], matches: $aMapMatches))
@@ -509,11 +508,13 @@
 					$aAudioScanString .= '-vn -sn -dn -map_chapters -1' . ' \\' . PHP_EOL;
 
 					$aAudioScanIndex = 0;
+					$i = 0;
 					
 					//Find all audio tracks where loudnorm scanning is necessary
 					foreach($aItemSettings['map'] as $aMapIndex => $aMapValue)
 					{
 						$aAudioScanFilters = array();
+						
 						foreach($aItemSettings as $aKey => $aData)
 						{
 							//Iterate through all given settings, which are not "map" informations
@@ -522,17 +523,25 @@
 									if($aDataMapIndex == $aMapIndex && $aKey == 'loudnorm' && $aDataValue != '0' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
 									{
 										$aLoudNormData = STATIC_CONFIG['audio']['loudnorm'][$aDataValue];
-										$aAudioScanFilters[10] = "loudnorm=I={$aLoudNormData['I']}:TP={$aLoudNormData['TP']}:LRA={$aLoudNormData['LRA']}:print_format=json";
-										$aAudioScanString .= "-map $aMapValue" . ' \\' . PHP_EOL;
+										if($i++ == 0)
+											$aAudioScanString .= "-map $aMapValue -filter loudnorm=I={$aLoudNormData['I']}:TP={$aLoudNormData['TP']}:LRA={$aLoudNormData['LRA']}:print_format=json" . ' \\' . PHP_EOL;
+										else
+										{
+											//create a split task for follow up audio tracks to scan all of them separate
+											$gConvertQueue[] = array(
+												'status'		=> QUMA_STATUS_SCAN_CHILD_READY,
+												'id'			=> "{$aItemID}x$i",
+												'settings'		=> array(
+													'type'		=> 'scan:' . $aItemSettings['type'],
+													'infile'	=> $aItemSettings['infile'],
+													'outfile'	=> $aItemSettings['outfile'],
+													'map'		=> array($aDataMapIndex => $aMapValue),
+													'loudnorm'	=> array($aDataMapIndex => $aItemSettings['loudnorm'][$aDataMapIndex]),
+													'duration'	=> $aItemSettings['duration'],
+													)
+												);
+										}
 									}
-						}
-
-						//Summarize collected audio loudnorm filter settings
-						if(count($aAudioScanFilters) > 0)
-						{
-							ksort($aAudioScanFilters);
-							$aAudioScanString .=	" -filter:$aAudioScanIndex " . escapeshellarg(implode(separator: ',', array: $aAudioScanFilters)) . ' \\' . PHP_EOL;
-							$aAudioScanIndex++;
 						}
 					}
 					
@@ -545,7 +554,7 @@
 					_msg(message: 'Start scanning of: ' . $aQueueItem['settings']['outfile'], CRF: '');
 					
 					if(CONFIG['Debugging'])
-						file_put_contents(filename: LOG_DIR . 'scan_ffmpeg_' . date('Ymd-His') . '_' . $aQueueItem['settings']['outfile'] . '.sh', data: '#!/bin/bash' . PHP_EOL . $aAudioScanString);
+						file_put_contents(filename: LOG_DIR . 'scan_ffmpeg_' . date('Ymd-His') . "{$aQueueItem['settings']['outfile']}$aItemID.sh", data: '#!/bin/bash' . PHP_EOL . $aAudioScanString);
 
 					//Preparing I/O pipes
 					$aDescriptorSpec = array(
@@ -568,10 +577,13 @@
 							
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 2);
+						if($aItemStatus == QUMA_STATUS_SCAN_READY)
+							changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN);
+						elseif($aItemStatus == QUMA_STATUS_SCAN_CHILD_READY)
+							changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN_CHILD);
 					}
 					else
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 92);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN_ERROR);
 				}
 				if(count($gQueueTasks['scan']) >= STATIC_CONFIG['queue']['max_scan_tasks'])
 					break;
@@ -588,7 +600,7 @@
 				$aItemStatus = $aQueueItem['status'];
 				$aItemSettings = $aQueueItem['settings'];
 				
-				if($aItemStatus == 3)
+				if($aItemStatus == QUMA_STATUS_CONVERT_READY)
 				{
 					$aConvertString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
 					if(is_string($aItemSettings['infile']))
@@ -618,7 +630,7 @@
 												if($aDataValue != '0' && isset(STATIC_CONFIG['audio']['loudnorm'][$aDataValue]))
 												{
 													$aLNData = STATIC_CONFIG['audio']['loudnorm'][$aDataValue];
-													$aLNScan = $aQueueItem['loudnorm_scan'][$aLoudnormIndex++];
+													$aLNScan = $aQueueItem['loudnorm_scan'][$aMapIndex];
 													$aFilters[10] =	"loudnorm=I={$aLNData['I']}:TP={$aLNData['TP']}:LRA={$aLNData['LRA']}:linear=true:" .
 																	"measured_I={$aLNScan['output_i']}:measured_TP={$aLNScan['output_tp']}:measured_LRA={$aLNScan['output_lra']}:measured_thresh={$aLNScan['output_thresh']}:offset={$aLNScan['target_offset']}";
 												}
@@ -760,10 +772,10 @@
 						
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 4);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_CONVERT);
 					}
 					else
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 94);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_CONVERT_ERROR);
 				}
 				if(count($gQueueTasks['convert']) >= STATIC_CONFIG['queue']['max_convert_tasks'])
 					break;
@@ -780,7 +792,7 @@
 				$aItemStatus = $aQueueItem['status'];
 				$aItemSettings = $aQueueItem['settings'];
 				
-				if($aItemStatus == 11)
+				if($aItemStatus == QUMA_STATUS_UNRAR_READY)
 				{
 					$aExtractString = CONFIG['Binaries']['unrar'];
 					$aExtractString .= isset($aItemSettings['ignorepaths']) ? ' e ' : ' x ';
@@ -814,10 +826,10 @@
 						_msg(message: 'PID: ' . proc_get_status(process: $aQueueItem['proc']['ressource'])['pid'], fixedWidth: 12);
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][1], enable: false);
 						stream_set_blocking(stream: $aQueueItem['proc']['pipes'][2], enable: false);
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 12);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_UNRAR);
 					}
 					else
-						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 19);
+						changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_UNRAR_ERROR);
 				}
 				if(count($gQueueTasks['extract']) >= STATIC_CONFIG['queue']['max_extract_tasks'])
 					break;
@@ -833,10 +845,63 @@
 				$aOutput = stream_get_contents(stream: $aQueueItem['proc']['pipes'][2]);
 				switch(true)
 				{
-					case preg_match_all(pattern: '/\[parsed_loudnorm.+\]\s+({[^[]+})/i', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
-						_msg(message: "Got Loudnorm scan results for: " . $aQueueItem['settings']['outfile']);
-						foreach($aMatches as $aScanIndex => $aLoudnormJSON)
-							$aQueueItem['loudnorm_scan'][$aScanIndex] = json_decode(json: $aLoudnormJSON[1], associative: true);
+					case preg_match_all(pattern: '/\[parsed_loudnorm_(?<index>\d+)[\s@]+(?<hexID>0x[0-9a-f]+)\][^{]+(?<loudnormData>{[^[]+})/is', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
+						
+						$aLoudnormResult = array();
+						foreach($aMatches as $aMatchData)
+						{
+							$aLoudnormData = json_decode(json: $aMatchData['loudnormData'], associative: true);
+							if($aLoudnormData['input_i'] == '-inf' || $aLoudnormData['input_tp'] == '-inf' || $aLoudnormData['target_offset'] == 'inf')
+								continue;
+							else
+								$aLoudnormResult[] = $aLoudnormData;
+						}
+
+						$aMappedKey = null;
+						$aMappedID = null;
+						
+						foreach($aQueueItem['settings']['loudnorm'] as $aLNKey => $aLNSettingName)
+							if($aLNSettingName != 0)
+							{
+								$aMappedKey = $aLNKey;
+								$aMappedID = $aQueueItem['settings']['map'][$aLNKey];
+								break;	
+							}
+
+						$aItemID = $aQueueItem['id'];
+						if(count($aLoudnormResult) == 1)
+							$aLoudnormResult = $aLoudnormResult[0];
+						$aQueueItem['loudnorm_scan'][$aMappedKey] = $aLoudnormResult;
+						
+						if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aItemID, matches: $aIDMatches))
+						{//if it's a child scan, add result to parent as well
+							$aItemID = $aIDMatches['id'];
+						
+							foreach($gConvertQueue as $aSearchItemIndex => &$aSearchQueueItem)
+								if($aSearchQueueItem['id'] == $aItemID)
+								{
+									$aSearchQueueItem['loudnorm_scan'][$aMappedKey] = $aLoudnormResult;
+									//parent waiting for results?
+									if($aSearchQueueItem['status'] == QUMA_STATUS_SCAN_WAITING)
+									{
+										//Figure out if loudnorm scans are still missing...
+										$aMissingLN = false;
+										foreach($aSearchQueueItem['settings']['loudnorm'] as $aLNKey => $aLNSettingName)
+											if($aLNSettingName != 0 && !isset($aSearchQueueItem['loudnorm_scan'][$aLNKey]))
+											{
+												$aMissingLN = true;
+												break;
+											}
+										if(!$aMissingLN)
+										{
+											changeQueueItemStatus(queueItemIndex: $aSearchItemIndex, newStatus: QUMA_STATUS_CONVERT_READY);
+										}
+									}
+									unset($aSearchQueueItem);
+									break;
+								}
+						}
+						_msg(message: "Stream: $aMappedID -> got Loudnorm scan results for: " . $aQueueItem['settings']['outfile']);
 					break;
 					case preg_match(pattern: '@frame=\s*(?<frame>[\d.]+)\s+fps=\s*(?<fps>[\d.]+)\s+q=\s*(?<q>[\d.]+)\s+size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
@@ -943,25 +1008,43 @@
 
 					switch($aItemStatus)
 					{
-						case 2:
+						case QUMA_STATUS_SCAN:
 							//Scanning done... continue
 							if(isset($aQueueItem['loudnorm_scan']))
-								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 3);
+							{
+								//Figure out if loudnorm scans are still missing...
+								foreach($aQueueItem['settings']['loudnorm'] as $aLNKey => $aLNSettingName)
+									if($aLNSettingName != 0 && !isset($aQueueItem['loudnorm_scan'][$aLNKey]))
+									{
+										changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN_WAITING);
+										continue(3);
+									}
+
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_CONVERT_READY);
+							}
 							else
-								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 92);
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN_ERROR);
 							continue(2);
 						break;
-						case 4:
+						case QUMA_STATUS_SCAN_CHILD:
+							//Scanning of child done... continue
+							if(isset($aQueueItem['loudnorm_scan']))
+								deleteQueueItem(itemID: $aQueueItem['id']);
+							else
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_SCAN_ERROR);
+							continue(2);
+						break;
+						case QUMA_STATUS_CONVERT:
 							//Conversion done...
 							$aQueueItem['result'] = array(
 								'fileSize' =>	filesize($aQueueItem['settings']['outfolder'] . $aQueueItem['settings']['outfile']),
 								);
-							changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 5);
+							changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_CONVERT_DONE);
 							continue(2);
 						break;
-						case 12:
+						case QUMA_STATUS_UNRAR:
 							//Extracting done...
-								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: 15);
+								changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_UNRAR_DONE);
 							continue(2);
 						break;
 					}
