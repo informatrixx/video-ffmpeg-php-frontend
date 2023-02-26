@@ -17,12 +17,14 @@ explore {
 explore folder, explore file {
 	display: block;
 	padding-left: 23px;
+	position: relative;
+	max-width: 600px;
+	height: 20px;
+	background-repeat: no-repeat;
+	background-size: contain;
 }
 explore folder {
 	background-image: url('../img/folder1-24.png');
-	background-repeat: no-repeat;
-	background-size: contain;
-	height: 20px;
 }
 explore folder[back] {
 	background-image: url('../img/folder2-24.png');
@@ -30,12 +32,34 @@ explore folder[back] {
 explore folder[root] {
 	background-image: url('../img/folder3-24.png');
 }
-explore folder a, explore file a {
+explore folder span, explore file span {
 	text-decoration: none;
 	color: #000;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	position: absolute;
+	top: 4px;
+	left: 0px;
+	z-index: 0;
+	max-width: 580px;
+	cursor: pointer;
+	margin-left: 23px;
+	font-family: "Helvetica", sans-serif;
+	font-size: 10pt;
 }
-explore folder a:hover, explore file a:hover {
-	color: #93B;
+explore folder span:hover, explore file span:hover {
+	text-overflow: normal;
+	white-space: normal;
+	overflow: visible;
+	word-break: break-all;
+	background-color: #eee;
+	z-index: 2;
+	border: 1px solid #abc;
+	top: 3px;
+	left: -1px;
+	border-radius: 1px;	
+	background-color: #DBF;
 }
 
 explore file img.join {

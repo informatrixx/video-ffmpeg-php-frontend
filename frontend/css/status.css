@@ -5,7 +5,7 @@ body {
 
 #statusContainer {
 	max-width: 600px;
-	font-family: "Tahoma", sans-serif;
+	font-family: "Helvetica", sans-serif;
 	font-size: 10pt;
 }
 
@@ -65,44 +65,45 @@ data > span:hover more {
 	display: block;
 }
 
-statusItemContainer[status="10"],
-statusItemContainer[status="0"] {
+statusItemContainer[status="QUMA_STATUS_UNRAR_WAITING"],
+statusItemContainer[status="QUMA_STATUS_WAITING"] {
 	background-color: #bbb;
 }
 
-statusItemContainer[status="1"],
-statusItemContainer[status="3"],
-statusItemContainer[status="11"] {
+statusItemContainer[status="QUMA_STATUS_SCAN_READY"],
+statusItemContainer[status="QUMA_STATUS_SCAN_CHILD"],
+statusItemContainer[status="QUMA_STATUS_UNRAR_READY"] {
 	background-color: #cad9d7;
 }
 
-statusItemContainer[status="2"] {
+statusItemContainer[status="QUMA_STATUS_SCAN"],
+statusItemContainer[status="QUMA_STATUS_SCAN_CHILD"] {
 	background-color: #caced9;
 }
 
-statusItemContainer[status="4"] {
+statusItemContainer[status="QUMA_STATUS_CONVERT"] {
 	background-color: #bfd1ff;
 }
 
-statusItemContainer[status="12"] {
+statusItemContainer[status="QUMA_STATUS_UNRAR"] {
 	background-color: #e6ccff;
 }
 
-statusItemContainer[status="5"],
-statusItemContainer[status="15"] {
+statusItemContainer[status="QUMA_STATUS_CONVERT_DONE"],
+statusItemContainer[status="QUMA_STATUS_UNRAR_DONE"] {
 	background-color: #dbffe5;
 }
-statusItemContainer[status="91"],
-statusItemContainer[status="93"] {
+statusItemContainer[status="QUMA_STATUS_SCAN_PAUSE"],
+statusItemContainer[status="QUMA_STATUS_CONVERT_PAUSE"] {
 	background-color: #d8cad8;
 }
 
-statusItemContainer[status="92"],
-statusItemContainer[status="94"] {
+statusItemContainer[status="QUMA_STATUS_SCAN_ERROR"],
+statusItemContainer[status="QUMA_STATUS_CONVERT_ERROR"] {
 	background-color: #ffe5db;
 }
-statusItemContainer[status="82"],
-statusItemContainer[status="84"] {
+statusItemContainer[status="QUMA_STATUS_SCAN_ABORT"],
+statusItemContainer[status="QUMA_STATUS_CONVERT_ABORT"] {
 	background-color: #fcc;
 }
 
