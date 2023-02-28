@@ -175,6 +175,8 @@
 			'error' =>		'',
 			);
 		
+		$newItem['settings']['outfolder'] = rtrim(characters: '/', string: $newItem['settings']['outfolder']) . '/';
+		
 		if(isset($newItem['settings']['outfile']))
 			_msg(message: 'Adding queue item: ' . $newItem['settings']['outfile'], CRF: '');
 		else
@@ -590,6 +592,7 @@
 				if($aItemStatus == QUMA_STATUS_CONVERT_READY)
 				{
 					$aConvertString = CONFIG['Binaries']['ffmpeg'] . ' \\' . PHP_EOL;
+					
 					if(is_string($aItemSettings['infile']))
 						$aConvertString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
 					elseif(is_array($aItemSettings['infile']))
@@ -653,6 +656,16 @@
 														$aBPS = $aBitRateMatches[1] * 1000;
 														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
 														$aConvertString .= " -b:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
+													}
+													break;
+												case 'cbr':
+													if(preg_match(pattern: '/^(\d+)k$/', subject: $aDataValue, matches: $aBitRateMatches) !== false)
+													{
+														$aBPS = $aBitRateMatches[1] * 1000;
+														$aConvertString .= " -metadata:s:$aStreamIndex " . escapeshellarg("BPS=$aBPS") . ' \\' . PHP_EOL;
+														$aConvertString .= " -b:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
+														$aConvertString .= " -minrate:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
+														$aConvertString .= " -maxrate:$aStreamIndex $aDataValue" . ' \\' . PHP_EOL;
 													}
 													break;
 												case 'profile':
@@ -892,6 +905,22 @@
 						}
 						_msg(message: "Stream: $aMappedID -> got Loudnorm scan results for: " . $aQueueItem['settings']['outfile']);
 					break;
+					case preg_match_all(pattern: '/\[(?<topic>.+)\s+@\s+0x[a-z0-9]+\](?<message>.+)/m', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
+						//Message from FFMpeg
+						//[matroska @ 0x561cd5bf2d00] Starting new cluster due to timestamp
+						foreach($aMatches as $aMessageMatch)
+						{
+							$aStatusArray = array(
+								'id'		=> $aQueueItem['id'],
+								'outfile'	=> $aQueueItem['settings']['outfile'],
+								'topic'		=> trim($aMessageMatch['topic']),
+								'message'	=> trim($aMessageMatch['message']),
+								);
+							$aQueueItem['result']['messages'][trim($aMessageMatch['topic'])][] = trim($aMessageMatch['message']);
+							
+							statusEcho(topic: 'info', statusArray: $aStatusArray);
+						}
+					break;
 					case preg_match(pattern: '@frame=\s*(?<frame>[\d.]+)\s+fps=\s*(?<fps>[\d.]+)\s+q=\s*(?<q>[\d.]+)\s+size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=N/A\s+time=(?<time>[\d:.]+)\sbitrate=N/A\sspeed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
@@ -918,6 +947,7 @@
 									);
 							}
 							
+						$aScanMappedStream = null;
 						if($aQueueItem['status'] == QUMA_STATUS_SCAN || $aQueueItem['status'] == QUMA_STATUS_SCAN_CHILD)
 							foreach($aQueueItem['settings']['loudnorm'] as $aLNKey => $aLNSettingsName)
 								if($aLNSettingsName != 0)

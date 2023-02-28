@@ -23,6 +23,27 @@ gEventSource.addEventListener('message',
 		//console.log('Message: ' + aEvent.data);
 	});
 
+gEventSource.addEventListener('info', 
+	function(aEvent)
+	{
+		const aData = JSON.parse(aEvent.data);
+		console.log(aData['topic'] + ' => ' + aData['message']);
+		
+		let aStatusContainer = document.getElementById('statusContainer');
+		
+		let aItemContainer = document.getElementById(aData.id);
+		if(aItemContainer === null)
+			return false;
+		
+		if(aData.topic == 'matroska')
+			switch(aData.message)
+			{
+				case 'Starting new cluster due to timestamp':
+					statusAddData(aItemContainer, 'WarningCluster', 'Warning', '<img src="img/warning1-16.png" alt=""/> ' + aData.message);
+					break;
+			}
+	});
+
 gEventSource.addEventListener('progress', 
 	function(aEvent)
 	{
@@ -56,6 +77,21 @@ gEventSource.addEventListener('error',
 		}
 	});
 
+function statusAddData(aContainer, aDataID, aLabelText, aDataValue)
+{
+	let aLabel = document.createElement('label');
+	aContainer.appendChild(aLabel);
+	aDataElement = document.createElement('data');
+	aDataElement.setAttribute('dataID', aDataID);
+	aContainer.appendChild(aDataElement);
+	
+	if(aDataValue != null)
+	{
+		aLabel.innerHTML = aLabelText;
+		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+	}
+}
+
 function statusSetData(aContainer, aDataID, aDataValue)
 {
 	const aDataElements = aContainer.getElementsByTagName('data');
@@ -70,26 +106,22 @@ function statusSetData(aContainer, aDataID, aDataValue)
 	let aLabel;
 	
 	if(aDataElement == null)
-	{
-		aLabel = document.createElement('label');
-		aContainer.appendChild(aLabel);
-		aDataElement = document.createElement('data');
-		aDataElement.setAttribute('dataID', aDataID);
-		aContainer.appendChild(aDataElement);
-	}
+		statusAddData(aContainer, aDataID, aDataID.charAt(0).toUpperCase() + aDataID.slice(1), aDataValue);
 	else
+	{
 		aLabel = aDataElement.previousElementSibling;
 	
-	const aRegEx = /progress(\d+):(\d+)/i;
-	const aProgressMatch = aDataID.match(aRegEx);
-	let aLabelText = aDataID.charAt(0).toUpperCase() + aDataID.slice(1);
-	if(aProgressMatch != null)
-		aLabelText = 'Scan #' + aProgressMatch[1] + ':' + aProgressMatch[2];
-	
-	if(aDataValue != null)
-	{
-		aLabel.innerHTML = aLabelText;
-		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+		const aRegEx = /progress(\d+):(\d+)/i;
+		const aProgressMatch = aDataID.match(aRegEx);
+		let aLabelText = aDataID.charAt(0).toUpperCase() + aDataID.slice(1);
+		if(aProgressMatch != null)
+			aLabelText = 'Scan #' + aProgressMatch[1] + ':' + aProgressMatch[2];
+		
+		if(aDataValue != null)
+		{
+			aLabel.innerHTML = aLabelText;
+			aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+		}
 	}
 }
 
@@ -174,7 +206,7 @@ function statusRemoveAction(aContainer, aAction)
 function displayProgress(aProgressData)
 {
 	let aData = JSON.parse(aProgressData);
-	const aIDRegEx = /[a-f0-9]/i; 
+	const aIDRegEx = /^[a-f0-9]+$/i; 
 	if(aIDRegEx.test(aData.id) == false)
 		return false;
 	
@@ -196,6 +228,7 @@ function displayProgress(aProgressData)
 		{
 			case 'id':
 			case 'scanning':
+			case 'streamID':
 				continue;
 			case 'time':
 				aTime = aData[aDataKeys[i]];
@@ -268,7 +301,7 @@ function displayProgress(aProgressData)
 function displayScanProgress(aProgressData)
 {
 	let aData = JSON.parse(aProgressData);
-	const aIDRegEx = /[a-f0-9]/i; 
+	const aIDRegEx = /^[a-f0-9]+$/i; 
 	if(aIDRegEx.test(aData.id) == false)
 		return false;
 	
@@ -301,7 +334,7 @@ function displayScanProgress(aProgressData)
 function changeStatus(aStatusData)
 {
 	let aData = JSON.parse(aStatusData);
-	const aIDRegEx = /[a-f0-9]/i; 
+	const aIDRegEx = /^[a-f0-9]+$/i; 
 	if(aIDRegEx.test(aData.id) == false)
 		return false;
 

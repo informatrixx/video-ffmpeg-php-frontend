@@ -108,7 +108,7 @@ function exploreFolderResult()
 			aScanFolderName = '..';
 			aAnchorHash = '';
 		}
-		aNewFolderElement.innerHTML = '<a href="javaScript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a>';
+		aNewFolderElement.innerHTML = '<span><a href="javascript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a></span>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}
 
@@ -124,19 +124,25 @@ function exploreFolderResult()
 		if(aJoin == true)
 			aJoinLink = "<img src='img/add1-16.png' class='join' onclick='joinFile(\"" + escapeQuotes(aFilePath) + "\")'>";
 		
+		let aContent = '';
+		
 		if(aScanModule != false)
-			aNewFileElement.innerHTML = aJoinLink + '<a href="scan.php?folder=' + escapeHTML(aFolderName) + '&file=' + escapeHTML(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
+			aContent = '<span>' + aJoinLink + '<a href="scan.php?folder=' + escapeQuotes(aFolderName) + '&file=' + escapeQuotes(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
 		else
-			aNewFileElement.innerHTML = aJoinLink + escapeHTML(aScanFileName);
+			aContent = '<span>' + aJoinLink + escapeHTML(aScanFileName);
 		
 		if("group" in aJSONData.files[aScanFileName] && aJSONData.files[aScanFileName].group.length > 0)
 		{
-			let aGroup = "(<a href='javascript:dummy()' onclick='toggleHiddenGroup(this)'>" + (aJSONData.files[aScanFileName].group.length*1 + 1) + " Parts</a>)<group class='hidden'>";
+			let aGroup = " (<a class='info' href='javascript:dummy()' onmousedown='toggleHiddenGroup(this)' onmouseout='toggleHiddenGroup(this, true)'>" + (aJSONData.files[aScanFileName].group.length*1 + 1) + " Parts</a>)<group class='hidden'>";
 			for(let i = 0; i < aJSONData.files[aScanFileName].group.length; i++)
 				aGroup = aGroup + '<file>' + aJSONData.files[aScanFileName].group[i] + '</file>';
 			aGroup = aGroup + '</group>';
-			aNewFileElement.innerHTML = aNewFileElement.innerHTML + aGroup;
+			aContent += aGroup;
 		}
+			
+		 aContent += '</span>';
+		 aNewFileElement.innerHTML = aContent;
+		
 		aExploreBox.appendChild(aNewFileElement);
 	}
 	
@@ -155,7 +161,7 @@ function historyEvent(aEvent)
 		exploreFolderQuery(escapeQuotes(aEvent.state.folder), false);
 }
 
-function toggleHiddenGroup(aObject)
+function toggleHiddenGroup(aObject, aHide)
 {
 	let aNextNode = aObject.nextSibling;
 	while(aNextNode && aNextNode.nodeName.toLowerCase() != 'group')
@@ -163,9 +169,14 @@ function toggleHiddenGroup(aObject)
 	
 	if(aNextNode)
 	{
-		if(aNextNode.getAttribute('class').match(/hidden/))
-			aNextNode.setAttribute('class', aNextNode.getAttribute('class').replace(/hidden/, ''));
+		if(aHide == undefined)
+			aHide = ! aNextNode.getAttribute('class').match(/hidden/);
+		if(aHide)
+		{
+			if(!aNextNode.getAttribute('class').match(/hidden/))
+				aNextNode.setAttribute('class', aNextNode.getAttribute('class') + ' hidden');
+		}
 		else
-			aNextNode.setAttribute('class', aNextNode.getAttribute('class') + ' hidden');
+			aNextNode.setAttribute('class', aNextNode.getAttribute('class').replace(/hidden/, ''));
 	}
 }

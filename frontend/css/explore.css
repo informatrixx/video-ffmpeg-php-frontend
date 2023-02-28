@@ -14,6 +14,15 @@ explore {
 	position: relative;
 }
 
+explore folder a,
+explore file a {
+	color: #639;
+	text-decoration: none;
+}
+explore file a.info {
+	cursor: help;	
+}
+
 explore folder, explore file {
 	display: block;
 	padding-left: 23px;
@@ -43,7 +52,6 @@ explore folder span, explore file span {
 	left: 0px;
 	z-index: 0;
 	max-width: 580px;
-	cursor: pointer;
 	margin-left: 23px;
 	font-family: "Helvetica", sans-serif;
 	font-size: 10pt;
@@ -59,7 +67,6 @@ explore folder span:hover, explore file span:hover {
 	top: 3px;
 	left: -1px;
 	border-radius: 1px;	
-	background-color: #DBF;
 }
 
 explore file img.join {

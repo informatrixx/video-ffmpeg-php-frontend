@@ -15,7 +15,7 @@
 					"cbr": {
 						"name": "x265 Constant Bitrate (CBR)",
 						"settingsName": "Target Bitrate",
-						"param": "b",
+						"param": "cbr",
 						"paramUnit": "k",
 						"unit": "kbit/s",
 						"min": 250,
@@ -71,7 +71,7 @@
 					"cbr": {
 						"name": "x264 Constant Bitrate (CBR)",
 						"settingsName": "Target Bitrate",
-						"param": "b",
+						"param": "cbr",
 						"paramUnit": "k",
 						"unit": "kbit/s",
 						"min": 250,

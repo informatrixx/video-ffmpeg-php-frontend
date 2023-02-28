@@ -35,14 +35,14 @@
 		}
 		else
 		{
-			$aFolder = globEscapeString($aFolder);
+			$aGlobFolder = globEscapeString($aFolder);
 			$aParentFolder = preg_replace(pattern: '@[^/]+/$@', replacement: '', subject: $aFolder);
 			if(pathIsInConversionRoot($aParentFolder))
 				$aFoldersList['..'] = $aParentFolder;
 			elseif(!empty($_GET['folder']))
 				$aFoldersList['.'] = '';
 			
-			$aGlob = glob(pattern: "$aFolder*");
+			$aGlob = glob(pattern: "$aGlobFolder*");
 			
 			foreach($aGlob as $aGlobPath)
 			{

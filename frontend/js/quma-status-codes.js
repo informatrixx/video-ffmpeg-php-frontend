@@ -13,7 +13,7 @@ const QUMA_STATUS_UNRAR = 12;
 const QUMA_STATUS_UNRAR_DONE = 15;
 const QUMA_STATUS_UNRAR_ERROR = 19;
 const QUMA_STATUS_SCAN_ABORT = 82;
-const QUMA_STATUS_CONVERT_ABORT = 86;
+const QUMA_STATUS_CONVERT_ABORT = 88;
 const QUMA_STATUS_UNRAR_ABORT = 812;
 const QUMA_STATUS_SCAN_PAUSE = 91;
 const QUMA_STATUS_SCAN_ERROR = 92;
@@ -35,7 +35,7 @@ const QUMA_CODE_STATUS = {
 	15: 'QUMA_STATUS_UNRAR_DONE',
 	19: 'QUMA_STATUS_UNRAR_ERROR',
 	82: 'QUMA_STATUS_SCAN_ABORT',
-	86: 'QUMA_STATUS_CONVERT_ABORT',
+	88: 'QUMA_STATUS_CONVERT_ABORT',
 	812: 'QUMA_STATUS_UNRAR_ABORT',
 	91: 'QUMA_STATUS_SCAN_PAUSE',
 	92: 'QUMA_STATUS_SCAN_ERROR',
@@ -57,7 +57,7 @@ const QUMA_CODE_STATUS = {
 	'15': 'Done  extracting (unrar)', 
 	'19': 'Error extracting (unrar)', 
 	'82': 'Abort scanning', 
-	'86': 'Abort converting', 
+	'88': 'Abort converting', 
 	'812': 'Abort extracting (unrar)', 
 	'91': 'Pause scanning', 
 	'92': 'Error scanning', 
