@@ -48,6 +48,9 @@
 			'status' =>		$aQueueItem['status'],
 			);
 		
+		if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aQueueItem['id'], matches: $aIDMatches))
+			continue;
+		
 		echo "	displayProgress('" . json_encode(value: $aProgressData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
 		echo "	changeStatus('" . json_encode(value: $aStatusData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
 	}

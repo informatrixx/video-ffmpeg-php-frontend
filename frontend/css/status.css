@@ -71,7 +71,7 @@ statusItemContainer[status="QUMA_STATUS_WAITING"] {
 }
 
 statusItemContainer[status="QUMA_STATUS_SCAN_READY"],
-statusItemContainer[status="QUMA_STATUS_SCAN_CHILD"],
+statusItemContainer[status="QUMA_STATUS_CONVERT_READY"],
 statusItemContainer[status="QUMA_STATUS_UNRAR_READY"] {
 	background-color: #cad9d7;
 }

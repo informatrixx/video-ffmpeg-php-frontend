@@ -487,22 +487,9 @@
 						$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile']) . ' \\' . PHP_EOL;
 					elseif(is_array($aItemSettings['infile']))
 					{
-						$aInFileIndexes = array();
-						//Only use input files for audio tracks where loudnorm scanning is necessary
-						foreach($aItemSettings['loudnorm'] as $aMapIndexLN => $aLoudNormValue)
-						{
-							if($aLoudNormValue == '0' || !isset(STATIC_CONFIG['audio']['loudnorm'][$aLoudNormValue]))
-								continue;
-							
-							if(!preg_match(pattern: '/^(\d+):\d+$/', subject: $aItemSettings['map'][$aMapIndexLN], matches: $aMapMatches))
-								continue;
 						
-							$aInFileIndexes[] = $aMapMatches[1];
-						}
-						$aInFileIndexes = array_unique($aInFileIndexes);
-						
-						foreach($aInFileIndexes as $aInFileIndex)
-							$aAudioScanString .= ' -i ' . escapeshellarg($aItemSettings['infile'][$aInFileIndex]) . ' \\' . PHP_EOL;
+						foreach($aItemSettings['infile'] as $aInFile)
+							$aAudioScanString .= ' -i ' . escapeshellarg($aInFile) . ' \\' . PHP_EOL;
 
 					}
 					$aAudioScanString .= '-vn -sn -dn -map_chapters -1' . ' \\' . PHP_EOL;
@@ -871,7 +858,8 @@
 						$aItemID = $aQueueItem['id'];
 						if(count($aLoudnormResult) == 1)
 							$aLoudnormResult = $aLoudnormResult[0];
-						$aQueueItem['loudnorm_scan'][$aMappedKey] = $aLoudnormResult;
+						if(count($aLoudnormResult) > 0)
+							$aQueueItem['loudnorm_scan'][$aMappedKey] = $aLoudnormResult;
 						
 						if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aItemID, matches: $aIDMatches))
 						{//if it's a child scan, add result to parent as well
@@ -880,7 +868,8 @@
 							foreach($gConvertQueue as $aSearchItemIndex => &$aSearchQueueItem)
 								if($aSearchQueueItem['id'] == $aItemID)
 								{
-									$aSearchQueueItem['loudnorm_scan'][$aMappedKey] = $aLoudnormResult;
+									if(count($aLoudnormResult) > 0)
+										$aSearchQueueItem['loudnorm_scan'][$aMappedKey] = $aLoudnormResult;
 									//parent waiting for results?
 									if($aSearchQueueItem['status'] == QUMA_STATUS_SCAN_WAITING)
 									{
@@ -907,6 +896,11 @@
 					case preg_match(pattern: '@size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=N/A\s+time=(?<time>[\d:.]+)\sbitrate=N/A\sspeed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 						$aSize = null;
+						$aItemID = $aQueueItem['id'];
+						
+						if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aItemID, matches: $aIDMatches))
+							$aItemID = $aIDMatches['id'];
+						
 						if(isset($aMatches['size']))
 							if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches['size'], matches: $aSizeMatches))
 							{
@@ -924,18 +918,36 @@
 									);
 							}
 							
+						if($aQueueItem['status'] == QUMA_STATUS_SCAN || $aQueueItem['status'] == QUMA_STATUS_SCAN_CHILD)
+							foreach($aQueueItem['settings']['loudnorm'] as $aLNKey => $aLNSettingsName)
+								if($aLNSettingsName != 0)
+								{
+									$aScanMappedStream = $aQueueItem['settings']['map'][$aLNKey];
+									break;
+								}
+							
 						$aStatusArray = array(
-							'id'		=> $aQueueItem['id'],
+							'id'		=> $aItemID,
 							'outfile'	=> $aQueueItem['settings']['outfile'],
-							'frame' 	=> !empty($aMatches['frame']) ? $aMatches['frame'] : null,
+							'frame'	 	=> !empty($aMatches['frame']) ? $aMatches['frame'] : null,
 							'fps'		=> !empty($aMatches['fps']) ? $aMatches['fps'] : null,
 							'q'			=> !empty($aMatches['q']) ? $aMatches['q'] : null,
 							'size'		=> $aSize,
-							'time'		=> !empty($aMatches['time']) ? $aMatches['time'] : null,
 							'bitrate'	=> !empty($aMatches['bitrate']) ? $aMatches['bitrate'] : null,
-							'speed'		=> !empty($aMatches['speed']) ? $aMatches['speed'] : null,
 							);
-						statusEcho(topic: 'progress', statusArray: $aStatusArray);
+						$aStatusSplitArray = array(
+							'id'		=> $aItemID,
+							'time'		=> !empty($aMatches['time']) ? $aMatches['time'] : null,
+							'speed'		=> !empty($aMatches['speed']) ? $aMatches['speed'] : null,
+							'streamID'	=> $aScanMappedStream,
+							);
+						if($aQueueItem['status'] == QUMA_STATUS_SCAN || $aQueueItem['status'] == QUMA_STATUS_SCAN_CHILD)
+						{
+							statusEcho(topic: 'progress', statusArray: $aStatusArray);
+							statusEcho(topic: 'scanProgress', statusArray: $aStatusSplitArray);
+						}
+						else
+							statusEcho(topic: 'progress', statusArray: $aStatusArray + $aStatusSplitArray);
 					break;
 					case preg_match_all(pattern: '/^Extracting\s+(.+)$/im', subject: $aOutput, matches: $aMatches, flags: PREG_SET_ORDER) > 0:
 						foreach($aMatches as $aMatchSet)

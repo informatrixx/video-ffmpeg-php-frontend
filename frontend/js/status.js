@@ -29,6 +29,12 @@ gEventSource.addEventListener('progress',
 		displayProgress(aEvent.data);
 	});
 
+gEventSource.addEventListener('scanProgress', 
+	function(aEvent)
+	{
+		displayScanProgress(aEvent.data);
+	});
+
 gEventSource.addEventListener('extract', 
 	function(aEvent)	
 	{
@@ -74,7 +80,11 @@ function statusSetData(aContainer, aDataID, aDataValue)
 	else
 		aLabel = aDataElement.previousElementSibling;
 	
+	const aRegEx = /progress(\d+):(\d+)/i;
+	const aProgressMatch = aDataID.match(aRegEx);
 	let aLabelText = aDataID.charAt(0).toUpperCase() + aDataID.slice(1);
+	if(aProgressMatch != null)
+		aLabelText = 'Scan #' + aProgressMatch[1] + ':' + aProgressMatch[2];
 	
 	if(aDataValue != null)
 	{
@@ -164,6 +174,10 @@ function statusRemoveAction(aContainer, aAction)
 function displayProgress(aProgressData)
 {
 	let aData = JSON.parse(aProgressData);
+	const aIDRegEx = /[a-f0-9]/i; 
+	if(aIDRegEx.test(aData.id) == false)
+		return false;
+	
 	let aStatusContainer = document.getElementById('statusContainer');
 	
 	let aItemContainer = document.getElementById(aData.id);
@@ -178,11 +192,10 @@ function displayProgress(aProgressData)
 	let aDataKeys = Object.keys(aData);
 	for(let i = 0; i < aDataKeys.length; i++)
 	{
-		let aLabelText = aDataKeys[i][0].toUpperCase() + aDataKeys[i].substring(1) + ':';
-		
 		switch(aDataKeys[i])
 		{
 			case 'id':
+			case 'scanning':
 				continue;
 			case 'time':
 				aTime = aData[aDataKeys[i]];
@@ -252,9 +265,46 @@ function displayProgress(aProgressData)
 	}
 }
 
+function displayScanProgress(aProgressData)
+{
+	let aData = JSON.parse(aProgressData);
+	const aIDRegEx = /[a-f0-9]/i; 
+	if(aIDRegEx.test(aData.id) == false)
+		return false;
+	
+	let aStatusContainer = document.getElementById('statusContainer');
+	
+	let aItemContainer = document.getElementById(aData.id);
+	if(aItemContainer === null)
+		return false;
+	
+	let aTime = aData['time'];
+	let aSpeedString = '';
+	if(aData['speed'] != null)
+		aSpeedString = ' (' + aData['speed'] + ')';
+	let aStreamID = aData['streamID'];
+	
+	if(aItemContainer.getAttribute('duration') != null && aTime != '')
+	{
+		const aTimeRegEx = /^(\d+):(\d+):(\d+\.\d+)$/;
+		let aTimeMatches = aTime.match(aTimeRegEx);
+		let aHours = aTimeMatches[1];
+		let aMinutes = aTimeMatches[2];
+		let aSeconds = aTimeMatches[3];
+		let aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
+		let aDuration = aItemContainer.getAttribute('duration');
+		let aPercent = Math.round(aTimeSeconds / aDuration * 100);
+		statusSetData(aItemContainer, 'Scan #' + aStreamID , aPercent + ' %' + aSpeedString );
+	}
+}
+
 function changeStatus(aStatusData)
 {
 	let aData = JSON.parse(aStatusData);
+	const aIDRegEx = /[a-f0-9]/i; 
+	if(aIDRegEx.test(aData.id) == false)
+		return false;
+
 	let aStatusContainer = document.getElementById('statusContainer');
 	
 	let aItemContainer = document.getElementById(aData.id);
@@ -301,6 +351,7 @@ function changeStatus(aStatusData)
 		case QUMA_STATUS_UNRAR_DONE:
 			statusRemoveData(aItemContainer, 'progress');
 			statusAddAction(aItemContainer, 'delete');
+			statusRemoveAction(aItemContainer, 'pause');
 			break;
 		case QUMA_STATUS_UNRAR_READY:
 			statusAddAction(aItemContainer, 'delete');
