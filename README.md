@@ -2,6 +2,13 @@
 A frontend for FFMPEG video conversion, written in PHP
 
 ### Status: Early development
+##### I'm still working on some misbehaviour/bugs.
+##### There is not yet prober data integrity checking! For example every location is accepted as output folder. It could alter system relevant files! Make sure to not run as root!
+##### Language is a mix of German & English ;)
+##### Don't use in a productive environment.
+##### Video encoding is working, but excpect the unexpected and check videos after conversion!
+##### Browser history can confuse, it's not yet properly implemented
+
 
 ## Overview
 A PHP frontend to be run on a web server, with the purpose to convert video clips using FFMPEG.
