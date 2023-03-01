@@ -108,7 +108,7 @@ function exploreFolderResult()
 			aScanFolderName = '..';
 			aAnchorHash = '';
 		}
-		aNewFolderElement.innerHTML = '<span><a href="javascript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a></span>';
+		aNewFolderElement.innerHTML = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)"><a href="javascript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a></span>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}
 
@@ -127,13 +127,13 @@ function exploreFolderResult()
 		let aContent = '';
 		
 		if(aScanModule != false)
-			aContent = '<span>' + aJoinLink + '<a href="scan.php?folder=' + escapeQuotes(aFolderName) + '&file=' + escapeQuotes(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
+			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + escapeQuotes(aFolderName) + '&file=' + escapeQuotes(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
 		else
-			aContent = '<span>' + aJoinLink + escapeHTML(aScanFileName);
+			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + escapeHTML(aScanFileName);
 		
 		if("group" in aJSONData.files[aScanFileName] && aJSONData.files[aScanFileName].group.length > 0)
 		{
-			let aGroup = " (<a class='info' href='javascript:dummy()' onmousedown='toggleHiddenGroup(this)' onmouseout='toggleHiddenGroup(this, true)'>" + (aJSONData.files[aScanFileName].group.length*1 + 1) + " Parts</a>)<group class='hidden'>";
+			let aGroup = " (<a class='info' href='javascript:dummy()' onmousedown='expandHiddenGroup(this, true)' onmouseup='expandHiddenGroup(this, false)'>" + (aJSONData.files[aScanFileName].group.length*1 + 1) + " Parts</a>)<group content='hide'>";
 			for(let i = 0; i < aJSONData.files[aScanFileName].group.length; i++)
 				aGroup = aGroup + '<file>' + aJSONData.files[aScanFileName].group[i] + '</file>';
 			aGroup = aGroup + '</group>';
@@ -163,22 +163,35 @@ function historyEvent(aEvent)
 		exploreFolderQuery(escapeQuotes(aEvent.state.folder), false);
 }
 
-function toggleHiddenGroup(aObject, aHide)
+function expandHiddenGroup(aObject, aShow)
 {
 	let aNextNode = aObject.nextSibling;
 	while(aNextNode && aNextNode.nodeName.toLowerCase() != 'group')
 		aNextNode = aNextNode.nextSibling;
 	
+	let aParentNode = aObject.parentNode;
+	while(aParentNode.nodeName.toUpperCase() != 'SPAN' && aParentNode != null)
+		aParentNode = aParentNode.parentNode;
+	
+	if(aParentNode == null)
+		return false;
+	
 	if(aNextNode)
 	{
-		if(aHide == undefined)
-			aHide = ! aNextNode.getAttribute('class').match(/hidden/);
-		if(aHide)
+		if(aShow)
 		{
-			if(!aNextNode.getAttribute('class').match(/hidden/))
-				aNextNode.setAttribute('class', aNextNode.getAttribute('class') + ' hidden');
+			aNextNode.setAttribute('content', 'expand');
+			showFullText(aParentNode, true, true);
 		}
 		else
-			aNextNode.setAttribute('class', aNextNode.getAttribute('class').replace(/hidden/, ''));
+			aNextNode.setAttribute('content', 'hide');
 	}
+}
+
+function showFullText(aObject, aShow, aForce)
+{
+	if(aShow == true && (aObject.clientWidth != aObject.scrollWidth || aObject.clientHeight != aObject.scrollHeight || aForce == true))
+		aObject.setAttribute('content', 'show');
+	else
+		aObject.setAttribute('content', 'hide');
 }

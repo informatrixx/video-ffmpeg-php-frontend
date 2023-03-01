@@ -23,7 +23,7 @@
 ?>
 <selectButtons>
 	<selectButton index='##VAR:index+##' streamindex='##DATA:streamIndex##' onclick='showTab(this)' active>
-		<input type='checkbox' name='map[##VAR:index##]' value='##VAR:fileIndex##:##DATA:streamIndex##' checked> ##DATA:channels:layout##, ##DATA:language:shortUC##, ##DATA:codec:nameUC##, ##DATA:bitrate:humanShort## <img onclick='duplicateStream(this)' class='duplicate' src='img/duplicate1-32.png' />
+		<input type='checkbox' name='map[##VAR:index##]' value='##VAR:fileIndex##:##DATA:streamIndex##' checked> ##DATA:channels:layout##, ##DATA:language:shortUC##, ##DATA:codec:nameUC##, ##DATA:bitrate:humanShort## <img onclick='duplicateStream(this)' class='duplicate' src='img/duplicate1-16.png' />
 	</selectButton>
 </selectButtons>
 <selectContent index='##VAR:index##' streamindex='##DATA:streamIndex##' audio>

@@ -10,7 +10,6 @@ explore {
 	max-width: 620px;
 	min-height: 200px;
 	height: max-content;
-	vertical-align: middle;
 	position: relative;
 }
 
@@ -23,14 +22,16 @@ explore file a.info {
 	cursor: help;	
 }
 
-explore folder, explore file {
-	display: block;
+explore folder,
+explore file {
+	display: flex;
 	padding-left: 23px;
 	position: relative;
 	max-width: 600px;
-	height: 20px;
+	height: 18px;
+	margin: 0px;
 	background-repeat: no-repeat;
-	background-size: contain;
+	background-size: auto 15px;
 }
 explore file[scan='video'] {
 	background-image: url('../img/video1-24.png');
@@ -44,22 +45,25 @@ explore folder[back] {
 explore folder[root] {
 	background-image: url('../img/folder3-24.png');
 }
-explore folder span, explore file span {
+explore folder span,
+explore file span {
 	text-decoration: none;
 	color: #000;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
 	position: absolute;
-	top: 4px;
+	top: 0px;
 	left: 0px;
 	z-index: 0;
 	max-width: 580px;
 	margin-left: 23px;
 	font-family: "Helvetica", sans-serif;
 	font-size: 10pt;
+	padding-top: 2px;
 }
-explore folder span:hover, explore file span:hover {
+explore folder span[content='show'],
+explore file span[content='show'] {
 	text-overflow: normal;
 	white-space: normal;
 	overflow: visible;
@@ -67,18 +71,20 @@ explore folder span:hover, explore file span:hover {
 	background-color: #eee;
 	z-index: 2;
 	border: 1px solid #abc;
-	top: 3px;
+	top: -1px;
 	left: -1px;
 	border-radius: 1px;	
 }
 
 explore file img.join {
 	cursor: pointer;
-	top: 3px;
-	position: relative;
 	padding-right: 3px;
+	height: 12px;
 }
 
-explore file group.hidden {
-	display: none;	
+explore file group[content='expand'] {
+	display: block;
+}
+explore file group[content='hide'] {
+	display: none;
 }
