@@ -5,8 +5,10 @@
 	},
 	"Binaries":
 	{
-		"ffprobe":      "/usr/bin/ffprobe",
-		"ffmpeg":       "/path/to/executable/ffmpeg"
+		"ffprobe":	"/usr/bin/ffprobe",
+		"ffmpeg":	"/path/to/executable/ffmpeg",
+		"unrar":	"/usr/bin/unrar"
 	},
-	"Debugging":    false
+	"Debugging":    false,
+	"OutputFileExists":	"move"
 }
