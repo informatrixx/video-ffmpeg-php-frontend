@@ -87,5 +87,8 @@ Right now the queue-manager is a PHP script, that needs to be executed by PHP-cl
   
  **Detailled installation not yet documented**
 
+## Image licenses!
+Make sure you use images which are licensed for your purpose! Images I use for development are examples and taken from flaticon.com, which need attribution (https://support.flaticon.com/s/article/Attribution-How-when-and-where-FI)
+
 ## Notes
 I am from Austria!
