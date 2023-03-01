@@ -65,8 +65,15 @@ At the moment the early development goal is to make a running application that c
 Right now the queue-manager is a PHP script, that needs to be executed by PHP-cli. Maybe sooner or later I'll compile a executable...
 
 ### ...(possible) Next steps
+- Better frontend styling (CSS)
+- Automatic title patterns for audio streams
+- Queue items reordering
+- Creating (or getting) a set of images/icons under GPL license
+- Adding more modes/codecs to conversion
 - Multiple language support
+- Making it Windows-based server compatible
 - Installation scripts
+
 
 ## Installation/Configuration
 - Edit config-example.json to your needs and rename it to **config.json**
