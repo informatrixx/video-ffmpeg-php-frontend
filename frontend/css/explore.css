@@ -32,6 +32,9 @@ explore folder, explore file {
 	background-repeat: no-repeat;
 	background-size: contain;
 }
+explore file[scan='video'] {
+	background-image: url('../img/video1-24.png');
+}
 explore folder {
 	background-image: url('../img/folder1-24.png');
 }

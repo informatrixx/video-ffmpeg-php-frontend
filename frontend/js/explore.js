@@ -142,6 +142,8 @@ function exploreFolderResult()
 			
 		 aContent += '</span>';
 		 aNewFileElement.innerHTML = aContent;
+		 if(aScanModule != false)
+		 	 aNewFileElement.setAttribute('scan', aScanModule);
 		
 		aExploreBox.appendChild(aNewFileElement);
 	}
