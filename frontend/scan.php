@@ -67,7 +67,7 @@
 		}
 	?>
 	<script>
-		var gFileName = "<?=urlencode($_GET['file'])?>";
+		var gFileName = "<?=$_GET['file']?>";
 		var gScanType = "<?=urlencode($_GET['type'])?>";
 
 
@@ -89,7 +89,7 @@
 	
 	window.addEventListener('popstate', historyEvent);
 
-	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? urlencode($_GET['folder']) : '';?>', true, gFileName);
+	exploreFolderQuery('<?=isset($_GET['folder']) && !empty($_GET['folder']) ? $_GET['folder'] : '';?>', true, gFileName);
 	scanFileQuery(gFileName, "<?=urlencode($_GET['type']);?>");
 
 </script>

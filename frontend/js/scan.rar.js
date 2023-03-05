@@ -80,7 +80,7 @@ function chainLoadCropPreviewQuery(aIndex, aFileIndex)
 	
 	var newQuery = new XMLHttpRequest();
 	newQuery.addEventListener("load", cropPreviewResult);
-	newQuery.open("GET", "query/croppreview.php?file=" + gFileName + "&seek=" + aSeek + "&index=" + aIndex + aSARString + "&fileIndex=" + aFileIndex);
+	newQuery.open("GET", "query/croppreview.php?file=" + encodeURIComponent(gFileName) + "&seek=" + aSeek + "&index=" + aIndex + aSARString + "&fileIndex=" + aFileIndex);
 	newQuery.send();	
 }
 

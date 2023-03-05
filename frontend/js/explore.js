@@ -25,7 +25,7 @@ function escapeQuotes(aText)
 		"'": '\\x27'
 	};
 	
-	return aText.replace(/[&<>"']/g, function(m) { return aMap[m]; });
+	return aText.replace(/["']/g, function(m) { return aMap[m]; });
 }
 
 function explorerScrollTo(aID)
@@ -50,7 +50,7 @@ function exploreFolderQuery(aFolder, aUpdateHistory = true, aModuleJoin = false)
 	if(aModuleJoin != false)
 		aModuleJoinString = '&join=' + aModuleJoin;
 	newQuery.addEventListener("load", exploreFolderResult);
-	newQuery.open("GET", "query/explore.php?folder=" + aFolder + aUpdateHistoryString + aModuleJoinString);
+	newQuery.open("GET", "query/explore.php?folder=" + encodeURIComponent(aFolder) + aUpdateHistoryString + aModuleJoinString);
 	newQuery.send();
 }
 
@@ -121,13 +121,13 @@ function exploreFolderResult()
 		
 		let aNewFileElement = document.createElement('file');
 		let aJoinLink = '';
-		if(aJoin == true)
+		if(aJoin == true && aFilePath != gFileName)
 			aJoinLink = "<img src='img/add1-16.png' class='join' onclick='joinFile(\"" + escapeQuotes(aFilePath) + "\")'>";
 		
 		let aContent = '';
 		
 		if(aScanModule != false)
-			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + escapeQuotes(aFolderName) + '&file=' + escapeQuotes(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
+			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + escapeQuotes(encodeURIComponent(aFolderName)) + '&file=' + escapeQuotes(encodeURIComponent(aFilePath)) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
 		else
 			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + escapeHTML(aScanFileName);
 		

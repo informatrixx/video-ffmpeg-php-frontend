@@ -192,7 +192,7 @@ function chainLoadCropPreviewQuery(aIndex, aFileIndex)
 	newQuery.addEventListener("load", cropPreviewResult);
 	
 	let aInFileInputs = document.getElementsByName('infile[' + aFileIndex + ']');
-	let aScanFile = gFileName;
+	let aScanFile = encodeURIComponent(gFileName);
 	if(aInFileInputs.length > 0)
 		aScanFile = aInFileInputs[0].value;
 	
