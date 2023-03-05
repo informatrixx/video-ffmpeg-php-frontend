@@ -62,7 +62,7 @@
 	<label>Denoise:</label><select name='nlmeans[##VAR:index##]'>
 		<?php
 		foreach(STATIC_CONFIG['video']['nlmeans'] as $aValue => $aNLMeansSettings)
-			echo "<option value='{$aNLMeansSettings['value']}' ##SELECT:conversionSettings:nlmeans={$aNLMeansSettings['value']}##>{$aNLMeansSettings['name']}</option>";
+			echo "<option value='$aValue' ##SELECT:conversionSettings:nlmeans=$aValue##>{$aNLMeansSettings['name']}</option>";
 		?>
 		</select>
 </selectContent>

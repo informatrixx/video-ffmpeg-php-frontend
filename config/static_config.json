@@ -112,21 +112,21 @@
 			}
 		},
 		"nlmeans": {
-			"off": {
+			"0": {
 				"name":		"",
 				"value":	0,
 				"default":	true
 			},
 			"light": {
-				"name":		"Leicht",
+				"name":		"Light",
 				"value":	"1.0:7:5:3:3"
 			},
 			"medium": {
-				"name":		"Mittel",
+				"name":		"Medium",
 				"value":	"3.0:9:9:5:5"
 			},
 			"strong": {
-				"name":		"Stark",
+				"name":		"Strong",
 				"value":	"5.0:11:11:7:7"
 			}
 		}
