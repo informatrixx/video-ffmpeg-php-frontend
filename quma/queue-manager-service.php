@@ -636,15 +636,15 @@
 												break;
 												case 'nlmeans':
 													if($aDataValue != '0')
-														$aFilters[10] = 'nlmeans=' . STATIC_CONFIG['video']['nlmeans'][$aDataValue]['value'];
+														$aFilters[20] = 'nlmeans=' . STATIC_CONFIG['video']['nlmeans'][$aDataValue]['value'];
 													break;
 												case 'crop':
 													if($aDataValue == 'auto' && !empty($aItemSettings['cropstring'][$aDataMapIndex]))
-														$aFilters[20] = $aItemSettings['cropstring'][$aDataMapIndex];
+														$aFilters[10] = $aItemSettings['cropstring'][$aDataMapIndex];
 													break;
 												case 'resize':
 													if($aDataValue != '0')
-														$aFilters[30] = "scale=$aDataValue:-1";
+														$aFilters[30] = "scale=-1:$aDataValue";
 													break;
 												case 'default':
 												case 'forced':
@@ -700,6 +700,10 @@
 					}
 					//If moreParams are given
 					$aConvertString .= $aItemSettings['moreParams'] . ' \\' . PHP_EOL;
+					
+					
+					//Starting new cluster due to timestamp -> -max_interleave_delta 0
+					
 					//Subtitles just copy (if mapped)
 					$aConvertString .= ' -c:s copy' . ' \\' . PHP_EOL;
 					$aConvertString .= ' -reserve_index_space 100k ' . ' \\' . PHP_EOL;
