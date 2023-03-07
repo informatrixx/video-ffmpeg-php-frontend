@@ -32,7 +32,7 @@
 			"resize":	false,
 			"old":	{
 				"nlmeans":	"medium",
-				"resize":	"720"
+				"resize":	"1280"
 			},
 			"series": {
 				"resize": "1080"

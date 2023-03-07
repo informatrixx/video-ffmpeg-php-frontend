@@ -1,15 +1,22 @@
-body {
-	margin: 10px auto;
-	color: #333;
-}
+status {
+	background-color: #f9f9f9;
+	border-color: #666;
+	border-radius:  0px 0.5em 0.5em 0px;
+	border-width: 1px;
+	border-style: solid;
+	border-left-style: none;
 
-#statusContainer {
-	max-width: 600px;
+	max-width: 620px;
 	font-family: "Helvetica", sans-serif;
 	font-size: 10pt;
+	margin: 2px;
+	box-sizing: border-box;
+	max-width: 620px;
+	min-height: 200px;
+	height: max-content;
 }
 
-file {
+status file {
 	display: block;	
 }
 
@@ -19,8 +26,18 @@ statusItemContainer {
 	padding: 5px;
 	margin: 3px;
 	max-width: 600px;
-	grid-template-columns: minmax(80px, max-content) auto;
+	grid-template-columns: minmax(20px, max-content) auto;
 	display: grid;
+}
+statusItemContainer caption {
+	text-align: right;
+	padding-right: 8px;
+}
+statusItemContainer caption[group='full'],
+statusItemContainer data[group='full'],
+statusItemContainer caption[group='more'],
+statusItemContainer data[group='more'] {
+	display: none;
 }
 data {
 	position: relative;

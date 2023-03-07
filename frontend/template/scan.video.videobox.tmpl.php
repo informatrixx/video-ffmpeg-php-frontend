@@ -28,7 +28,7 @@
 </selectButtons>
 <selectContent index='##VAR:index##' streamindex='##DATA:streamIndex##' video>
 	<label>Codec:</label><text>##DATA:codec:nameFull##</text>
-	<label>Anzeige:</label><text>##DATA:displayAspectRatio##</text>
+	<label>Display:</label><text>##DATA:displayAspectRatio##</text>
 	<delimiter></delimiter>
 	<label>Codec/Mode:</label><select style='grid-column: span 2; max-width: 80%; width: 250px' name='c[##VAR:index##]' onchange='selectVideoCodec(this)'>
 		<?php
@@ -48,14 +48,14 @@
 		?>
 		</select>
 	##BUILDVIDEOSETTINGS:conversionSettings##
-	<label>Größe ändern:</label><select name='resize[##VAR:index##]'>
+	<label>Change size:</label><select name='resize[##VAR:index##]'>
 		<option value='0' ##SELECT:conversionSettings:resize=0##></option>
 		<?php
 		foreach(DECISIONS['video'] as $aValue => $aVideoData)
-			echo "<option value='$aValue' ##SELECT:conversionSettings:resize=$aValue##>{$aVideoData['name']}</option>";
+			echo "<option value='{$aVideoData['width']}' ##SELECT:conversionSettings:resize=$aValue##>{$aVideoData['name']}</option>";
 		?>
 		</select>
-	<label>Zuschneiden:</label><select name='crop[##VAR:index##]'>
+	<label>Crop:</label><select name='crop[##VAR:index##]'>
 		<option value='auto' selected>Auto</option><option value='man'>Manuell</option><option value='0'>-kein Zuschneiden-</option>
 		</select>
 		<cropAutoChoice id='cropAutoChoice_##VAR:index##' index='##VAR:index##' fileIndex='##VAR:fileIndex##'></cropAutoChoice>

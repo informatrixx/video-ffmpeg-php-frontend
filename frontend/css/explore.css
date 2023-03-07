@@ -5,7 +5,7 @@ explore {
 	border-radius:  0px 0.5em 0.5em;
 	border: 1px solid;
 	padding: 10px;
-	margin: 10px;
+	margin: 5px;
 	box-sizing: border-box;
 	max-width: 620px;
 	min-height: 200px;
@@ -34,16 +34,16 @@ explore file {
 	background-size: auto 15px;
 }
 explore file[scan='video'] {
-	background-image: url('../img/video1-24.png');
+	background-image: url('../img/video1-16.png');
 }
 explore folder {
-	background-image: url('../img/folder1-24.png');
+	background-image: url('../img/folder3-16.png');
 }
 explore folder[back] {
-	background-image: url('../img/folder2-24.png');
+	background-image: url('../img/folder2-16.png');
 }
 explore folder[root] {
-	background-image: url('../img/folder3-24.png');
+	background-image: url('../img/folder1-16.png');
 }
 explore folder span,
 explore file span {

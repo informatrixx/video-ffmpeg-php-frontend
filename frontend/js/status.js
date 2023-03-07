@@ -1,4 +1,5 @@
 var gEventSource;
+var gStatusItemDurations = new Object();
 
 function dummy(){}
 
@@ -29,7 +30,6 @@ gEventSource.addEventListener('info',
 		const aData = JSON.parse(aEvent.data);
 		console.log(aData['topic'] + ' => ' + aData['message']);
 		
-		let aStatusContainer = document.getElementById('statusContainer');
 		
 		let aItemContainer = document.getElementById(aData.id);
 		if(aItemContainer === null)
@@ -39,7 +39,7 @@ gEventSource.addEventListener('info',
 			switch(aData.message)
 			{
 				case 'Starting new cluster due to timestamp':
-					statusAddData(aItemContainer, 'WarningCluster', 'Warning', '<img src="img/warning1-16.png" alt=""/> ' + aData.message);
+					statusAddData(aItemContainer, 'WarningCluster', 'Warning', '<img src="img/warning1-16.png" alt=""> ' + aData.message);
 					break;
 			}
 	});
@@ -77,24 +77,19 @@ gEventSource.addEventListener('error',
 		}
 	});
 
-function statusAddData(aContainer, aDataID, aLabelText, aDataValue)
+function statusSetData(aStatusItemID, aDataID, aDataValue, aCaption, aGroup)
 {
-	let aLabel = document.createElement('label');
-	aContainer.appendChild(aLabel);
-	aDataElement = document.createElement('data');
-	aDataElement.setAttribute('dataID', aDataID);
-	aContainer.appendChild(aDataElement);
+	const aGroupOrder = ['base', 'full', 'more'];
 	
-	if(aDataValue != null)
+	let aStatusItemContainer = document.getElementById(aStatusItemID);
+	if(aStatusItemContainer === null)
 	{
-		aLabel.innerHTML = aLabelText;
-		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
-	}
-}
-
-function statusSetData(aContainer, aDataID, aDataValue)
-{
-	const aDataElements = aContainer.getElementsByTagName('data');
+		aStatusItemContainer = document.createElement('statusItemContainer');
+		aStatusItemContainer.setAttribute('id', aStatusItemID);
+		gStatusContainer.appendChild(aStatusItemContainer);
+	}	
+	
+	const aDataElements = aStatusItemContainer.getElementsByTagName('data');
 	let aDataElement = null;
 	for(let i = 0; i < aDataElements.length; i++)
 		if(aDataElements[i].getAttribute('dataID') == aDataID)
@@ -103,26 +98,41 @@ function statusSetData(aContainer, aDataID, aDataValue)
 			break;
 		}
 		
-	let aLabel;
+	
+	let aCaptionElement;
 	
 	if(aDataElement == null)
-		statusAddData(aContainer, aDataID, aDataID.charAt(0).toUpperCase() + aDataID.slice(1), aDataValue);
-	else
 	{
-		aLabel = aDataElement.previousElementSibling;
-	
-		const aRegEx = /progress(\d+):(\d+)/i;
-		const aProgressMatch = aDataID.match(aRegEx);
-		let aLabelText = aDataID.charAt(0).toUpperCase() + aDataID.slice(1);
-		if(aProgressMatch != null)
-			aLabelText = 'Scan #' + aProgressMatch[1] + ':' + aProgressMatch[2];
-		
-		if(aDataValue != null)
+		aCaptionElement = document.createElement('caption');
+		aCaptionElement.setAttribute('group', aGroup);
+		aDataElement = document.createElement('data');
+		aDataElement.setAttribute('dataID', aDataID);
+		aDataElement.setAttribute('group', aGroup);
+		const aTargetGroupIndex = aGroupOrder.indexOf(aGroup);
+		let aInserted = false;
+		for(let i = 0; i < aStatusItemContainer.children.length; i++)
+			if(aGroupOrder.indexOf(aStatusItemContainer.children[i].getAttribute('group')) > aTargetGroupIndex)
+			{
+				aInserted = true;
+				aStatusItemContainer.insertBefore(aDataElement, aStatusItemContainer.children[i]);
+				aStatusItemContainer.insertBefore(aCaptionElement, aStatusItemContainer.children[i]);
+				break;
+			}
+		if(!aInserted)
 		{
-			aLabel.innerHTML = aLabelText;
-			aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+			aStatusItemContainer.appendChild(aCaptionElement);
+			aStatusItemContainer.appendChild(aDataElement);
 		}
 	}
+	else
+		aCaptionElement = aDataElement.previousElementSibling;
+	
+	if(aDataValue != null)
+	{
+		if(aCaptionElement.innerHTML != aCaption)
+			aCaptionElement.innerHTML = aCaption;
+		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+	}		
 }
 
 function statusRemoveData(aContainer, aDataID)
@@ -134,15 +144,14 @@ function statusRemoveData(aContainer, aDataID)
 
 function statusAddAction(aContainer, aAction)
 {
-	const aID = aContainer.getAttribute('id');
+	const aStatusItemID = aContainer.getAttribute('id');
 	let aActionElements = aContainer.getElementsByTagName('actions');
 	let aActionElement = null;
 	
 	if(aActionElements.length == 0)
 	{
-		let aLabel = document.createElement('label');
-		aLabel.innerHTML = 'Action';
-		aContainer.appendChild(aLabel);
+		let aCaptionElement = document.createElement('caption');
+		aContainer.appendChild(aCaptionElement);
 		aActionElement = document.createElement('actions');
 		aContainer.appendChild(aActionElement);
 	}
@@ -165,7 +174,13 @@ function statusAddAction(aContainer, aAction)
 	switch(aAction)
 	{
 		case 'delete':
-			aImage = 'broom1-16.png';
+			aImage = 'remove1-16.png';
+			break;
+		case 'hideFull':
+			aImage = 'hide1-16.png';
+			break;
+		case 'infoFull':
+			aImage = 'info1-16.png';
 			break;
 		case 'pause':
 			aImage = 'pause1-16.png';
@@ -179,7 +194,7 @@ function statusAddAction(aContainer, aAction)
 		default:
 			return false;
 	}
-	aTargetAction.innerHTML = '<button onclick="queueItemAction(\'' + aID + '\', \'' + aAction + '\', this)"><img src="img/' + aImage + '" alt="' + aAction + '"/></button>'
+	aTargetAction.innerHTML = '<button onclick="queueItemAction(\'' + aStatusItemID + '\', \'' + aAction + '\', this)"><img src="img/' + aImage + '" alt="' + aAction + '"></button>'
 	
 	for(let i = 0; i < aTargetActions.length; i++)
 		aTargetActions[i].disabled = false;
@@ -205,56 +220,25 @@ function statusRemoveAction(aContainer, aAction)
 
 function displayProgress(aProgressData)
 {
-	let aData = JSON.parse(aProgressData);
-	const aIDRegEx = /^[a-f0-9]+$/i; 
-	if(aIDRegEx.test(aData.id) == false)
+	const aData = JSON.parse(aProgressData);
+	const aStatusItemID = aData.id;
+	const aIDRegEx = /^[a-f0-9]+$/i;
+	if(aIDRegEx.test(aStatusItemID) == false)
 		return false;
 	
-	let aStatusContainer = document.getElementById('statusContainer');
-	
-	let aItemContainer = document.getElementById(aData.id);
-	if(aItemContainer === null)
-	{
-		aItemContainer = document.createElement('statusItemContainer');
-		aItemContainer.setAttribute('id', aData.id);
-		aStatusContainer.appendChild(aItemContainer);
-	}
-	
 	let aTime = '';
-	let aDataKeys = Object.keys(aData);
+	const aDataKeys = Object.keys(aData);
 	for(let i = 0; i < aDataKeys.length; i++)
 	{
 		switch(aDataKeys[i])
 		{
 			case 'id':
 			case 'scanning':
+			case 'status':
 			case 'streamID':
 				continue;
-			case 'time':
-				aTime = aData[aDataKeys[i]];
-				break;
-			case 'infile':
-				if(typeof aData[aDataKeys[i]] !== 'string')
-				{
-					if(aData[aDataKeys[i]].length > 1)
-					{
-						let aInFiles = aData[aDataKeys[i]];
-						aData[aDataKeys[i]] = aInFiles[0];
-						
-						aData[aDataKeys[i]] += '<more>';
-						for(const aInFile of aInFiles)
-							aData[aDataKeys[i]] += '<file>' + aInFile + '</file>';
-						aData[aDataKeys[i]] += '</more>';
-					}
-					else
-						aData[aDataKeys[i]] = aData[aDataKeys[i]][0];
-				}
-				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
-				break;
-			case 'size':
-				if(aData[aDataKeys[i]] == null)
-					continue;
-				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]].human);
+			case 'bitrate':
+				statusSetData(aStatusItemID, 'bitrate', aData[aDataKeys[i]], '<img src="img/bitrate1-16.png" alt="Bitrate">', 'full');
 				break;
 			case 'duration':
 				if(aData[aDataKeys[i]] == null)
@@ -266,35 +250,83 @@ function displayProgress(aProgressData)
 				else
 					aDuration = aData[aDataKeys[i]][0];
 				
-				aItemContainer.setAttribute('duration', aDuration);
 				if(aDuration != '')
 				{
-					let aRawDuration = aDuration;
-					let aSeekLeft = Math.round(aRawDuration, 0) % 3600;
+					gStatusItemDurations[aStatusItemID] = aDuration;
+					const aRawDuration = aDuration;
+					const aSeekLeft = Math.round(aRawDuration, 0) % 3600;
 					
-					aData[aDataKeys[i]] =	Math.floor(aRawDuration / 3600).toString().padStart(2, '0') + ':' + 
+					const aDurationValue =	Math.floor(aRawDuration / 3600).toString().padStart(2, '0') + ':' + 
 											Math.floor(aSeekLeft / 60).toString().padStart(2, '0') + ':' +
 											Math.floor(aSeekLeft % 60).toString().padStart(2, '0');
+					statusSetData(aStatusItemID, 'duration', aDurationValue, '<img src="img/duration1-16.png" alt="Duration">', 'full');
 				}
-				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
+				break;
+			case 'fps':
+			case 'frame':
+				if(aData['frame'] != null && aData['fps'] != null)
+					statusSetData(aStatusItemID, 'frame', 'Frame ' + aData['frame'] + ' (' + aData['fps'] + ' fps)', '<img src="img/frame1-16.png" alt="FPS">', 'full');
+				break;
+			case 'infile':
+				let aCaption = 'Source';
+				let aFilesValue = aData[aDataKeys[i]];
+				let aShortValue;
+				if(typeof aData[aDataKeys[i]] !== 'string')
+				{
+					aCaption = 'Source Files';
+					aShortValue = aData[aDataKeys[i]][0].split(/[\\/]/).pop();
+					if(aData[aDataKeys[i]].length > 1)
+					{
+						let aInFiles = aData[aDataKeys[i]];
+						aFilesValue = aInFiles[0];
+						
+						aFilesValue += '<more>';
+						for(const aInFile of aInFiles)
+							aFilesValue += '<file>' + aInFile + '</file>';
+						aFilesValue += '</more>';
+						
+						aShortValue += ' +' + (aData[aDataKeys[i]].length - 1);
+					}
+					else
+						aFilesValue = aData[aDataKeys[i]][0];
+				}
+					
+				statusSetData(aStatusItemID, 'infile', aFilesValue, aCaption, 'more');
+				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/input1-16.png" alt="Source">', 'base');
+				break;
+			case 'outfile':
+				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'full');
+				break;
+			case 'q':
+				statusSetData(aStatusItemID, 'q', 'Q ' + aData[aDataKeys[i]], '<img src="img/quality1-16.png" alt="Output">', 'full');
+				break;
+			case 'size':
+				if(aData[aDataKeys[i]] == null)
+					continue;
+				statusSetData(aStatusItemID, 'size', aData[aDataKeys[i]].human, '<img src="img/size1-16.png" alt="Size">', 'full');
+				break;
+			case 'speed':
+				statusSetData(aStatusItemID, 'speed', aData[aDataKeys[i]], '<img src="img/speed1-16.png" alt="Speed">', 'full');
+				break;
+			case 'time':
+				aTime = aData[aDataKeys[i]];
 				break;
 			default:
-				statusSetData(aItemContainer, aDataKeys[i], aData[aDataKeys[i]]);
+				statusSetData(aStatusItemID, aDataKeys[i], aData[aDataKeys[i]], aDataKeys[i].charAt(0).toUpperCase() + aDataKeys[i].slice(1), 'full');
 				break;
 		}
 		
 	}
-	if(aItemContainer.getAttribute('duration') != null && aTime != '')
+	if(gStatusItemDurations[aStatusItemID] != null && aTime != '')
 	{
 		const aTimeRegEx = /^(\d+):(\d+):(\d+\.\d+)$/;
-		let aTimeMatches = aTime.match(aTimeRegEx);
-		let aHours = aTimeMatches[1];
-		let aMinutes = aTimeMatches[2];
-		let aSeconds = aTimeMatches[3];
-		let aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
-		let aDuration = aItemContainer.getAttribute('duration');
-		let aPercent = Math.round(aTimeSeconds / aDuration * 100);
-		statusSetData(aItemContainer, 'progress', aPercent + ' %');
+		const aTimeMatches = aTime.match(aTimeRegEx);
+		const aHours = aTimeMatches[1];
+		const aMinutes = aTimeMatches[2];
+		const aSeconds = aTimeMatches[3];
+		const aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
+		const aPercent = Math.round(aTimeSeconds / gStatusItemDurations[aStatusItemID] * 100);
+		statusSetData(aStatusItemID, 'progress', aPercent + ' %', '<img src="img/progress1-16.png" alt="Progress">', 'base');
 	}
 }
 
@@ -305,117 +337,117 @@ function displayScanProgress(aProgressData)
 	if(aIDRegEx.test(aData.id) == false)
 		return false;
 	
-	let aStatusContainer = document.getElementById('statusContainer');
-	
-	let aItemContainer = document.getElementById(aData.id);
-	if(aItemContainer === null)
-		return false;
-	
-	let aTime = aData['time'];
+	const aTime = aData['time'];
 	let aSpeedString = '';
 	if(aData['speed'] != null)
 		aSpeedString = ' (' + aData['speed'] + ')';
-	let aStreamID = aData['streamID'];
+	const aStreamID = aData['streamID'];
 	
-	if(aItemContainer.getAttribute('duration') != null && aTime != '')
+	if(gStatusItemDurations[aStatusItemID] != null && aTime != '')
 	{
 		const aTimeRegEx = /^(\d+):(\d+):(\d+\.\d+)$/;
-		let aTimeMatches = aTime.match(aTimeRegEx);
-		let aHours = aTimeMatches[1];
-		let aMinutes = aTimeMatches[2];
-		let aSeconds = aTimeMatches[3];
-		let aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
-		let aDuration = aItemContainer.getAttribute('duration');
-		let aPercent = Math.round(aTimeSeconds / aDuration * 100);
-		statusSetData(aItemContainer, 'Scan #' + aStreamID , aPercent + ' %' + aSpeedString );
+		const aTimeMatches = aTime.match(aTimeRegEx);
+		const aHours = aTimeMatches[1];
+		const aMinutes = aTimeMatches[2];
+		const aSeconds = aTimeMatches[3];
+		const aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
+		const aPercent = Math.round(aTimeSeconds / gStatusItemDurations[aStatusItemID] * 100);
+		statusSetData(aStatusItemID, 'scanProgress' + aStreamID, aPercent + ' %' + aSpeedString, '<img src="img/progress1-16.png" alt="Progress"> ' + aStreamID, 'base');
 	}
 }
 
 function changeStatus(aStatusData)
 {
 	let aData = JSON.parse(aStatusData);
+	const aStatusItemID = aData.id;
 	const aIDRegEx = /^[a-f0-9]+$/i; 
-	if(aIDRegEx.test(aData.id) == false)
+	if(aIDRegEx.test(aStatusItemID) == false)
 		return false;
 
-	let aStatusContainer = document.getElementById('statusContainer');
+	displayProgress(aStatusData);
 	
-	let aItemContainer = document.getElementById(aData.id);
+	const aStatusItemContainer = document.getElementById(aStatusItemID);
+	aStatusItemContainer.setAttribute('status', QUMA_CODE_STATUS[aData.status]);
 	
-	if(aItemContainer === null)
-	{
-		aItemContainer = document.createElement('statusItemContainer');
-		aItemContainer.setAttribute('id', aData.id);
-		aItemContainer.setAttribute('status', aData.status);
-		aItemContainer.innerHTML = '<label>Infile:</label><data dataID="infile"><span>' + aData.infile + '</span></data>';
-		if(aData.outfile != null)
-			aItemContainer.innerHTML += '<label>Outfile:</label><data dataID="outfile">' + aData.outfile + '</data>';
-		aItemContainer.innerHTML += '<label>Action:</label><actions></actions>'
-		aStatusContainer.appendChild(aItemContainer);
-	}
-	else
-		aItemContainer.setAttribute('status', QUMA_CODE_STATUS[aData.status]);
-
+	
+	statusAddAction(aStatusItemContainer, 'infoFull');
 	
 	switch(parseInt(aData.status, 10))
 	{
 		case QUMA_STATUS_WAITING:
 		case QUMA_STATUS_UNRAR_WAITING:
-			statusAddAction(aItemContainer, 'delete');
+			statusAddAction(aStatusItemContainer, 'delete');
 			break;
 		case QUMA_STATUS_SCAN_READY: 
-			statusAddAction(aItemContainer, 'delete');
+			statusAddAction(aStatusItemContainer, 'delete');
 			break;
 		case QUMA_STATUS_SCAN:
-			statusAddAction(aItemContainer, 'pause');
-			statusRemoveAction(aItemContainer, 'delete');
+			statusAddAction(aStatusItemContainer, 'pause');
+			statusRemoveAction(aStatusItemContainer, 'delete');
 			break;
 		case QUMA_STATUS_CONVERT_READY:
-			statusAddAction(aItemContainer, 'delete');
-			statusRemoveAction(aItemContainer, 'pause');
-			statusRemoveData(aItemContainer, 'progress');
-			statusRemoveData(aItemContainer, 'speed');
+			statusAddAction(aStatusItemContainer, 'delete');
+			statusRemoveAction(aStatusItemContainer, 'pause');
+			statusRemoveData(aStatusItemContainer, 'progress');
+			statusRemoveData(aStatusItemContainer, 'speed');
 			break;
 		case QUMA_STATUS_CONVERT: 
-			statusAddAction(aItemContainer, 'pause');
-			statusRemoveAction(aItemContainer, 'delete');
+			statusAddAction(aStatusItemContainer, 'pause');
+			statusRemoveAction(aStatusItemContainer, 'delete');
 			break;
 		case QUMA_STATUS_CONVERT_DONE:
 		case QUMA_STATUS_UNRAR_DONE:
-			statusRemoveData(aItemContainer, 'progress');
-			statusAddAction(aItemContainer, 'delete');
-			statusRemoveAction(aItemContainer, 'pause');
+			statusRemoveData(aStatusItemContainer, 'progress');
+			statusAddAction(aStatusItemContainer, 'delete');
+			statusRemoveAction(aStatusItemContainer, 'pause');
 			break;
 		case QUMA_STATUS_UNRAR_READY:
-			statusAddAction(aItemContainer, 'delete');
+			statusAddAction(aStatusItemContainer, 'delete');
 			break;
 		case QUMA_STATUS_UNRAR:
 			break;
 		case QUMA_STATUS_SCAN_PAUSE: 
 		case QUMA_STATUS_CONVERT_PAUSE: 
-			statusAddAction(aItemContainer, 'resume');
+			statusAddAction(aStatusItemContainer, 'resume');
 			break;
 		case QUMA_STATUS_SCAN_ABORT:
 		case QUMA_STATUS_CONVERT_ABORT:
 		case QUMA_STATUS_SCAN_ERROR:
 		case QUMA_STATUS_CONVERT_ERROR:
 		case 991:
-			statusRemoveAction(aItemContainer, 'pause');
-			statusAddAction(aItemContainer, 'delete');
-			statusAddAction(aItemContainer, 'retry');
+			statusRemoveAction(aStatusItemContainer, 'pause');
+			statusAddAction(aStatusItemContainer, 'delete');
+			statusAddAction(aStatusItemContainer, 'retry');
 			break;
 	}
 }
 
-function queueItemAction(aID, aAction, aObject)
+function queueItemAction(aStatusItemID, aAction, aObject)
 {
-	let aItemContainer = document.getElementById(aID);
-	let aActionElements = aItemContainer.getElementsByTagName('actions');
+	let aStatusItemContainer = document.getElementById(aStatusItemID);
+	let aActionElements = aStatusItemContainer.getElementsByTagName('actions');
+	
+	if(aAction == 'infoFull')
+	{
+		for(let i = 0; i < aStatusItemContainer.children.length; i++)
+			if(aStatusItemContainer.children[i].getAttribute('group') == 'full')
+				aStatusItemContainer.children[i].style.display = 'block';
+		statusRemoveAction(aStatusItemContainer, 'infoFull');
+		statusAddAction(aStatusItemContainer, 'hideFull');
+	}
+	if(aAction == 'hideFull')
+	{
+		for(let i = 0; i < aStatusItemContainer.children.length; i++)
+			if(aStatusItemContainer.children[i].getAttribute('group') == 'full')
+				aStatusItemContainer.children[i].style.display = 'none';
+		statusAddAction(aStatusItemContainer, 'infoFull');
+		statusRemoveAction(aStatusItemContainer, 'hideFull');
+	}
 	
 	for(let i = 0; i < aActionElements[0].length; i++)
 		aActionElements[0][i].disabled = true;
 	
-	fetch('query/queueitemaction.php?id=' + aID + '&action=' + aAction, 
+	fetch('query/queueitemaction.php?id=' + aStatusItemID + '&action=' + aAction, 
 			{
 				method: 'GET',
 				credentials: 'include',
@@ -424,13 +456,13 @@ function queueItemAction(aID, aAction, aObject)
 		.then((aResponse) => { return aResponse.json();})
 		.then((aData) => {
 				if(aData.success)
-					queueItemActionResult(aData, aID, aAction);
+					queueItemActionResult(aData, aStatusItemID, aAction);
 			})
 }
 
-function queueItemActionResult(aData, aID, aAction)
+function queueItemActionResult(aData, aStatusItemID, aAction)
 {
-	let aStatusItemContainer = document.getElementById(aID);
+	let aStatusItemContainer = document.getElementById(aStatusItemID);
 	switch(aAction)
 	{
 		case 'delete':

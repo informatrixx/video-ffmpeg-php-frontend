@@ -644,7 +644,7 @@
 													break;
 												case 'resize':
 													if($aDataValue != '0')
-														$aFilters[30] = "scale=-1:$aDataValue";
+														$aFilters[30] = "scale=$aDataValue:-2";
 													break;
 												case 'default':
 												case 'forced':
