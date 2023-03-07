@@ -6,13 +6,14 @@ status {
 	border-style: solid;
 	border-left-style: none;
 
-	max-width: 620px;
 	font-family: "Helvetica", sans-serif;
 	font-size: 10pt;
 	margin: 2px;
 	box-sizing: border-box;
 	max-width: 620px;
 	min-height: 200px;
+	min-width: 200px;
+	width: 200px;
 	height: max-content;
 }
 

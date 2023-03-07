@@ -295,7 +295,7 @@ function displayProgress(aProgressData)
 				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/input1-16.png" alt="Source">', 'base');
 				break;
 			case 'outfile':
-				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'full');
+				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'base');
 				break;
 			case 'q':
 				statusSetData(aStatusItemID, 'q', 'Q ' + aData[aDataKeys[i]], '<img src="img/quality1-16.png" alt="Output">', 'full');

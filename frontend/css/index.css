@@ -6,7 +6,7 @@ body {
 }
 body > grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, 620px);
+	grid-template-columns: minmax(200px, max-content) repeat(auto-fit, 620px);
 	grid-auto-flow: dense;	
 }
 
