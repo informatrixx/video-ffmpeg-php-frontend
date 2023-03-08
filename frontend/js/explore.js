@@ -28,6 +28,16 @@ function escapeQuotes(aText)
 	return aText.replace(/["']/g, function(m) { return aMap[m]; });
 }
 
+function escapeURI(aText)
+{
+	var aMap = {
+		'"': '%22',
+		"'": '%27'
+	};
+	
+	return aText.replace(/["']/g, function(m) { return aMap[m]; });
+}
+
 function explorerScrollTo(aID)
 {
 	aID = aID.toLowerCase();
@@ -81,7 +91,7 @@ function exploreFolderResult()
 	let aHistoryParam = aJSONData.history;
 	let aJoinParam = '';
 	if(aJSONData.join != false)
-		aJoinParam = escapeHTML(aJSONData.join);
+		aJoinParam = escapeQuotes(aJSONData.join);
 	
 	let aAlphaChar = '';
 	
@@ -108,7 +118,7 @@ function exploreFolderResult()
 			aScanFolderName = '..';
 			aAnchorHash = '';
 		}
-		aNewFolderElement.innerHTML = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)"><a href="javascript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + escapeQuotes(aJoinParam) + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a></span>';
+		aNewFolderElement.innerHTML = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)"><a href="javascript:dummy()" onclick="exploreFolderQuery(\'' + escapeQuotes(aFolderPath) + '\', ' + aHistoryParam + ', \'' + aJoinParam + '\')" ' + aAnchorHash + '>' + escapeHTML(aScanFolderName) + '</a></span>';
 		aExploreBox.appendChild(aNewFolderElement);
 	}
 
@@ -127,7 +137,7 @@ function exploreFolderResult()
 		let aContent = '';
 		
 		if(aScanModule != false)
-			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + escapeQuotes(encodeURIComponent(aFolderName)) + '&file=' + escapeQuotes(encodeURIComponent(aFilePath)) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
+			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + encodeURIComponent(aFolderName) + '&file=' + encodeURIComponent(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
 		else
 			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + escapeHTML(aScanFileName);
 		

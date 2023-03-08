@@ -303,7 +303,7 @@ function displayProgress(aProgressData)
 						aIconFile = 'archive1-16.png';
 						break;
 				}
-				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/' + aIconFile + '" alt="Source">', 'base');
+				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/' + aIconFile + '" alt="Source">', 'info');
 				break;
 			case 'outfile':
 				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'base');

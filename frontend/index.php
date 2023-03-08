@@ -59,7 +59,7 @@
 
 	window.addEventListener('popstate', historyEvent);
 
-	exploreFolderQuery('<?=$aFolder;?>', true, false);
+	exploreFolderQuery('<?=str_replace(search: "'", replace: '\\x27', subject:$aFolder);?>', true, false);
 
 	<?php
 		$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
