@@ -1,5 +1,6 @@
 status {
 	background-color: #f9f9f9;
+
 	border-color: #666;
 	border-radius:  0px 0.5em 0.5em 0px;
 	border-width: 1px;
@@ -8,13 +9,19 @@ status {
 
 	font-family: "Helvetica", sans-serif;
 	font-size: 10pt;
-	margin: 2px;
+
+	margin: 0px;
+	overflow-y: auto;
+
 	box-sizing: border-box;
 	max-width: 620px;
-	min-height: 200px;
 	min-width: 200px;
 	width: 200px;
-	height: max-content;
+	height: 100vh;
+	
+	position: sticky;
+	top: 0px;
+	left: 0px;
 }
 
 status file {
@@ -34,10 +41,10 @@ statusItemContainer caption {
 	text-align: right;
 	padding-right: 8px;
 }
-statusItemContainer caption[group='full'],
-statusItemContainer data[group='full'],
-statusItemContainer caption[group='more'],
-statusItemContainer data[group='more'] {
+statusItemContainer[info='base'] caption[group='info'],
+statusItemContainer[info='base'] data[group='info'],
+statusItemContainer:not([info='full']) caption[group='full'],
+statusItemContainer:not([info='full']) data[group='full'] {
 	display: none;
 }
 data {
@@ -83,6 +90,24 @@ data > span:hover more {
 	display: block;
 }
 
+data > span > progressBar {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='10'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:rgb(200,200,200);stop-opacity:0.5' /%3E%3Cstop offset='100%25' style='stop-color:rgb(250,250,250);stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='10' fill='url(%23grad1)' /%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	border: 1px solid #555;
+	border-radius: 3px;
+	width: 99%;
+	height: 6px;
+	display: inline-block;
+	box-shadow: inset 0 -6px 2px -3px rgba(0,0,0,0.10),inset 0 6px 5px -3px rgba(255,255,255,0.15),inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+data[dataID='progressBar'] > span:hover {
+	background-color: inherit;
+	border: 0;
+	top: 0px;
+	left: 0px;
+	cursor: default;
+}
+
 statusItemContainer[status="QUMA_STATUS_UNRAR_WAITING"],
 statusItemContainer[status="QUMA_STATUS_WAITING"] {
 	background-color: #bbb;
@@ -125,6 +150,20 @@ statusItemContainer[status="QUMA_STATUS_CONVERT_ABORT"] {
 	background-color: #fcc;
 }
 
+actions button {
+	padding: 1px;
+	margin: 1px;
+	width: 21px;
+	height: 21px;
+	border-radius: 2px;
+	border: 1px solid #555;
+	box-sizing: border-box;
+	background-color: #99ccff;
+	box-shadow: inset 0 -6px 10px -3px rgba(0,0,0,0.17),inset 0 6px 20px -3px rgba(255,255,255,0.15),inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+actions button:hover {
+	box-shadow: inset 0 6px 20px -3px rgba(0,0,0,0.15),inset 0 0 0 1px rgba(255,255,255,0.12);
+}
 
 @media only screen and (max-width: 600px) {
 	#statusContainer {

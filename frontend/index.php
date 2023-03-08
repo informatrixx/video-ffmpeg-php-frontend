@@ -46,8 +46,8 @@
 </head>
 <body>
 <grid>
-	<status>
-		<h1>Status</h1>
+	<status info="base">
+		<h1>Status<actions><img src='img/hide1-16.png' alt='Hide Status'><a href='status.php' target='quma_status'><img src='img/expand1-16.png' alt='Show full Status'></a></actions></h1>
 	</status>
 	<explore></explore>
 </grid>
@@ -55,6 +55,7 @@
 <script>
 
 	const gStatusContainer = document.getElementsByTagName('status')[0];
+	const gShowFullInfo = false;
 
 	window.addEventListener('popstate', historyEvent);
 
@@ -73,22 +74,20 @@
 			else
 				$aSizeArray = null;
 				
-			$aProgressData = array(
+			$aStatusData = array(
+				'duration'	=> isset($aQueueItem['settings']['duration']) ? $aQueueItem['settings']['duration'] : null,
 				'id'		=> $aQueueItem['id'],
 				'infile'	=> $aQueueItem['settings']['infile'],
-				'outfile'	=> $aQueueItem['settings']['outfile'],
-				'duration'	=> $aQueueItem['settings']['duration'],
+				'outfile'	=> isset($aQueueItem['settings']['outfile']) ? $aQueueItem['settings']['outfile'] : null,
 				'size'		=> $aSizeArray,
-				);
-			$aStatusData = array(
-				'id' =>			$aQueueItem['id'],
-				'status' =>		$aQueueItem['status'],
+				'id'		=> $aQueueItem['id'],
+				'status' 	=> $aQueueItem['status'],
+				'type'	 	=> $aQueueItem['settings']['type'],
 				);
 			
 			if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aQueueItem['id'], matches: $aIDMatches))
 				continue;
 			
-			echo "	displayProgress('" . json_encode(value: $aProgressData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
 			echo "	changeStatus('" . json_encode(value: $aStatusData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
 		}
 	?>

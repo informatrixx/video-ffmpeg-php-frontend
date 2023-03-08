@@ -79,13 +79,14 @@ gEventSource.addEventListener('error',
 
 function statusSetData(aStatusItemID, aDataID, aDataValue, aCaption, aGroup)
 {
-	const aGroupOrder = ['base', 'full', 'more'];
+	const aGroupOrder = ['base', 'info', 'full'];
 	
 	let aStatusItemContainer = document.getElementById(aStatusItemID);
 	if(aStatusItemContainer === null)
 	{
 		aStatusItemContainer = document.createElement('statusItemContainer');
 		aStatusItemContainer.setAttribute('id', aStatusItemID);
+		aStatusItemContainer.setAttribute('info', 'base');
 		gStatusContainer.appendChild(aStatusItemContainer);
 	}	
 	
@@ -131,7 +132,8 @@ function statusSetData(aStatusItemID, aDataID, aDataValue, aCaption, aGroup)
 	{
 		if(aCaptionElement.innerHTML != aCaption)
 			aCaptionElement.innerHTML = aCaption;
-		aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
+		if(aDataElement.innerHTML != '<span>' + aDataValue + '</span>')
+			aDataElement.innerHTML = '<span>' + aDataValue + '</span>';
 	}		
 }
 
@@ -176,10 +178,10 @@ function statusAddAction(aContainer, aAction)
 		case 'delete':
 			aImage = 'remove1-16.png';
 			break;
-		case 'hideFull':
+		case 'hideInfo':
 			aImage = 'hide1-16.png';
 			break;
-		case 'infoFull':
+		case 'showInfo':
 			aImage = 'info1-16.png';
 			break;
 		case 'pause':
@@ -238,7 +240,7 @@ function displayProgress(aProgressData)
 			case 'streamID':
 				continue;
 			case 'bitrate':
-				statusSetData(aStatusItemID, 'bitrate', aData[aDataKeys[i]], '<img src="img/bitrate1-16.png" alt="Bitrate">', 'full');
+				statusSetData(aStatusItemID, 'bitrate', aData[aDataKeys[i]], '<img src="img/bitrate1-16.png" alt="Bitrate">', 'info');
 				break;
 			case 'duration':
 				if(aData[aDataKeys[i]] == null)
@@ -259,13 +261,13 @@ function displayProgress(aProgressData)
 					const aDurationValue =	Math.floor(aRawDuration / 3600).toString().padStart(2, '0') + ':' + 
 											Math.floor(aSeekLeft / 60).toString().padStart(2, '0') + ':' +
 											Math.floor(aSeekLeft % 60).toString().padStart(2, '0');
-					statusSetData(aStatusItemID, 'duration', aDurationValue, '<img src="img/duration1-16.png" alt="Duration">', 'full');
+					statusSetData(aStatusItemID, 'duration', aDurationValue, '<img src="img/duration1-16.png" alt="Duration">', 'info');
 				}
 				break;
 			case 'fps':
 			case 'frame':
 				if(aData['frame'] != null && aData['fps'] != null)
-					statusSetData(aStatusItemID, 'frame', 'Frame ' + aData['frame'] + ' (' + aData['fps'] + ' fps)', '<img src="img/frame1-16.png" alt="FPS">', 'full');
+					statusSetData(aStatusItemID, 'frame', 'Frame ' + aData['frame'] + ' (' + aData['fps'] + ' fps)', '<img src="img/frame1-16.png" alt="FPS">', 'info');
 				break;
 			case 'infile':
 				let aCaption = 'Source';
@@ -290,23 +292,32 @@ function displayProgress(aProgressData)
 					else
 						aFilesValue = aData[aDataKeys[i]][0];
 				}
+				else
+					 aShortValue = aData[aDataKeys[i]].split(/[\\/]/).pop();
 					
-				statusSetData(aStatusItemID, 'infile', aFilesValue, aCaption, 'more');
-				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/input1-16.png" alt="Source">', 'base');
+				statusSetData(aStatusItemID, 'infile', aFilesValue, aCaption, 'full');
+				let aIconFile = 'input1-16.png';
+				switch(aData['type'])
+				{
+					case 'rar':
+						aIconFile = 'archive1-16.png';
+						break;
+				}
+				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/' + aIconFile + '" alt="Source">', 'base');
 				break;
 			case 'outfile':
 				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'base');
 				break;
 			case 'q':
-				statusSetData(aStatusItemID, 'q', 'Q ' + aData[aDataKeys[i]], '<img src="img/quality1-16.png" alt="Output">', 'full');
+				statusSetData(aStatusItemID, 'q', 'Q ' + aData[aDataKeys[i]], '<img src="img/quality1-16.png" alt="Output">', 'info');
 				break;
 			case 'size':
 				if(aData[aDataKeys[i]] == null)
 					continue;
-				statusSetData(aStatusItemID, 'size', aData[aDataKeys[i]].human, '<img src="img/size1-16.png" alt="Size">', 'full');
+				statusSetData(aStatusItemID, 'size', aData[aDataKeys[i]].human, '<img src="img/size1-16.png" alt="Size">', 'info');
 				break;
 			case 'speed':
-				statusSetData(aStatusItemID, 'speed', aData[aDataKeys[i]], '<img src="img/speed1-16.png" alt="Speed">', 'full');
+				statusSetData(aStatusItemID, 'speed', aData[aDataKeys[i]], '<img src="img/speed1-16.png" alt="Speed">', 'info');
 				break;
 			case 'time':
 				aTime = aData[aDataKeys[i]];
@@ -326,15 +337,17 @@ function displayProgress(aProgressData)
 		const aSeconds = aTimeMatches[3];
 		const aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
 		const aPercent = Math.round(aTimeSeconds / gStatusItemDurations[aStatusItemID] * 100);
-		statusSetData(aStatusItemID, 'progress', aPercent + ' %', '<img src="img/progress1-16.png" alt="Progress">', 'base');
+		statusSetData(aStatusItemID, 'progressBar', '<progressbar style="background-size: ' + aPercent + '% 100%"></progressbar>', '&nbsp;', 'base');
+		statusSetData(aStatusItemID, 'progress', aPercent + ' %', '<img src="img/progress1-16.png" alt="Progress">', 'info');
 	}
 }
 
 function displayScanProgress(aProgressData)
 {
-	let aData = JSON.parse(aProgressData);
+	const aData = JSON.parse(aProgressData);
+	const aStatusItemID = aData.id;
 	const aIDRegEx = /^[a-f0-9]+$/i; 
-	if(aIDRegEx.test(aData.id) == false)
+	if(aIDRegEx.test(aStatusItemID) == false)
 		return false;
 	
 	const aTime = aData['time'];
@@ -352,7 +365,8 @@ function displayScanProgress(aProgressData)
 		const aSeconds = aTimeMatches[3];
 		const aTimeSeconds = (aHours * 3600) + (aMinutes * 60) + (aSeconds * 1);
 		const aPercent = Math.round(aTimeSeconds / gStatusItemDurations[aStatusItemID] * 100);
-		statusSetData(aStatusItemID, 'scanProgress' + aStreamID, aPercent + ' %' + aSpeedString, '<img src="img/progress1-16.png" alt="Progress"> ' + aStreamID, 'base');
+		statusSetData(aStatusItemID, 'scanProgressBar' + aStreamID, '<progressbar style="background-size: ' + aPercent + '% 100%"></progressbar>', aStreamID, 'base');
+		statusSetData(aStatusItemID, 'scanProgress' + aStreamID, aStreamID + ': ' + aPercent + ' %' + aSpeedString, '<img src="img/progress1-16.png" alt="Progress"> ', 'info');
 	}
 }
 
@@ -370,7 +384,7 @@ function changeStatus(aStatusData)
 	aStatusItemContainer.setAttribute('status', QUMA_CODE_STATUS[aData.status]);
 	
 	
-	statusAddAction(aStatusItemContainer, 'infoFull');
+	statusAddAction(aStatusItemContainer, 'showInfo');
 	
 	switch(parseInt(aData.status, 10))
 	{
@@ -427,21 +441,20 @@ function queueItemAction(aStatusItemID, aAction, aObject)
 	let aStatusItemContainer = document.getElementById(aStatusItemID);
 	let aActionElements = aStatusItemContainer.getElementsByTagName('actions');
 	
-	if(aAction == 'infoFull')
+	if(aAction == 'showInfo')
 	{
-		for(let i = 0; i < aStatusItemContainer.children.length; i++)
-			if(aStatusItemContainer.children[i].getAttribute('group') == 'full')
-				aStatusItemContainer.children[i].style.display = 'block';
-		statusRemoveAction(aStatusItemContainer, 'infoFull');
-		statusAddAction(aStatusItemContainer, 'hideFull');
+		if(gShowFullInfo == true)
+			aStatusItemContainer.setAttribute('info', 'full');
+		else
+			aStatusItemContainer.setAttribute('info', 'info');
+		statusRemoveAction(aStatusItemContainer, 'showInfo');
+		statusAddAction(aStatusItemContainer, 'hideInfo');
 	}
-	if(aAction == 'hideFull')
+	if(aAction == 'hideInfo')
 	{
-		for(let i = 0; i < aStatusItemContainer.children.length; i++)
-			if(aStatusItemContainer.children[i].getAttribute('group') == 'full')
-				aStatusItemContainer.children[i].style.display = 'none';
-		statusAddAction(aStatusItemContainer, 'infoFull');
-		statusRemoveAction(aStatusItemContainer, 'hideFull');
+		aStatusItemContainer.setAttribute('info', 'base');
+		statusAddAction(aStatusItemContainer, 'showInfo');
+		statusRemoveAction(aStatusItemContainer, 'hideInfo');
 	}
 	
 	for(let i = 0; i < aActionElements[0].length; i++)

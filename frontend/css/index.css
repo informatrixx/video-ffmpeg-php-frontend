@@ -1,7 +1,7 @@
 body {
 	font-family: Helvetica sans-serif;
 	font-size: 10pt;
-	margin: 10px auto;
+	margin: 0px auto;
 	color: #333;
 }
 body > grid {
@@ -17,3 +17,13 @@ h1 {
     padding: 3px;
 }
 
+
+h1 actions {
+	display: block;
+	margin-left: auto;
+	float: right;
+}
+
+h1 actions img {
+	margin: 0px 2px;
+}

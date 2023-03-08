@@ -18,43 +18,42 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-	<div id='statusContainer'>
+	<status>
+	</status>
 	<script>
+
+	const gStatusContainer = document.getElementsByTagName('status')[0];
+	const gShowFullInfo = true;
+	
 	<?php
+		$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
 		
-	
-	$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
-	
-	
-	foreach($aConvertQueue as $aQueueItem)
-	{
-		if(isset($aQueueItem['result']) && isset($aQueueItem['result']['fileSize']))
-			$aSizeArray = array(
-				'human'	=> humanFilesize($aQueueItem['result']['fileSize']) . 'B',
-				'bytes'	=> $aQueueItem['result']['fileSize'],
-				);
-		else
-			$aSizeArray = null;
+		foreach($aConvertQueue as $aQueueItem)
+		{
+			if(isset($aQueueItem['result']) && isset($aQueueItem['result']['fileSize']))
+				$aSizeArray = array(
+					'human'	=> humanFilesize($aQueueItem['result']['fileSize']) . 'B',
+					'bytes'	=> $aQueueItem['result']['fileSize'],
+					);
+			else
+				$aSizeArray = null;
+				
+				$aStatusData = array(
+					'duration'	=> isset($aQueueItem['settings']['duration']) ? $aQueueItem['settings']['duration'] : null,
+					'id'		=> $aQueueItem['id'],
+					'infile'	=> $aQueueItem['settings']['infile'],
+					'outfile'	=> isset($aQueueItem['settings']['outfile']) ? $aQueueItem['settings']['outfile'] : null,
+					'size'		=> $aSizeArray,
+					'id'		=> $aQueueItem['id'],
+					'status' 	=> $aQueueItem['status'],
+					'type'	 	=> $aQueueItem['settings']['type'],
+					);
 			
-		$aProgressData = array(
-			'id'		=> $aQueueItem['id'],
-			'infile'	=> $aQueueItem['settings']['infile'],
-			'outfile'	=> $aQueueItem['settings']['outfile'],
-			'duration'	=> $aQueueItem['settings']['duration'],
-			'size'		=> $aSizeArray,
-			);
-		$aStatusData = array(
-			'id' =>			$aQueueItem['id'],
-			'status' =>		$aQueueItem['status'],
-			);
-		
-		if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aQueueItem['id'], matches: $aIDMatches))
-			continue;
-		
-		echo "	displayProgress('" . json_encode(value: $aProgressData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
-		echo "	changeStatus('" . json_encode(value: $aStatusData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
-	}
+			if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aQueueItem['id'], matches: $aIDMatches))
+				continue;
+			
+			echo "	changeStatus('" . json_encode(value: $aStatusData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
+		}
 	?></script>
-	</div>
 </body>
 </html>
