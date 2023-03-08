@@ -238,6 +238,7 @@ function displayProgress(aProgressData)
 			case 'scanning':
 			case 'status':
 			case 'streamID':
+			case 'type':
 				continue;
 			case 'bitrate':
 				statusSetData(aStatusItemID, 'bitrate', aData[aDataKeys[i]], '<img src="img/bitrate1-16.png" alt="Bitrate">', 'info');
@@ -270,32 +271,31 @@ function displayProgress(aProgressData)
 					statusSetData(aStatusItemID, 'frame', 'Frame ' + aData['frame'] + ' (' + aData['fps'] + ' fps)', '<img src="img/frame1-16.png" alt="FPS">', 'info');
 				break;
 			case 'infile':
-				let aCaption = 'Source';
 				let aFilesValue = aData[aDataKeys[i]];
 				let aShortValue;
 				if(typeof aData[aDataKeys[i]] !== 'string')
 				{
-					aCaption = 'Source Files';
 					aShortValue = aData[aDataKeys[i]][0].split(/[\\/]/).pop();
 					if(aData[aDataKeys[i]].length > 1)
 					{
 						let aInFiles = aData[aDataKeys[i]];
-						aFilesValue = aInFiles[0];
+						aFilesValue = '<file>' + aInFiles[0] + '</file>';
 						
-						aFilesValue += '<more>';
 						for(const aInFile of aInFiles)
 							aFilesValue += '<file>' + aInFile + '</file>';
-						aFilesValue += '</more>';
 						
 						aShortValue += ' +' + (aData[aDataKeys[i]].length - 1);
 					}
 					else
 						aFilesValue = aData[aDataKeys[i]][0];
+					statusSetData(aStatusItemID, 'infile', aFilesValue, '<img src="img/folders1-16.png" alt="Source">', 'full');
 				}
 				else
-					 aShortValue = aData[aDataKeys[i]].split(/[\\/]/).pop();
+				{
+					aShortValue = aData[aDataKeys[i]].split(/[\\/]/).pop();
+					statusSetData(aStatusItemID, 'infile', aFilesValue, '<img src="img/input1-16.png" alt="Source">', 'full');
+				}
 					
-				statusSetData(aStatusItemID, 'infile', aFilesValue, aCaption, 'full');
 				let aIconFile = 'input1-16.png';
 				switch(aData['type'])
 				{

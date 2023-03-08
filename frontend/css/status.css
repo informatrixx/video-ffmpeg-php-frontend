@@ -24,9 +24,6 @@ status {
 	left: 0px;
 }
 
-status file {
-	display: block;	
-}
 
 statusItemContainer {
 	border: 1px solid #234;
@@ -60,21 +57,38 @@ data > span {
 	left: 0px;
 	z-index: 0;
 	width: 100%;
-	cursor: pointer;
+	border: 1px hidden #fff;
+	box-sizing: border-box;
 }
+data[dataID='infile'] > span {
+	position: relative;
+	overflow: visible;
+	white-space: normal;
+	word-break: break-all;
+}
+data[dataID='infile'] > span file {
+	display: list-item;
+	list-style-type: auto;
+	list-style-position: inside;
+	text-indent: 3px;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	margin-top: 6px;
+	margin-bottom: 4px;
+}
+data[dataID='infile'] > span file:first-of-type {
+	margin-top: 0px;
+}
+data[dataID='infile'] > span file:last-of-type:hover {
+	margin-bottom: 2px;
+}
+
 data > span info {
 	display: inline;	
 }
-data > span more {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	z-index: 2;
-	width: 100%;
-	display: none;	
-}
-data > span:hover,
-data > span:hover more {
+data > span:hover, 
+data[dataID='infile'] > span file:hover {
 	text-overflow: normal;
 	white-space: normal;
 	overflow: visible;
@@ -84,14 +98,20 @@ data > span:hover more {
 	border: 1px solid #abc;
 	top: -1px;
 	left: -1px;
-	border-radius: 3px;	
+	border-radius: 3px;
 }
-data > span:hover more {
-	display: block;
+data[dataID='infile'] > span:hover {
+	top: 0px;
+	left: 0px;
+	border: none;
+}
+data[dataID='infile'] > span file:hover + file {
+	margin-top: 4px;	
 }
 
+
 data > span > progressBar {
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='10'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:rgb(200,200,200);stop-opacity:0.5' /%3E%3Cstop offset='100%25' style='stop-color:rgb(250,250,250);stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='10' fill='url(%23grad1)' /%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='10'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:rgb(220,220,200);stop-opacity:0.5' /%3E%3Cstop offset='100%25' style='stop-color:rgb(255,255,220);stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='10' fill='url(%23grad1)' /%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	border: 1px solid #555;
 	border-radius: 3px;
@@ -100,7 +120,8 @@ data > span > progressBar {
 	display: inline-block;
 	box-shadow: inset 0 -6px 2px -3px rgba(0,0,0,0.10),inset 0 6px 5px -3px rgba(255,255,255,0.15),inset 0 0 0 1px rgba(255,255,255,0.12);
 }
-data[dataID='progressBar'] > span:hover {
+data[dataID='progressBar'] > span:hover,
+data[dataID='scanProgressBar'] > span:hover {
 	background-color: inherit;
 	border: 0;
 	top: 0px;
@@ -158,7 +179,7 @@ actions button {
 	border-radius: 2px;
 	border: 1px solid #555;
 	box-sizing: border-box;
-	background-color: #99ccff;
+	background-color: inherit;
 	box-shadow: inset 0 -6px 10px -3px rgba(0,0,0,0.17),inset 0 6px 20px -3px rgba(255,255,255,0.15),inset 0 0 0 1px rgba(255,255,255,0.12);
 }
 actions button:hover {

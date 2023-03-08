@@ -9,6 +9,7 @@ expand1-16.png		<a href="https://www.flaticon.com/free-icons/maximize" title="ma
 folder1-16.png		<a href="https://www.flaticon.com/free-icons/coding" title="coding icons">Coding icons created by exomoon design studio - Flaticon</a>
 folder2-16.png		<a href="https://www.flaticon.com/free-icons/import" title="import icons">Import icons created by exomoon design studio - Flaticon</a>
 folder3-16.png		<a href="https://www.flaticon.com/free-icons/files-and-folders" title="files and folders icons">Files and folders icons created by exomoon design studio - Flaticon</a>
+folders1-16.png		<a href="https://www.flaticon.com/free-icons/files-and-folders" title="files and folders icons">Files and folders icons created by exomoon design studio - Flaticon</a>
 frame1-16.png		<a href="https://www.flaticon.com/free-icons/frame" title="frame icons">Frame icons created by exomoon design studio - Flaticon</a>
 hide1-16.png		<a href="https://www.flaticon.com/free-icons/show-password" title="show password icons">Show password icons created by exomoon design studio - Flaticon</a>
 info1-16.png		<a href="https://www.flaticon.com/free-icons/importance" title="importance icons">Importance icons created by exomoon design studio - Flaticon</a>
