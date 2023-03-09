@@ -50,25 +50,25 @@ gEventSource.addEventListener('progress',
 		displayProgress(aEvent.data);
 	});
 
-gEventSource.addEventListener('scanProgress', 
+gEventSource.addEventListener('scanProgress',
 	function(aEvent)
 	{
 		displayScanProgress(aEvent.data);
 	});
 
-gEventSource.addEventListener('extract', 
+gEventSource.addEventListener('extract',
 	function(aEvent)	
 	{
 		displayProgress(aEvent.data);
 	});
 
-gEventSource.addEventListener('status', 
+gEventSource.addEventListener('status',
 	function(aEvent)
 	{
 		changeStatus(aEvent.data);
 	});
 
-gEventSource.addEventListener('error', 
+gEventSource.addEventListener('error',
 	function(aEvent)
 	{
 		if (aEvent.readyState === EventSource.CLOSED)
@@ -142,6 +142,106 @@ function statusRemoveData(aContainer, aDataID)
 	let aDataRow = aContainer.getElementsByTagName(aDataID);
 	if(aDataRow.length > 0)
 		aDataRow[0].parentNode.removeChild(aDataRow[0]);
+}
+
+function statusSetActions(aStatusItemID, aActions)
+{
+	const aStatusItemContainer = document.getElementById(aStatusItemID);
+	if(aStatusItemContainer == null)
+		return false;
+	
+	const aActionsContainers = aStatusItemContainer.getElementsByTagName('actions');
+	let aActionsContainer = null;
+	if(aActionsContainers.length == 0)
+	{
+		let aCaptionElement = document.createElement('caption');
+		aStatusItemContainer.appendChild(aCaptionElement);
+		aActionsContainer = document.createElement('actions');
+		aStatusItemContainer.appendChild(aActionsContainer);
+	}
+	else
+		aActionsContainer = aActionsContainers[0];
+	
+	for(let i = 0; i < aActions.length; i++)
+	{
+		let aAction = aActions[i];
+		let aActionElement;
+		if(aAction == '##INFO##')
+		{
+			if(aActionsContainer.getElementsByTagName('showInfo').length > 0)
+				aActionElement = aActionsContainer.getElementsByTagName('showInfo')[0];
+			else
+				aActionElement = aActionsContainer.getElementsByTagName('hideInfo')[0];
+			if(aActionElement == null)
+				aAction = 'showInfo';
+		}
+		else
+			aActionElement = aActionsContainer.getElementsByTagName(aAction)[0];
+		
+		if(aActionElement == null)
+			aActionElement = document.createElement(aAction);
+		
+		let aImage = getActionImage(aAction);
+		let aInnerHTML = '<button onclick="queueItemAction(\'' + aStatusItemID + '\', \'' + aAction + '\', this)"><img src="img/' + aImage + '" alt="' + aAction + '"></button>';
+		if(aActionElement.innerHTML != aInnerHTML)
+			aActionElement.innerHTML = aInnerHTML;
+		
+		aActionsContainer.appendChild(aActionElement);
+	}
+	
+	for(let i = aActionsContainer.length - 1; i >= 0; i--)
+	{
+		if(aActions.includes(aActionsContainer[i].nodeName.toLowerCase())) 
+			aActionsContainer[i].disabled = false;
+		else
+			aActionsContainer[i].remove();
+	}
+}
+
+function getActionImage(aAction)
+{
+	switch(aAction)
+	{
+		case 'delete':
+			return 'remove1-16.png';
+		case 'hideInfo':
+			return 'hide1-16.png';
+		case 'showInfo':
+			return 'info1-16.png';
+		case 'pause':
+			return 'pause1-16.png';
+		case 'resume':
+			return 'play1-16.png';
+		case 'retry':
+			return 'retry1-16.png';
+		default:
+			return false;
+	}
+}
+	
+function statusReplaceAction(aStatusItemID, aOldAction, aNewAction)
+{
+	const aStatusItemContainer = document.getElementById(aStatusItemID);
+	if(aStatusItemContainer == null)
+		return false;
+	
+	const aActionsContainers = aStatusItemContainer.getElementsByTagName('actions');
+	if(aActionsContainers.length == 0)
+		return false;
+	
+	const aActionsContainer = aActionsContainers[0];
+	const aTargetActions = aActionsContainer.getElementsByTagName(aOldAction);
+	if(aTargetActions.length == 0)
+		return false;
+	
+	const aTargetAction = aTargetActions[0];
+	const aImage = getActionImage(aNewAction);
+	const aReplacementAction = document.createElement(aNewAction);
+	aReplacementAction.innerHTML = '<button onclick="queueItemAction(\'' + aStatusItemID + '\', \'' + aNewAction + '\', this)"><img src="img/' + aImage + '" alt="' + aNewAction + '"></button>';
+	aActionsContainer.insertBefore(aReplacementAction, aTargetAction);
+	aTargetAction.remove();
+	
+	return true;
 }
 
 function statusAddAction(aContainer, aAction)
@@ -309,6 +409,8 @@ function displayProgress(aProgressData)
 				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'base');
 				break;
 			case 'q':
+				if(aData[aDataKeys[i]] == null)
+					continue;
 				statusSetData(aStatusItemID, 'q', 'Q ' + aData[aDataKeys[i]], '<img src="img/quality1-16.png" alt="Output">', 'info');
 				break;
 			case 'size':
@@ -383,55 +485,47 @@ function changeStatus(aStatusData)
 	const aStatusItemContainer = document.getElementById(aStatusItemID);
 	aStatusItemContainer.setAttribute('status', QUMA_CODE_STATUS[aData.status]);
 	
-	
-	statusAddAction(aStatusItemContainer, 'showInfo');
-	
 	switch(parseInt(aData.status, 10))
 	{
 		case QUMA_STATUS_WAITING:
 		case QUMA_STATUS_UNRAR_WAITING:
-			statusAddAction(aStatusItemContainer, 'delete');
+			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
 			break;
 		case QUMA_STATUS_SCAN_READY: 
-			statusAddAction(aStatusItemContainer, 'delete');
+			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
 			break;
 		case QUMA_STATUS_SCAN:
-			statusAddAction(aStatusItemContainer, 'pause');
-			statusRemoveAction(aStatusItemContainer, 'delete');
+			statusSetActions(aStatusItemID, ['##INFO##', 'pause']);
 			break;
 		case QUMA_STATUS_CONVERT_READY:
-			statusAddAction(aStatusItemContainer, 'delete');
-			statusRemoveAction(aStatusItemContainer, 'pause');
+			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
 			statusRemoveData(aStatusItemContainer, 'progress');
 			statusRemoveData(aStatusItemContainer, 'speed');
 			break;
 		case QUMA_STATUS_CONVERT: 
-			statusAddAction(aStatusItemContainer, 'pause');
-			statusRemoveAction(aStatusItemContainer, 'delete');
+			statusSetActions(aStatusItemID, ['##INFO##', 'pause']);
 			break;
 		case QUMA_STATUS_CONVERT_DONE:
 		case QUMA_STATUS_UNRAR_DONE:
+			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
 			statusRemoveData(aStatusItemContainer, 'progress');
-			statusAddAction(aStatusItemContainer, 'delete');
-			statusRemoveAction(aStatusItemContainer, 'pause');
 			break;
 		case QUMA_STATUS_UNRAR_READY:
-			statusAddAction(aStatusItemContainer, 'delete');
+			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
 			break;
 		case QUMA_STATUS_UNRAR:
+			statusSetActions(aStatusItemID, ['##INFO##']);
 			break;
 		case QUMA_STATUS_SCAN_PAUSE: 
 		case QUMA_STATUS_CONVERT_PAUSE: 
-			statusAddAction(aStatusItemContainer, 'resume');
+			statusSetActions(aStatusItemID, ['##INFO##', 'resume']);
 			break;
 		case QUMA_STATUS_SCAN_ABORT:
 		case QUMA_STATUS_CONVERT_ABORT:
 		case QUMA_STATUS_SCAN_ERROR:
 		case QUMA_STATUS_CONVERT_ERROR:
 		case 991:
-			statusRemoveAction(aStatusItemContainer, 'pause');
-			statusAddAction(aStatusItemContainer, 'delete');
-			statusAddAction(aStatusItemContainer, 'retry');
+			statusSetActions(aStatusItemID, ['##INFO##', 'delete', 'retry']);
 			break;
 	}
 }
@@ -447,14 +541,12 @@ function queueItemAction(aStatusItemID, aAction, aObject)
 			aStatusItemContainer.setAttribute('info', 'full');
 		else
 			aStatusItemContainer.setAttribute('info', 'info');
-		statusRemoveAction(aStatusItemContainer, 'showInfo');
-		statusAddAction(aStatusItemContainer, 'hideInfo');
+		return statusReplaceAction(aStatusItemID, 'showInfo', 'hideInfo');
 	}
 	if(aAction == 'hideInfo')
 	{
 		aStatusItemContainer.setAttribute('info', 'base');
-		statusAddAction(aStatusItemContainer, 'showInfo');
-		statusRemoveAction(aStatusItemContainer, 'hideInfo');
+		return statusReplaceAction(aStatusItemID, 'hideInfo', 'showInfo');
 	}
 	
 	for(let i = 0; i < aActionElements[0].length; i++)
