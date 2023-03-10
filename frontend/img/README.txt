@@ -17,6 +17,7 @@ input1-16.png		<a href="https://www.flaticon.com/free-icons/register" title="reg
 link1-16.png		<a href="https://www.flaticon.com/free-icons/reference" title="reference icons">Reference icons created by exomoon design studio - Flaticon</a>
 minimize1-16.png	<a href="https://www.flaticon.com/free-icons/scalable" title="scalable icons">Scalable icons created by exomoon design studio - Flaticon</a>
 note1-16.png		<a href="https://www.flaticon.com/free-icons/register" title="register icons">Register icons created by exomoon design studio - Flaticon</a>
+output1-16.png		<a href="https://www.flaticon.com/free-icons/log-out" title="log out icons">Log out icons created by exomoon design studio - Flaticon</a>
 pause1-16.png		<a href="https://www.flaticon.com/free-icons/feature" title="feature icons">Feature icons created by exomoon design studio - Flaticon</a>
 play1-16.png		<a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by exomoon design studio - Flaticon</a>
 progress1-16.png	<a href="https://www.flaticon.com/free-icons/trend" title="trend icons">Trend icons created by exomoon design studio - Flaticon</a>

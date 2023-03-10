@@ -165,23 +165,26 @@ function statusSetActions(aStatusItemID, aActions)
 	for(let i = 0; i < aActions.length; i++)
 	{
 		let aAction = aActions[i];
-		let aActionElement;
-		if(aAction == '##INFO##')
-		{
-			if(aActionsContainer.getElementsByTagName('showInfo').length > 0)
-				aActionElement = aActionsContainer.getElementsByTagName('showInfo')[0];
-			else
-				aActionElement = aActionsContainer.getElementsByTagName('hideInfo')[0];
-			if(aActionElement == null)
-				aAction = 'showInfo';
-		}
-		else
-			aActionElement = aActionsContainer.getElementsByTagName(aAction)[0];
+		let aImageAction = aAction;
+		let aActionElement = aActionsContainer.getElementsByTagName(aAction)[0];
 		
 		if(aActionElement == null)
+		{
 			aActionElement = document.createElement(aAction);
+			if(aAction == 'info')
+				aActionElement.setAttribute('action', 'show')
+		}
 		
-		let aImage = getActionImage(aAction);
+		if(aAction == 'info')
+		{
+			
+			if(aActionElement.getAttribute('action') == 'show')
+				aImageAction = 'showInfo';
+			else
+				aImageAction = 'hideInfo';
+		}
+		
+		let aImage = getActionImage(aImageAction);
 		let aInnerHTML = '<button onclick="queueItemAction(\'' + aStatusItemID + '\', \'' + aAction + '\', this)"><img src="img/' + aImage + '" alt="' + aAction + '"></button>';
 		if(aActionElement.innerHTML != aInnerHTML)
 			aActionElement.innerHTML = aInnerHTML;
@@ -189,12 +192,12 @@ function statusSetActions(aStatusItemID, aActions)
 		aActionsContainer.appendChild(aActionElement);
 	}
 	
-	for(let i = aActionsContainer.length - 1; i >= 0; i--)
+	for(let i = aActionsContainer.children.length - 1; i >= 0; i--)
 	{
-		if(aActions.includes(aActionsContainer[i].nodeName.toLowerCase())) 
-			aActionsContainer[i].disabled = false;
+		if(aActions.includes(aActionsContainer.children[i].nodeName.toLowerCase())) 
+			aActionsContainer.children[i].disabled = false;
 		else
-			aActionsContainer[i].remove();
+			aActionsContainer.children[i].remove();
 	}
 }
 
@@ -242,64 +245,6 @@ function statusReplaceAction(aStatusItemID, aOldAction, aNewAction)
 	aTargetAction.remove();
 	
 	return true;
-}
-
-function statusAddAction(aContainer, aAction)
-{
-	const aStatusItemID = aContainer.getAttribute('id');
-	let aActionElements = aContainer.getElementsByTagName('actions');
-	let aActionElement = null;
-	
-	if(aActionElements.length == 0)
-	{
-		let aCaptionElement = document.createElement('caption');
-		aContainer.appendChild(aCaptionElement);
-		aActionElement = document.createElement('actions');
-		aContainer.appendChild(aActionElement);
-	}
-	else
-		aActionElement = aActionElements[0];
-	
-	let aTargetActions = aActionElement.getElementsByTagName(aAction);
-	let aTargetAction = null;
-	
-	if(aTargetActions.length == 0)
-	{
-		aTargetAction = document.createElement(aAction);
-		aActionElement.appendChild(aTargetAction);
-	}
-	else
-		aTargetAction = aTargetActions[0];
-	
-	let aImage;
-	
-	switch(aAction)
-	{
-		case 'delete':
-			aImage = 'remove1-16.png';
-			break;
-		case 'hideInfo':
-			aImage = 'hide1-16.png';
-			break;
-		case 'showInfo':
-			aImage = 'info1-16.png';
-			break;
-		case 'pause':
-			aImage = 'pause1-16.png';
-			break;
-		case 'resume':
-			aImage = 'play1-16.png';
-			break;
-		case 'retry':
-			aImage = 'retry1-16.png';
-			break;
-		default:
-			return false;
-	}
-	aTargetAction.innerHTML = '<button onclick="queueItemAction(\'' + aStatusItemID + '\', \'' + aAction + '\', this)"><img src="img/' + aImage + '" alt="' + aAction + '"></button>'
-	
-	for(let i = 0; i < aTargetActions.length; i++)
-		aTargetActions[i].disabled = false;
 }
 
 function statusRemoveAction(aContainer, aAction)
@@ -396,17 +341,28 @@ function displayProgress(aProgressData)
 					statusSetData(aStatusItemID, 'infile', aFilesValue, '<img src="img/input1-16.png" alt="Source">', 'full');
 				}
 					
-				let aIconFile = 'input1-16.png';
 				switch(aData['type'])
 				{
 					case 'rar':
-						aIconFile = 'archive1-16.png';
+						statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/archive1-16.png" alt="Source">', 'base');
 						break;
+					default:
+						statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/input1-16.png" alt="Source">', 'info');
 				}
-				statusSetData(aStatusItemID, 'infileShort', aShortValue, '<img src="img/' + aIconFile + '" alt="Source">', 'info');
+				
 				break;
 			case 'outfile':
-				statusSetData(aStatusItemID, 'outfile', aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'base');
+				statusSetData(aStatusItemID, aDataKeys[i], aData[aDataKeys[i]], '<img src="img/save1-16.png" alt="Output">', 'base');
+				break;
+			case 'file':
+				statusSetData(aStatusItemID, aDataKeys[i], aData[aDataKeys[i]], '<img src="img/output1-16.png" alt="Output">', 'base');
+				break;
+			case 'progress':
+				if(aData[aDataKeys[i]] == null)
+					continue;
+				let aPercent = aData[aDataKeys[i]].replace('%', '');
+				statusSetData(aStatusItemID, 'progressBar', '<progressbar style="background-size: ' + aPercent + '% 100%"></progressbar>', '&nbsp;', 'base');
+				statusSetData(aStatusItemID, 'progress', aPercent + ' %', '<img src="img/progress1-16.png" alt="Progress">', 'info');
 				break;
 			case 'q':
 				if(aData[aDataKeys[i]] == null)
@@ -425,7 +381,7 @@ function displayProgress(aProgressData)
 				aTime = aData[aDataKeys[i]];
 				break;
 			default:
-				statusSetData(aStatusItemID, aDataKeys[i], aData[aDataKeys[i]], aDataKeys[i].charAt(0).toUpperCase() + aDataKeys[i].slice(1), 'full');
+				statusSetData(aStatusItemID, aDataKeys[i], aData[aDataKeys[i]], aDataKeys[i].charAt(0).toUpperCase() + aDataKeys[i].slice(1), 'info');
 				break;
 		}
 		
@@ -489,43 +445,43 @@ function changeStatus(aStatusData)
 	{
 		case QUMA_STATUS_WAITING:
 		case QUMA_STATUS_UNRAR_WAITING:
-			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
+			statusSetActions(aStatusItemID, ['info', 'delete']);
 			break;
 		case QUMA_STATUS_SCAN_READY: 
-			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
+			statusSetActions(aStatusItemID, ['info', 'delete']);
 			break;
 		case QUMA_STATUS_SCAN:
-			statusSetActions(aStatusItemID, ['##INFO##', 'pause']);
+			statusSetActions(aStatusItemID, ['info', 'pause']);
 			break;
 		case QUMA_STATUS_CONVERT_READY:
-			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
+			statusSetActions(aStatusItemID, ['info', 'delete']);
 			statusRemoveData(aStatusItemContainer, 'progress');
 			statusRemoveData(aStatusItemContainer, 'speed');
 			break;
 		case QUMA_STATUS_CONVERT: 
-			statusSetActions(aStatusItemID, ['##INFO##', 'pause']);
+			statusSetActions(aStatusItemID, ['info', 'pause']);
 			break;
 		case QUMA_STATUS_CONVERT_DONE:
 		case QUMA_STATUS_UNRAR_DONE:
-			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
+			statusSetActions(aStatusItemID, ['info', 'delete']);
 			statusRemoveData(aStatusItemContainer, 'progress');
 			break;
 		case QUMA_STATUS_UNRAR_READY:
-			statusSetActions(aStatusItemID, ['##INFO##', 'delete']);
+			statusSetActions(aStatusItemID, ['info', 'delete']);
 			break;
 		case QUMA_STATUS_UNRAR:
-			statusSetActions(aStatusItemID, ['##INFO##']);
+			statusSetActions(aStatusItemID, ['info']);
 			break;
 		case QUMA_STATUS_SCAN_PAUSE: 
 		case QUMA_STATUS_CONVERT_PAUSE: 
-			statusSetActions(aStatusItemID, ['##INFO##', 'resume']);
+			statusSetActions(aStatusItemID, ['info', 'resume']);
 			break;
 		case QUMA_STATUS_SCAN_ABORT:
 		case QUMA_STATUS_CONVERT_ABORT:
 		case QUMA_STATUS_SCAN_ERROR:
 		case QUMA_STATUS_CONVERT_ERROR:
 		case 991:
-			statusSetActions(aStatusItemID, ['##INFO##', 'delete', 'retry']);
+			statusSetActions(aStatusItemID, ['info', 'delete', 'retry']);
 			break;
 	}
 }
@@ -535,18 +491,34 @@ function queueItemAction(aStatusItemID, aAction, aObject)
 	let aStatusItemContainer = document.getElementById(aStatusItemID);
 	let aActionElements = aStatusItemContainer.getElementsByTagName('actions');
 	
-	if(aAction == 'showInfo')
+	if(aAction == 'info')
 	{
-		if(gShowFullInfo == true)
-			aStatusItemContainer.setAttribute('info', 'full');
+		if(aObject.getElementsByTagName('img').length == 0)
+			return false;
+		
+		const aInfoActionElement = aObject.parentNode;
+		const aImage = aObject.getElementsByTagName('img')[0];
+		
+		if(aInfoActionElement.getAttribute('action') != 'hide')
+		{
+			if(gShowFullInfo == true)
+				aStatusItemContainer.setAttribute('info', 'full');
+			else
+				aStatusItemContainer.setAttribute('info', 'info');
+			aInfoActionElement.setAttribute('action', 'hide');
+			
+			aImage.src = 'img/' + getActionImage('hideInfo');
+			aImage.alt = 'Hide Info';
+		}
 		else
-			aStatusItemContainer.setAttribute('info', 'info');
-		return statusReplaceAction(aStatusItemID, 'showInfo', 'hideInfo');
-	}
-	if(aAction == 'hideInfo')
-	{
-		aStatusItemContainer.setAttribute('info', 'base');
-		return statusReplaceAction(aStatusItemID, 'hideInfo', 'showInfo');
+		{
+			aStatusItemContainer.setAttribute('info', 'base');
+			aInfoActionElement.setAttribute('action', 'show');
+			
+			aImage.src = 'img/' + getActionImage('showInfo');
+			aImage.alt = 'Show Info';
+		}
+		return true;
 	}
 	
 	for(let i = 0; i < aActionElements[0].length; i++)
@@ -574,16 +546,13 @@ function queueItemActionResult(aData, aStatusItemID, aAction)
 			aStatusItemContainer.remove();
 			break;
 		case 'pause':
-			statusRemoveAction(aStatusItemContainer, 'pause');
-			statusAddAction(aStatusItemContainer, 'resume');
+			//statusReplaceAction(aStatusItemContainer, 'pause', 'resume');
 			break;
 		case 'resume':
-			statusRemoveAction(aStatusItemContainer, 'resume');
-			statusAddAction(aStatusItemContainer, 'pause');
+			//statusReplaceAction(aStatusItemContainer, 'resume', 'pause');
 			break;
 		case 'retry':
-			statusRemoveAction(aStatusItemContainer, 'retry');
-			statusAddAction(aStatusItemContainer, 'delete');
+			//statusReplaceAction(aStatusItemContainer, 'retry', 'delete');
 			break;
 	}
 }

@@ -313,9 +313,13 @@
 	{
 		global $gConvertQueue;
 		$gConvertQueue[$queueItemIndex]['status'] = $newStatus;
-		
+
+		if(isset($gConvertQueue[$queueItemIndex]['settings']['outfile']))
+			$aFileText = 'Target: ' . $gConvertQueue[$queueItemIndex]['settings']['outfile'];
+		else
+			$aFileText = 'Source: ' . $gConvertQueue[$queueItemIndex]['settings']['infile'];
 		if(isset(QUMA_TEXT_STATUS[$newStatus]))
-			_msg(message: 'Change queue item status to "' . QUMA_TEXT_STATUS[$newStatus] . " ($newStatus)\": " . $gConvertQueue[$queueItemIndex]['settings']['outfile']);
+			_msg(message: 'Change queue item status to "' . QUMA_TEXT_STATUS[$newStatus] . " ($newStatus)\": $aFileText");
 		
 		$aStatusArray = array(
 			'id'		=> $gConvertQueue[$queueItemIndex]['id'],
@@ -323,6 +327,7 @@
 			'outfile'	=> isset($gConvertQueue[$queueItemIndex]['settings']['outfile']) ? $gConvertQueue[$queueItemIndex]['settings']['outfile'] : null,
 			'size'		=> isset($gConvertQueue[$queueItemIndex]['result']) && isset($gConvertQueue[$queueItemIndex]['result']['fileSize']) ? $gConvertQueue[$queueItemIndex]['result']['fileSize'] : null,
 			'status'	=> $newStatus,
+			'type'		=> $gConvertQueue[$queueItemIndex]['settings']['type'],
 			);
 		statusEcho(topic: 'status', statusArray: $aStatusArray);
 		
@@ -699,7 +704,8 @@
 							$aStreamIndex++;
 					}
 					//If moreParams are given
-					$aConvertString .= $aItemSettings['moreParams'] . ' \\' . PHP_EOL;
+					if(isset($aItemSettings['moreParams']))
+						$aConvertString .= $aItemSettings['moreParams'] . ' \\' . PHP_EOL;
 					
 					
 					//Starting new cluster due to timestamp -> -max_interleave_delta 0
@@ -919,6 +925,7 @@
 								'outfile'	=> $aQueueItem['settings']['outfile'],
 								'topic'		=> trim($aMessageMatch['topic']),
 								'message'	=> trim($aMessageMatch['message']),
+								'type'		=> $aQueueItem['settings']['type'],
 								);
 							$aQueueItem['result']['messages'][trim($aMessageMatch['topic'])][] = trim($aMessageMatch['message']);
 							
@@ -968,6 +975,7 @@
 							'q'			=> !empty($aMatches['q']) ? $aMatches['q'] : null,
 							'size'		=> $aSize,
 							'bitrate'	=> !empty($aMatches['bitrate']) ? $aMatches['bitrate'] : null,
+							'type'		=> $aQueueItem['settings']['type'],
 							);
 						$aStatusSplitArray = array(
 							'id'		=> $aItemID,
@@ -994,6 +1002,7 @@
 								'infile'	=> $aQueueItem['settings']['infile'],
 								'file'	 	=> isset($aFileName) ? $aFileName : null,
 								'progress'	=> isset($aSubMatches[2]) ? $aSubMatches[2] : null,
+								'type'		=> $aQueueItem['settings']['type'],
 								);
 							statusEcho(topic: 'extract', statusArray: $aStatusArray);
 						}
@@ -1003,6 +1012,7 @@
 							'id'		=> $aQueueItem['id'],
 							'infile'	=> $aQueueItem['settings']['infile'],
 							'progress'	=> $aMatches[1],
+							'type'		=> $aQueueItem['settings']['type'],
 							);
 						statusEcho(topic: 'extract', statusArray: $aStatusArray);
 					break;
@@ -1011,7 +1021,8 @@
 							'id'		=> $aQueueItem['id'],
 							'infile'	=> $aQueueItem['settings']['infile'],
 							'outfile'	=> isset($aQueueItem['settings']['outfile']) ? $aQueueItem['settings']['outfile'] : null,
-							'message'	=> $aOutput
+							'message'	=> $aOutput,
+							'type'		=> $aQueueItem['settings']['type'],
 							);
 						statusEcho(topic: 'message', statusArray: $aStatusArray);
 					break;
