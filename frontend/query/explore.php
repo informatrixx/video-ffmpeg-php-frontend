@@ -12,6 +12,7 @@
 	$aError = '';
 	$aUpdateHistory = isset($_GET['history']) && $_GET['history'] != 0;
 	$aModuleJoin = isset($_GET['join']) ? $_GET['join'] : false;
+	$aShowFiles = isset($_GET['show_files']) ? $_GET['show_files'] != 0 : true;
 	$aFoldersList = array();
 	$aFilesList = array();
 
@@ -49,7 +50,7 @@
 				$aItemName = rtrim(string: str_replace(search: $aFolder, replace: '', subject: $aGlobPath), characters: '/');
 				if(is_dir($aGlobPath))	//subfolder
 					$aFoldersList[$aItemName] = rtrim(string: $aGlobPath, characters: '/') . '/';
-				elseif(file_exists($aGlobPath))	//if it's a file
+				elseif($aShowFiles && file_exists($aGlobPath))	//if it's a file
 				{
 					$aScanModules = false;
 					$aJoin = false;
@@ -103,6 +104,7 @@
 		'files' =>		$aFilesList,
 		'history' =>	$aUpdateHistory,
 		'join' =>		$aModuleJoin,
+		'showFiles' =>	$aShowFiles,
 		);
 	
 	echo json_encode($aResult, JSON_PRETTY_PRINT);

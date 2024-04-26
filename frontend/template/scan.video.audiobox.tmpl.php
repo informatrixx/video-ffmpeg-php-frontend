@@ -26,11 +26,11 @@
 		<input type='checkbox' name='map[##VAR:index##]' value='##VAR:fileIndex##:##DATA:streamIndex##' checked> ##DATA:channels:layout##, ##DATA:language:shortUC##, ##DATA:codec:nameUC##, ##DATA:bitrate:humanShort## <img onclick='duplicateStream(this)' class='duplicate' src='img/duplicate1-16.png' />
 	</selectButton>
 </selectButtons>
-<selectContent index='##VAR:index##' streamindex='##DATA:streamIndex##' audio>
+<selectContent index='##VAR:index##' streamindex='##DATA:streamIndex##' fileindex='##VAR:fileIndex##' audio>
 	<label>Sprache:</label><text>##DATA:language:human##</text>
 	<label>Größe:</label><text>##DATA:size:human##</text>
 	<delimiter></delimiter>
-	<label>Titel:</label><input style='grid-column: span 2;' name='title[##VAR:index##]' value='##DATA:title##'>
+	<label>Titel:</label><input style='grid-column: span 2;' name='title[##VAR:index##]' value='##DATA:title##'><button type="button" onclick='autoTitle(this, "audio")'><img src='img/note1-16.png' alt='Auto-Name'/></button>
 	<label>Codec:</label><select name='c[##VAR:index##]' onchange='selectAudioCodec(this)'>
 		<?php
 		foreach(STATIC_CONFIG['audio']['codecs'] as $aCodecValue => $aCodecData)

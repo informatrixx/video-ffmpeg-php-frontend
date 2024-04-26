@@ -2,7 +2,8 @@
 	"presets": {
 		"high":		"High",
 		"low":		"Low",
-		"series":	"Serien",
+		"series1":	"Serien Low",
+		"series2":	"Serien High",
 		"old":		"Alt"
 	},
 	"video":
@@ -34,7 +35,7 @@
 				"nlmeans":	"medium",
 				"resize":	"1280"
 			},
-			"series": {
+			"series1": {
 				"resize": "1080"
 			}
 		},
@@ -64,6 +65,10 @@
 			"high": {
 				"codec":	"libx265",
 				"mode":		"crf",
+				"setting":	22
+			},
+			"series1": {
+				"resize":	"720",
 				"setting":	22
 			},
 			"old": {
@@ -97,6 +102,7 @@
 		}
 	},
 	"audio": {
+		"autoNaming": "##LANG:human## (##CHANNELS:short####LOUDNORM:comma-true##)",
 		"choices": {
 			"ger" : {
 				"loudnorm":	"0",
@@ -173,6 +179,14 @@
 					"profile":		"aac_he",
 					"bitrate":		"256k",
 					"samplerate":	48000
+				},
+				"series1": {
+					"profile":		"aac_he",
+					"bitrate":		"128k",
+					"samplerate":	48000,
+					"channels":		"dpl",
+					"filter":		"aresample=matrix_encoding=dplii",
+					"loudnorm":		"ebur128"
 				}
 			},
 			"7.1": {
@@ -186,6 +200,6 @@
 	},
 	"subtitles": {
 		"pick": ["ger", "eng"],
-		"autoNaming": "##INDEX## - ##LANG:human## ##FORCED=(Forced)##"
+		"autoNaming": "##INDEX## - ##LANG:human## ##FORCED=(Forced)## ##TITLE##"
 	}
 }

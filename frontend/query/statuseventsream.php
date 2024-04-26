@@ -17,6 +17,8 @@
 	
 	ini_set('max_execution_time', 0);
 	
+	const SOCK_READ_TIMEOUT_MS = 10000;	//Microseconds
+	
 	function shutDownFunction()
 	{
 		global $gResponseSocket;
@@ -65,6 +67,8 @@
 
 	$aID = 0;
 	$aInit = true;
+	
+	$aIdleTimeMS = 0;
 
 	$aOldData = '';
 	$aData = '';
@@ -156,10 +160,11 @@
 		$aReadSockets = array($aStatusSocket);
 		$aWriteSockets = null;
 		$aExceptSockets = null;
-		$aSockChanged = socket_select(read: $aReadSockets, write: $aWriteSockets, except: $aExceptSockets, seconds: 0, microseconds: 100);
+		$aSockChanged = socket_select(read: $aReadSockets, write: $aWriteSockets, except: $aExceptSockets, seconds: 0, microseconds: SOCK_READ_TIMEOUT_MS);
 		if($aSockChanged === false)
 		{
 			$aID++;
+			$aIdleTimeMS = 0;
 			echo	"id: $aID\n" .
 					"event: connection\n" .
 					"data: Error receiving data from Queue Manager\n\n";
@@ -168,11 +173,15 @@
 		elseif($aSockChanged > 0)
 		{	
 			$aID++;
+			//$aIdleTimeMS = 0;
 			//Read data from control socket
 			if(socket_recv(socket: $aStatusSocket, data: $aMessage, length: 64 * 1024, flags: MSG_DONTWAIT) === false)
+			{
 				echo	"id: $aID\n" .
 						"event: connection\n" .
 						"data: Error receiving data from Queue Manager\n\n";
+				$aIdleTimeMS = 0;
+			}
 			else
 			{
 				$aMessageArray = explode(separator: '\0', string: $aMessage);
@@ -191,14 +200,29 @@
 							echo "event: $aTopic\n";
 							echo "data: $aData\n\n";
 							$aOldData = $aData;
+							$aIdleTimeMS = 0;
 						}
 					}
 					elseif($aDataMessage != '')
+					{
 						echo "id: $aID\n" .
 							"event: unknown\n" .
 							"data: $aMessage\n\n";
+						$aIdleTimeMS = 0;
+					}
 				}
 			}
+		}
+		else
+			$aIdleTimeMS += SOCK_READ_TIMEOUT_MS;
+			
+		//Prevent net::ERR_HTTP2_PROTOCOL_ERROR 200 (timeout if nothing is beeing sent over HTTPs)
+		if($aIdleTimeMS > 10000000) //ca. 10s - 10000000 microseconds
+		{
+			$aIdleTimeMS = 0;
+			echo	"id: $aID\n" .
+					"event: idle\n" .
+					"data: -idle-\n\n";
 		}
 		ob_flush();
 		flush();

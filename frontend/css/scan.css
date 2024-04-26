@@ -150,3 +150,17 @@ selectContent cropPreviewContainer img {
     border-radius: 0px 0px 0.5em 0.5em ;
 }
 
+button[type='submit'] {
+	background-position: right;
+	background-repeat: no-repeat;
+	background-size: 16px; 
+}
+button.submit-waiting {
+	background-image: url('../img/loader.svg');
+}
+button.submit-success {
+	background-image: url('../img/check1-16.png');
+}
+button.submit-error {
+	background-image: url('../img/error1-16.png');
+}

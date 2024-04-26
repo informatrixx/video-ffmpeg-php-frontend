@@ -1,5 +1,7 @@
 var gXHRData = new Array();
 
+var gSubmitterForm = null;
+
 function escapeQuotes(aText)
 {
 	var aMap = {
@@ -12,9 +14,12 @@ function escapeQuotes(aText)
 
 function scanFileQuery(aFile, aType)
 {
+	let aPresetString = '';
+	if(gPreset != '')
+		aPresetString = '&preset=' + gPreset;
 	let newQuery = new XMLHttpRequest();
 	newQuery.addEventListener('load', scanFileResult);
-	newQuery.open('GET', 'query/scan.php?file=' + aFile + '&type=' + aType);
+	newQuery.open('GET', 'query/scan.php?file=' + aFile + '&type=' + aType + aPresetString);
 	newQuery.send();
 }
 
@@ -126,6 +131,8 @@ function duplicateStream(aObject)
 
 function collectFormSubmit(aForm)
 {
+	gSubmitterForm = aForm;
+	
 	let aMapList = new Array();
 	for(let i = 0; i < document.getElementsByTagName('selectContainer').length; i++)
 	{
@@ -191,9 +198,61 @@ function collectFormSubmit(aForm)
 	aParamList.forEach(element => console.log(element));
 	let aURl = aForm.getAttribute('action');
 	
-	location.href = aURl + '?' + aParamList.join('&');
+	for(let i = 0; i < aForm.getElementsByTagName('button').length; i++)
+	{
+		if(aForm.getElementsByTagName('button')[i].type == 'submit')
+		{
+			let aButtonClass = aForm.getElementsByTagName('button')[i].getAttribute('class');
+			const aClassRegex = /submit-.+/;
+			if(aButtonClass != null)
+				aButtonClass = aButtonClass.replace(aClassRegex, '') + ' submit-waiting';
+			else
+				aButtonClass = ' submit-waiting';
+			aForm.getElementsByTagName('button')[i].setAttribute('class', aButtonClass);
+		}
+	}
+	
+	let newQuery = new XMLHttpRequest();
+	newQuery.addEventListener('load', submitFormResult);
+	newQuery.open('GET', aURl + '?' + aParamList.join('&'));
+	newQuery.send();
+	
 	return false;
 }
+
+function submitFormResult()
+{
+	var aJSONData = JSON.parse(this.responseText);
+	let aNewClass = 'submit-error';
+	
+	if(aJSONData.success == false)
+		alert('Fehler:' + aJSONData.error);
+	else
+	{
+		aNewClass = 'submit-success';
+		if(document.getElementsByName('outfolder').length > 0)
+			gOutFolder = document.getElementsByName('outfolder')[0].value;
+		
+		alert('Erfolgreich hinzugefügt!');
+	}
+	
+	for(let i = 0; i < gSubmitterForm.getElementsByTagName('button').length; i++)
+	{
+		if(gSubmitterForm.getElementsByTagName('button')[i].type == 'submit')
+		{
+			let aButtonClass = gSubmitterForm.getElementsByTagName('button')[i].getAttribute('class');
+			const aClassRegex = /submit-.+/;
+			if(aButtonClass != null)
+				aButtonClass = aButtonClass.replace(aClassRegex, '') + ' ' + aNewClass;
+			else
+				aButtonClass = aNewClass;
+			gSubmitterForm.getElementsByTagName('button')[i].setAttribute('class', aButtonClass);
+		}
+	}
+	
+	return aJSONData.success == true;
+}
+	
 
 function processTemplateData(aTemplateData, aJSONData, aContainer)
 {

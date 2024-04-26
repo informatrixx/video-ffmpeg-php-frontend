@@ -157,8 +157,8 @@
 			"1":	"Mono",
 			"2":	"Stereo",
 			"dpl":	"Dolby Pro Logic II",
-			"6":	"5.1 (Surround)",
-			"8":	"7.1 (Surround)"
+			"6":	"5.1",
+			"8":	"7.1"
 		},
 		"bitrate": ["32k", "40k", "48k", "56k", "64k", "80k", "96k", "112k", "128k", "160k", "192k", "224k", "256k", "320k", "448k", "512k", "640k"],
 		"samplerate": [32000, 44100, 48000],
@@ -197,7 +197,7 @@
 	"scanModules": {
 		"video": {
 			"fileExtensions": {
-				"match":	["mkv", "mp4", "avi", "flv", "3gp", "m2ts", "m2v", "mov", "mpeg", "ts", "vob", "wmv", "mts"],
+				"match":	["mkv", "mp4", "m4v", "avi", "flv", "3gp", "m2ts", "m2v", "mov", "mpeg", "ts", "vob", "wmv", "mts"],
 				"join":		["idx", "aac", "mkv", "mp4", "avi", "mp3", "srt", "m4a"]
 			}
 		},

@@ -25,14 +25,17 @@
 	<selectButton>Global</selectButton>
 </selectButtons>
 <selectContent>
-	<label>Vorgabe:</label><select name='conversionchoice'>
+	<label>Vorgabe:</label><select name='conversionchoice' onchange='reloadPreset(this)'>
 		<?php
 		foreach(DECISIONS['presets'] as $aPresetID => $aPresetName)
-			echo "<option value='$aPresetID'>$aPresetName</option>";
+			echo "<option value='$aPresetID' ##SELECT:preset=$aPresetID##>$aPresetName</option>";
 		?>
 		</select>
+	<delimiter></delimiter>
 	<label>Titel:</label><input style='grid-column: span 2;' name='filetitle' value='##DATA:info:title##'>
-	<label>Ausgabepfad:</label><input style='grid-column: span 2;' name='outfolder' value='##DATA:outfile:folder##'>
+	<label>Ausgabepfad:</label><div style='grid-column: span 2;'><input style='width: 90%' name='outfolder' value='##DATA:outfile:folder##'><button type='button' onclick='' style='width: 10%'>...</button></div>
 	<label>Ausgabedatei:</label><input style='grid-column: span 2;' name='outfile' value='##DATA:outfile:fileName##'>
+	<label>Tuning:</label><p><input type='checkbox' name='max_interleave_delta_null' value='1'> max_interleave_delta = 0</p>
+	<delimiter></delimiter>
 	<label>Konvertieren:</label><button type='submit'>Weiter...</button>
 </selectContent>

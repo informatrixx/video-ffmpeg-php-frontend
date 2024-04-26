@@ -50,7 +50,7 @@
 	else
 	{
 		$aOutFile = escapeshellcmd($aTmpFileBMP);
-		$aFFExtractCmd = CONFIG['Binaries']['ffmpeg'] . " -ss $aSeek -i " . escapeshellarg($aInputFile) . " -frames:v 1 -vf  scale='trunc(ih*dar):ih',setsar=1 -an -sn '$aOutFile' 2> /srv/www/movie-ffmpeg-php-frontend/log/extract_bmp.log";
+		$aFFExtractCmd = CONFIG['Binaries']['ffmpeg'] . " -ss $aSeek -i " . escapeshellarg($aInputFile) . " -frames:v 1 -vf  scale='trunc(ih*dar):ih',setsar=1 -an -sn '$aOutFile' 2> " . LOG_DIR . "extract_bmp.log";
 		shell_exec($aFFExtractCmd);
 		
 		$aFFCropDetectCmd = CONFIG['Binaries']['ffmpeg'] . " -ss $aSeek -skip_frame nokey -i " . escapeshellarg($aInputFile) . " -frames:v " . STATIC_CONFIG['cropPreview']['detectNumberFrames'] . ' -vf cropdetect=round=2 -an -sn -f null - 2>&1 ';

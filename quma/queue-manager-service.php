@@ -703,6 +703,10 @@
 
 							$aStreamIndex++;
 					}
+					if(isset($aItemSettings['max_interleave_delta_null']))
+						$aConvertString .= ' -max_interleave_delta 0 \\' . PHP_EOL;
+
+					
 					//If moreParams are given
 					if(isset($aItemSettings['moreParams']))
 						$aConvertString .= $aItemSettings['moreParams'] . ' \\' . PHP_EOL;
@@ -732,7 +736,7 @@
 					$aConvertString .= ' -metadata:s:a "_STATISTICS_TAGS=DURATION BPS" \\' . PHP_EOL;
 
 					$aOutFolder = rtrim(string: $aItemSettings['outfolder'], characters: '/') . '/';
-					$aOutFile = $aItemSettings['outfile'];
+					$aOutFile = '.quma.ffmpeg.' . $aItemSettings['outfile'];
 					$aConvertString .= " " . escapeshellarg("$aOutFolder$aOutFile") . PHP_EOL;
 					
 					//Add itemID to scan list for identification
@@ -746,7 +750,7 @@
 								do
 								{
 									$i++;
-									$aMvFileName = "$aOutFile~$i";
+									$aMvFileName = ".quma.$aOutFile~$i";
 								} while(file_exists("$aOutFolder$aMvFileName"));
 								_msg(message: 'Output file already exists! Move...', CRF: '');
 								if(rename(from: "$aOutFolder$aOutFile", to: "$aOutFolder$aMvFileName"))
@@ -932,7 +936,7 @@
 							statusEcho(topic: 'info', statusArray: $aStatusArray);
 						}
 					break;
-					case preg_match(pattern: '@frame=\s*(?<frame>[\d.]+)\s+fps=\s*(?<fps>[\d.]+)\s+q=\s*(?<q>[\d.]+)\s+size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
+					case preg_match(pattern: '@frame=\s*(?<frame>[\d.]+)\s+fps=\s*(?<fps>[\d.]+)\s+q=\s*(?<q>[\d.]+)\s+size=\s*(?<size>[\d]+\Si?B)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=\s*(?<size>[\d]+\SB)\s+time=\s*(?<time>[\d:.]+)\s+bitrate=\s*(?<bitrate>[\d.]+\Sbits/s)\s+speed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 					case preg_match(pattern: '@size=N/A\s+time=(?<time>[\d:.]+)\sbitrate=N/A\sspeed=\s*(?<speed>[\d.]+x)@mi', subject: $aOutput, matches: $aMatches) > 0:
 						$aSize = null;
@@ -942,14 +946,14 @@
 							$aItemID = $aIDMatches['id'];
 						
 						if(isset($aMatches['size']))
-							if(preg_match(pattern: '/(\d+)(\S?B)/i', subject: $aMatches['size'], matches: $aSizeMatches))
+							if(preg_match(pattern: '/(\d+)(\S?i?B)/i', subject: $aMatches['size'], matches: $aSizeMatches))
 							{
 								$aSizeFactor = match(strtolower($aSizeMatches[2]))
 								{
 									'b'	 => 1,
-									'kb' => 1024,
-									'mb' => 1024 * 1024,
-									'gb' => 1024 * 1024 * 1024,
+									'kb', 'kib' => 1024,
+									'mb', 'mib' => 1024 * 1024,
+									'gb', 'gib' => 1024 * 1024 * 1024,
 								};
 								$aSizeBytes = $aSizeMatches[1] * $aSizeFactor;
 								$aSize = array(
@@ -1093,8 +1097,18 @@
 						break;
 						case QUMA_STATUS_CONVERT:
 							//Conversion done...
+							$aOutFolder = rtrim(string: $aItemSettings['outfolder'], characters: '/') . '/';
+							$aTempOutFile = '.quma.ffmpeg.' . $aItemSettings['outfile'];
+							$aOutFile = $aItemSettings['outfile'];
+							
+							_msg(message: "Move $aTempOutFile -> $aOutFile", CRF: '');
+							if(rename("$aOutFolder$aTempOutFile", "$aOutFolder$aOutFile"))
+								_msg(message: 'OK');
+							else
+								_msg(message: 'Fehler');
+							
 							$aQueueItem['result'] = array(
-								'fileSize' =>	filesize($aQueueItem['settings']['outfolder'] . $aQueueItem['settings']['outfile']),
+								'fileSize' =>	filesize("$aOutFolder$aOutFile"),
 								);
 							changeQueueItemStatus(queueItemIndex: $aItemIndex, newStatus: QUMA_STATUS_CONVERT_DONE);
 							continue(2);

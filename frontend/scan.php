@@ -37,6 +37,14 @@
 		die("Wrong module selection! ({$_GET['type']})");
 	}
 
+	if(isset($_GET['preset']) && !isset(DECISIONS['presets']))
+	{
+		header("HTTP/1.0 400 Bad Request");
+		die("Wrong preset selection! ({$_GET['preset']})");
+	}
+	else
+		$aPreset = isset($_GET['preset']) ? $_GET['preset'] : '';
+
 
 ?>
 <html>
@@ -69,7 +77,8 @@
 	<script>
 		var gFileName = "<?=str_replace(search: ["'", '"'], replace: ['\\x27', '\\x22'], subject: $_GET['file'])?>";
 		var gScanType = "<?=urlencode($_GET['type'])?>";
-
+		var gPreset = "<?= isset($_GET['preset']) ? $_GET['preset'] : '' ?>";
+		var gOutFolder = "<?= isset($_GET['outfolder']) ? str_replace(search: ["'", '"'], replace: ['\\x27', '\\x22'], subject: $_GET['outfolder']) : '' ?>";
 
 		const PAGE_TITLE_PREFIX = 'SCAN - ';
 		

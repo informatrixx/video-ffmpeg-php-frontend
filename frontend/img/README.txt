@@ -3,8 +3,10 @@ If you want to use this icons, you have to attribute, or replace them by your ow
 add1-16.png			<a href="https://www.flaticon.com/free-icons/read-more" title="read more icons">Read more icons created by exomoon design studio - Flaticon</a>
 archive1-16.png		<a href="https://www.flaticon.com/free-icons/files-and-folders" title="files and folders icons">Files and folders icons created by exomoon design studio - Flaticon</a>
 bitrate1-16.png		<a href="https://www.flaticon.com/free-icons/activity" title="activity icons">Activity icons created by exomoon design studio - Flaticon</a>
+check1-16.png		<a href="https://www.flaticon.com/free-icons/foursquare-check-in" title="foursquare-check-in icons">Foursquare-check-in icons created by icon wind - Flaticon</a>
 duplicate1-16.png	<a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by exomoon design studio - Flaticon</a>
 duration1-16.png	<a href="https://www.flaticon.com/free-icons/duration" title="duration icons">Duration icons created by exomoon design studio - Flaticon</a>
+error1-16.png		<a href="https://www.flaticon.com/free-icons/close" title="close icons">Close icons created by Alfredo Hernandez - Flaticon</a>
 expand1-16.png		<a href="https://www.flaticon.com/free-icons/maximize" title="maximize icons">Maximize icons created by exomoon design studio - Flaticon</a>
 folder1-16.png		<a href="https://www.flaticon.com/free-icons/coding" title="coding icons">Coding icons created by exomoon design studio - Flaticon</a>
 folder2-16.png		<a href="https://www.flaticon.com/free-icons/import" title="import icons">Import icons created by exomoon design studio - Flaticon</a>

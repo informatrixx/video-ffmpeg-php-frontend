@@ -55,12 +55,15 @@ function exploreFolderQuery(aFolder, aUpdateHistory = true, aModuleJoin = false)
 	let newQuery = new XMLHttpRequest();
 	let aUpdateHistoryString = '';
 	let aModuleJoinString = '';
+	let aPresetString = '';
 	if(aUpdateHistory == true)
 		aUpdateHistoryString = '&history=1';
 	if(aModuleJoin != false)
 		aModuleJoinString = '&join=' + aModuleJoin;
+	if(gPreset != '')
+		aPresetString = '&preset=' + gPreset;
 	newQuery.addEventListener("load", exploreFolderResult);
-	newQuery.open("GET", "query/explore.php?folder=" + encodeURIComponent(aFolder) + aUpdateHistoryString + aModuleJoinString);
+	newQuery.open("GET", "query/explore.php?folder=" + encodeURIComponent(aFolder) + aUpdateHistoryString + aModuleJoinString + aPresetString);
 	newQuery.send();
 }
 
@@ -129,6 +132,14 @@ function exploreFolderResult()
 		let aScanModule = aJSONData.files[aScanFileName].scan;
 		let aJoin = aJSONData.files[aScanFileName].join;
 		
+		let aPresetString = '';
+		if(gPreset != '')
+			aPresetString = '&preset=' + gPreset;
+		
+		let aOutFolderString = '';
+		if(typeof gOutFolder !== 'undefined' && gOutFolder != '')
+			aOutFolderString = '&outfolder=' + gOutFolder;
+		
 		let aNewFileElement = document.createElement('file');
 		let aJoinLink = '';
 		if(aJoin == true && aFilePath != gFileName)
@@ -137,7 +148,7 @@ function exploreFolderResult()
 		let aContent = '';
 		
 		if(aScanModule != false)
-			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + encodeURIComponent(aFolderName) + '&file=' + encodeURIComponent(aFilePath) + '&type=' + aScanModule + '">' + escapeHTML(aScanFileName) + '</a>';
+			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + '<a href="scan.php?folder=' + encodeURIComponent(aFolderName) + '&file=' + encodeURIComponent(aFilePath) + '&type=' + aScanModule + aPresetString + aOutFolderString + '">' + escapeHTML(aScanFileName) + '</a>';
 		else
 			aContent = '<span onmouseover="showFullText(this, true)" onmouseout="showFullText(this, false)">' + aJoinLink + escapeHTML(aScanFileName);
 		

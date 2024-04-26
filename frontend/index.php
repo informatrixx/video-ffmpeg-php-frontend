@@ -1,3 +1,8 @@
+<?php
+	header("Cache-Control: no-cache, must-revalidate"); //HTTP 1.1
+	header("Pragma: no-cache"); //HTTP 1.0
+	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+?>
 <!DOCTYPE html>
 <html lang="en">
 <?php
@@ -56,6 +61,8 @@
 
 	const gStatusContainer = document.getElementsByTagName('status')[0];
 	const gShowFullInfo = false;
+	
+	var gPreset = "<?= isset($_GET['preset']) ? $_GET['preset'] : '' ?>";
 
 	window.addEventListener('popstate', historyEvent);
 

@@ -16,6 +16,11 @@
 		
 		$videoSizeName = DECISIONS['video'][$aVideoSizeIndex]['name'];
 		
+		$aResult['decision'] = array(
+			'preset' =>				$preset,
+			'aVideoSizeIndex' =>		$aVideoSizeIndex,
+			);
+
 		$aResult['codec'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['codec']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['codec'] : DECISIONS['video'][$aVideoSizeIndex]['codec'];
 		$aResult['mode'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['mode']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['mode'] : DECISIONS['video'][$aVideoSizeIndex]['mode'];
 		$aResult['codecMode'] = $aResult['codec'] . '_' . $aResult['mode'];
@@ -24,7 +29,7 @@
 
 		$aResult['preset'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['preset']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['preset'] : DECISIONS['video'][$aVideoSizeIndex]['preset'];
 		$aResult['crop'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['crop']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['crop'] : DECISIONS['video'][$aVideoSizeIndex]['crop'];
-		$aResult['resize'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['crop']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['resize'] : DECISIONS['video'][$aVideoSizeIndex]['resize'];
+		$aResult['resize'] = isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['resize']) ? DECISIONS['video'][$aVideoSizeIndex][$preset]['resize'] : DECISIONS['video'][$aVideoSizeIndex]['resize'];
 		
 		if(isset(DECISIONS['video'][$aVideoSizeIndex][$preset]['nlmeans']))
 			$aResult['nlmeans'] = DECISIONS['video'][$aVideoSizeIndex][$preset]['nlmeans'];
@@ -49,8 +54,21 @@
 		$aResult = array();
 		
 		$aResult['loudnorm'] = $aLangChoice['loudnorm'];
-		if(isset($aLangChoice['preset']))
+		if(isset($_GET['preset']) && CONV_PRESET == $_GET['preset'])
+			$preset = CONV_PRESET;
+		elseif(isset($aLangChoice['preset']))
 			$preset = $aLangChoice['preset'];
+
+		if(isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['loudnorm']))
+			$aResult['loudnorm'] =  DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['loudnorm'];
+		elseif(isset(DECISIONS['audio']['profiles'][$aSelectedProfile]['loudnorm']))
+			$aResult['loudnorm'] = DECISIONS['audio']['profiles'][$aSelectedProfile]['loudnorm'];
+		
+		$aResult['decision'] = array(
+			'langOptions' =>	$aLangChoice,
+			'preset' =>			$preset,
+			'profile' =>		$aSelectedProfile,
+			);
 		$aResult['codec'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['codec']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['codec'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['codec'];
 		$aResult['profile'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['profile']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['profile'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['profile'];
 		$aResult['bitrate'] = isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]) && isset(DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['bitrate']) ? DECISIONS['audio']['profiles'][$aSelectedProfile][$preset]['bitrate'] : DECISIONS['audio']['profiles'][$aSelectedProfile]['bitrate'];
@@ -63,18 +81,25 @@
 	
 	
 	$aFFProbeCmd = CONFIG['Binaries']['ffprobe'] . ' -show_chapters -show_format -show_streams -print_format json -loglevel quiet ' . escapeshellarg($aScanFileName);
+
+	file_put_contents(LOG_DIR . 'probe.sh', $aFFProbeCmd);
 	
-	$aJSONProbeData = shell_exec($aFFProbeCmd);
-	$aFFProbeData = json_decode(json: $aJSONProbeData, associative: true);
-	
-	if(empty($aFFProbeData))
+	$aJSONProbeData = array();
+	$aResultCode = null;
+	$aResult = exec(command: $aFFProbeCmd, output: $aJSONProbeData, result_code: $aResultCode);
+	if($aResultCode != 0)
 	{
 		echo json_encode(value: array(
-			'success' =>	false,
+			'success'		=> false,
+			'result_code'	=> $aResultCode,
+			'output'		=> implode(separator: PHP_EOL, array: $aJSONProbeData),
+			'result'		=> $aResult,
 			), flags: JSON_PRETTY_PRINT);
 		exit;	
 	}
-	
+
+	$aFFProbeData = json_decode(json: implode(separator: PHP_EOL, array: $aJSONProbeData), associative: true);
+
 	$aFileDuration = null;
 	$aVideoStreamsCount = 0;
 	$aAudioLanguages = array();
@@ -105,6 +130,8 @@
 			case 'video': 
 				if($aStreamData['disposition']['attached_pic'] != 1)
 					$aVideoStreamsCount++;
+				else
+					break;
 				
 				$aSizeInBytes = match(true) 
 				{
@@ -113,9 +140,21 @@
 					default => null
 				};
 
-				$aInputDARDiv = explode(separator: ':', string: $aStreamData['display_aspect_ratio']);
-				$aInputSAR = $aStreamData['sample_aspect_ratio'];
-				$aInputSARDiv = explode(separator: ':', string: $aStreamData['sample_aspect_ratio']);
+				if(isset($aStreamData['sample_aspect_ratio']))
+				{
+					$aInputSAR = $aStreamData['sample_aspect_ratio'];
+					$aInputSARDiv = explode(separator: ':', string: $aStreamData['sample_aspect_ratio']);
+				}
+				else
+				{
+					$aInputSAR = "1:1";
+					$aInputSARDiv = array(1, 1);
+				}
+				
+				if(isset($aStreamData['display_aspect_ratio']))
+					$aInputDARDiv = explode(separator: ':', string: $aStreamData['display_aspect_ratio']);
+				else
+					$aInputDARDiv = array($aStreamData['width'] * $aInputSARDiv[0] / $aInputSARDiv[1], $aStreamData['height']);
 
 				$aCropPreviewSeek = array();
 				for($i = 1; $i < 11; $i++)
@@ -239,6 +278,7 @@
 						'short' =>	$aStreamData['tags']['language'],
 						),
 					'streamIndex' => $aSI,
+					'title' => isset($aStreamData['tags']['title']) ? $aStreamData['tags']['title'] : null,
 					);
 				break;
 		}
@@ -260,6 +300,7 @@
 	
 	$aResult = array(
 		'autoNaming'		=> array(
+			'audio'	=>	DECISIONS['audio']['autoNaming'],
 			'subtitle'	=>	DECISIONS['subtitles']['autoNaming'],
 			),
 		'file' =>				$aScanFileName,
@@ -283,11 +324,13 @@
 			'fileName' => 	pathinfo(path: $aScanFileName, flags: PATHINFO_FILENAME) . '.mkv',
 			'folder' => 	rtrim(string: dirname($aScanFileName), characters: '/') . '/',
 			),
+		'preset' => CONV_PRESET,
 		'streams' => array(
 			'audio' =>				$aAudioStreams,
 			'subtitle' =>			isset($aSubtitleStreams) ? $aSubtitleStreams : null,
 			'video' =>				$aVideoStreams,
 			),
+		'rawData' => implode(separator: PHP_EOL, array: $aJSONProbeData),
 		);
 
 	echo json_encode(value: $aResult, flags: JSON_PRETTY_PRINT);

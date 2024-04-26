@@ -434,6 +434,15 @@ function autoTitle(aObject, aTopic)
 					case 'INDEX':
 						aReplacement = aNamingIndex;
 						break;
+					case 'TITLE':
+						for(let j = 0; j < gScanFileResult[aFileIndex]['streams'][aTopic].length; j++)
+							if(gScanFileResult[aFileIndex]['streams'][aTopic][j]['streamIndex'] == aStreamIndex)
+							{
+								if(gScanFileResult[aFileIndex]['streams'][aTopic][j]['title'] != null)
+									aReplacement = '"' + gScanFileResult[aFileIndex]['streams'][aTopic][j]['title'] + '"';
+								break;
+							}
+						break;
 					case 'LANG':
 						if(aMatch[2].charAt(0) != ':')
 							break;
@@ -452,6 +461,21 @@ function autoTitle(aObject, aTopic)
 						if(document.getElementsByName('forced[' + aIndex + ']') != null && document.getElementsByName('forced[' + aIndex + ']')[0].checked)
 							aReplacement = aMatch[2].slice(1);
 						break;
+					case 'CHANNELS':
+						if(aMatch[2].charAt(0) != ':')
+							break;
+						if(document.getElementsByName('ac[' + aIndex + ']') != null)
+							aReplacement = document.getElementsByName('ac[' + aIndex + ']')[0].options[document.getElementsByName('ac[' + aIndex + ']')[0].selectedIndex].text;
+						break;
+					case 'LOUDNORM':
+						if(aMatch[2].charAt(0) != ':')
+							break;
+						let aLoudnormTopic = aMatch[2].slice(1);
+						
+						if(document.getElementsByName('loudnorm[' + aIndex + ']') != null)
+							if(aLoudnormTopic == 'comma-true')
+								aReplacement = document.getElementsByName('loudnorm[' + aIndex + ']')[0].options[document.getElementsByName('loudnorm[' + aIndex + ']')[0].selectedIndex].value != 0 ? ', Loudnorm' : '';
+						break;
 				}
 				aTitle = aTitle.replaceAll(aMatch[0], aReplacement);
 			}
@@ -459,4 +483,13 @@ function autoTitle(aObject, aTopic)
 			break;
 		}
 	}
+}
+
+function reloadPreset(aObject)
+{
+	let aSearch = window.location.search;
+	const aPresetRegex = /preset=[^&]+/;
+	aSearch = aSearch.replace(aPresetRegex, '');
+	aSearch = aSearch + '&preset=' + aObject.options[aObject.selectedIndex].value;
+	location.href = aSearch;
 }
