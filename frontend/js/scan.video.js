@@ -409,6 +409,12 @@ function autoTitle(aObject, aTopic)
 	const aStreamIndex = aContentContainer.getAttribute('streamindex');
 	const aFileIndex = aContentContainer.getAttribute('fileindex');
 	
+	if(aTopic == 'filename')
+	{
+		document.getElementsByName('outfile')[0].value = document.getElementsByName('filetitle')[0].value + '.mkv';
+		return true;	
+	}
+	
 	let aCount = 0;
 	let aNamingIndex = 0;
 	let aNamingPattern = gScanFileResult[aFileIndex]['autoNaming'][aTopic];
@@ -485,6 +491,13 @@ function autoTitle(aObject, aTopic)
 	}
 }
 
+function autoTitleAll()
+{
+	for(let i = 0; i < document.getElementsByTagName('button').length; i++)
+		if(typeof document.getElementsByTagName('button')[i].dataset.autotitle !== 'undefined')
+			autoTitle(document.getElementsByTagName('button')[i], document.getElementsByTagName('button')[i].dataset.autotitle);
+}
+
 function reloadPreset(aObject)
 {
 	let aSearch = window.location.search;
@@ -492,4 +505,22 @@ function reloadPreset(aObject)
 	aSearch = aSearch.replace(aPresetRegex, '');
 	aSearch = aSearch + '&preset=' + aObject.options[aObject.selectedIndex].value;
 	location.href = aSearch;
+}
+
+function outFolderChange(aObject)
+{
+	let aOption = aObject.options[aObject.selectedIndex];
+	if(typeof aOption.dataset.do != 'undefined')
+		switch(aOption.dataset.do)
+		{
+			case 'promptOutFolder':
+				let aPrompt = prompt('Ausgabeordner', aObject.value);
+				if(aPrompt != null)
+				{
+					aOption.value = aPrompt;
+					aOption.innerHTML = aPrompt + ' (Manuell...)';
+				}
+				break;
+		}
+			
 }

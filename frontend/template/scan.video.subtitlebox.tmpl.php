@@ -30,7 +30,7 @@
 	<label>Sprache:</label><text>##DATA:language:human##</text>
 	<label>Codec:</label><text>##DATA:codec:nameFull##</text>
 	<label>Größe:</label><text>##DATA:size:human##</text>
-	<label>Titel:</label><input name='title[##VAR:index##]' value='##DATA:title##'><button type="button" onclick='autoTitle(this, "subtitle")'><img src='img/note1-16.png' alt='Auto-Name'/></button>
+	<label>Titel:</label><input name='title[##VAR:index##]' value='##DATA:title##'><button type="button" onclick='autoTitle(this, "subtitle")' data-autoTitle='subtitle'><img src='img/note1-16.png' alt='Auto-Name'/></button>
 	<label>Default:</label><input type='checkbox' name='default[##VAR:index##]' value='1' ##CHECK:disposition:default##>
 	<label>Forced:</label><input type='checkbox' name='forced[##VAR:index##]' value='1' ##CHECK:disposition:forced##>
 </selectContent>

@@ -30,7 +30,7 @@
 	<label>Sprache:</label><text>##DATA:language:human##</text>
 	<label>Größe:</label><text>##DATA:size:human##</text>
 	<delimiter></delimiter>
-	<label>Titel:</label><input style='grid-column: span 2;' name='title[##VAR:index##]' value='##DATA:title##'><button type="button" onclick='autoTitle(this, "audio")'><img src='img/note1-16.png' alt='Auto-Name'/></button>
+	<label>Titel:</label><div style='grid-column: span 2;'><input style='width: 90%' name='title[##VAR:index##]' value='##DATA:title##'><button type="button" onclick='autoTitle(this, "audio")' style='width: 10%; top: 4px; position: relative' data-autoTitle='audio'><img src='img/note1-16.png' alt='Auto-Name'/></button></div>
 	<label>Codec:</label><select name='c[##VAR:index##]' onchange='selectAudioCodec(this)'>
 		<?php
 		foreach(STATIC_CONFIG['audio']['codecs'] as $aCodecValue => $aCodecData)
