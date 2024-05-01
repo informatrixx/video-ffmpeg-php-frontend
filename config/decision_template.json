@@ -71,6 +71,9 @@
 				"resize":	"720",
 				"setting":	22
 			},
+			"series2": {
+				"setting":	22
+			},
 			"old": {
 				"nlmeans":	"medium",
 				"resize":	"720"
@@ -156,6 +159,9 @@
 				"low": {
 					"profile":		"aac_he_v2",
 					"bitrate":		"56k"
+				},
+				"series2": {
+					"loudnorm":		"ebur128"
 				}
 			},
 			"dpl": {
@@ -187,7 +193,14 @@
 					"channels":		"dpl",
 					"filter":		"aresample=matrix_encoding=dplii",
 					"loudnorm":		"ebur128"
+				},
+				"series2": {
+					"profile":		"aac_he",
+					"bitrate":		"256k",
+					"samplerate":	48000,
+					"loudnorm":		"ebur128"
 				}
+
 			},
 			"7.1": {
 				"codec":		"libfdk_aac",
@@ -200,6 +213,6 @@
 	},
 	"subtitles": {
 		"pick": ["ger", "eng"],
-		"autoNaming": "##INDEX## - ##LANG:human## ##FORCED=(Forced)## ##TITLE##"
+		"autoNaming": "##INDEX## - ##LANG:human[if-no-title]##  ##TITLE## ##FORCED=(Forced)##"
 	}
 }

@@ -452,14 +452,38 @@ function autoTitle(aObject, aTopic)
 					case 'LANG':
 						if(aMatch[2].charAt(0) != ':')
 							break;
-						let aLangTopic = aMatch[2].slice(1);
+						
+						//Finding the proper index
+						let aItemIndex;
 						for(let j = 0; j < gScanFileResult[aFileIndex]['streams'][aTopic].length; j++)
 							if(gScanFileResult[aFileIndex]['streams'][aTopic][j]['streamIndex'] == aStreamIndex)
 							{
-								if(gScanFileResult[aFileIndex]['streams'][aTopic][j]['language'][aLangTopic] != null)
-									aReplacement = gScanFileResult[aFileIndex]['streams'][aTopic][j]['language'][aLangTopic];
+								aItemIndex = j;
 								break;
 							}
+							
+						let aLangTopic = aMatch[2].slice(1);
+						
+						//Check if a condition is set
+						let aConditionPattern = /(.+)\[(.+)\]/;
+						let aConditionMatches;
+						let aCondition = true;
+						if(aConditionMatches = aLangTopic.match(aConditionPattern))
+						{
+							aLangTopic = aConditionMatches[0];
+
+							switch(aConditionMatches[1])
+							{
+								case 'if-no-title':	//If a title is set -> condition not met
+									if(gScanFileResult[aFileIndex]['streams'][aTopic][aItemIndex]['title'] != null && gScanFileResult[aFileIndex]['streams'][aTopic][aItemIndex]['title'].trim() != '')
+										aCondition = false;
+									break;
+							}
+						}
+						
+						if(aCondition && gScanFileResult[aFileIndex]['streams'][aTopic][aItemIndex]['language'][aLangTopic] != null)
+							aReplacement = gScanFileResult[aFileIndex]['streams'][aTopic][aItemIndex]['language'][aLangTopic];
+						
 						break;
 					case 'FORCED':
 						if(aMatch[2].charAt(0) != '=')
@@ -485,6 +509,10 @@ function autoTitle(aObject, aTopic)
 				}
 				aTitle = aTitle.replaceAll(aMatch[0], aReplacement);
 			}
+			
+			//Clean multiple spaces
+			aPattern = /\s{2,}/g;
+			aTitle = aTitle.replace(aPattern, ' ');
 			document.getElementsByName('title[' + aIndex + ']')[0].value = aTitle;
 			break;
 		}
