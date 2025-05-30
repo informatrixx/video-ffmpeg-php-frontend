@@ -3,7 +3,7 @@
 
 	$aETag = '"' . filemtime(__FILE__) . '"';
 
-	header('Cache-Control: max-age=86400');
+	header('Cache-Control: no-cache, must-revalidate, max-age=86400');
 	header('ETag: ' . $aETag);
 
 	if(isset($_SERVER['HTTP_IF_NONE_MATCH']))

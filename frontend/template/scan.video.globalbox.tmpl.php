@@ -1,11 +1,20 @@
 <?php
 	header('Content-Type: text/plain; charset=utf-8');
 	
-	$aETag = '"' . filemtime(__FILE__) . '"';
+	require('../../shared/common.inc.php');
+	
+	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
+	define(constant_name: 'DECISIONS', value: json_decode(json: file_get_contents(ROOT . 'config/decision_template.json'), associative: true));
+	define(constant_name: 'OUTFOLDER_HISTORY', value: json_decode(json: file_get_contents(ROOT . 'config/outfolder_history.json'), associative: true));
 
-	header('Cache-Control: max-age=86400');
+	if(filemtime(__FILE__) < filemtime(ROOT . 'config/outfolder_history.json'))
+		$aETag = '"' . filemtime(ROOT . 'config/outfolder_history.json') . '"';
+	else
+		$aETag = '"' . filemtime(__FILE__) . '"';
+
+	header('Cache-Control: no-cache, must-revalidate, max-age=86400');
 	header('ETag: ' . $aETag);
-
+	
 	if(isset($_SERVER['HTTP_IF_NONE_MATCH']))
 	{
 		if($_SERVER['HTTP_IF_NONE_MATCH'] == $aETag)
@@ -15,11 +24,6 @@
 		}
 	}
 
-	require('../../shared/common.inc.php');
-	
-	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
-	define(constant_name: 'DECISIONS', value: json_decode(json: file_get_contents(ROOT . 'config/decision_template.json'), associative: true));
-	define(constant_name: 'OUTFOLDER_HISTORY', value: json_decode(json: file_get_contents(ROOT . 'config/outfolder_history.json'), associative: true));
 	
 ?>
 <selectButtons>

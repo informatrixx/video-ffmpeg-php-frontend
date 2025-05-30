@@ -185,7 +185,7 @@
         //Check for duplicate item
         foreach($gConvertQueue as $aQueueItem)
         {
-        	if($newItem['settings']['outfolder'] == $aQueueItem['settings']['outfolder'] && $newItem['settings']['infile'] == $aQueueItem['settings']['infile'])
+        	if(isset($aQueueItem['settings']['outfolder']) && $newItem['settings']['outfolder'] == $aQueueItem['settings']['outfolder'] && $newItem['settings']['infile'] == $aQueueItem['settings']['infile'])
 			{
 				$aResult['error'] = 'Duplicate';
 				_msg(message: 'Duplicate', fixedWidth: 6);

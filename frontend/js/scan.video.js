@@ -470,9 +470,9 @@ function autoTitle(aObject, aTopic)
 						let aCondition = true;
 						if(aConditionMatches = aLangTopic.match(aConditionPattern))
 						{
-							aLangTopic = aConditionMatches[0];
+							aLangTopic = aConditionMatches[1];
 
-							switch(aConditionMatches[1])
+							switch(aConditionMatches[2])
 							{
 								case 'if-no-title':	//If a title is set -> condition not met
 									if(gScanFileResult[aFileIndex]['streams'][aTopic][aItemIndex]['title'] != null && gScanFileResult[aFileIndex]['streams'][aTopic][aItemIndex]['title'].trim() != '')

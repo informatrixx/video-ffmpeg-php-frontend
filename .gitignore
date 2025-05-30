@@ -9,3 +9,4 @@
 *.pid
 *.sock
 config/outfolder_history.json
+config/outfolder_history.json
