@@ -1,6 +1,12 @@
+<?php
+
+	header('Content-Type: text/html; charset=utf-8');
+
+?>
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
+	<meta charset="utf-8">
 	<title>Status</title>
 	<?php
 

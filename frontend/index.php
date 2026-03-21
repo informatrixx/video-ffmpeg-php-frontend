@@ -1,102 +1,147 @@
 <?php
-	header("Cache-Control: no-cache, must-revalidate"); //HTTP 1.1
-	header("Pragma: no-cache"); //HTTP 1.0
-	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../shared/app/bootstrap.php';
+
+header('Content-Type: text/html; charset=utf-8');
+
+$runtime = app_runtime();
+
+if ($runtime->config()->debug()) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
+
+function assetVersion(string $relativePath): string
+{
+    return (string) filemtime(__DIR__ . '/' . ltrim($relativePath, '/'));
+}
 ?>
 <!DOCTYPE html>
-<html lang="en">
-<?php
-
-	require('../shared/common.inc.php');
-	require('../shared/cache-gen.inc.php');
-
-	define(constant_name: 'CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config.json'), associative: true));
-	define(constant_name: 'QUMA_DIR', value: ROOT . '/quma/');
-	define(constant_name: 'QUEUE_FILE', value: QUMA_DIR . 'queue.json');
-	define(constant_name: 'STATIC_CONFIG', value: json_decode(json: file_get_contents(ROOT . 'config/static_config.json'), associative: true));
-	
-	define(constant_name: 'MORE_TEXT', value: '...');
-	
-	if(CONFIG['Debugging'] == true)
-	{
-		ini_set(option: 'display_errors', value: 1);
-		ini_set(option: 'display_startup_errors', value: 1);
-		error_reporting(E_ALL);
-	}
-
-	#Set scan folder
-	$aFolder = '';
-	$aFolderString = ' HOME ';
-	if(isset($_GET['folder']) && !empty($_GET['folder']))
-	{
-		$aFolder = $_GET['folder'];
-		$aFolderString = $aFolder;
-	}
-?>
+<html lang="de">
 <head>
-	<title>FFMPEG - <?=$aFolder?></title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<link rel="stylesheet" href="<?= provideStaticFile('css/index.css')?>">
-	<link rel="stylesheet" href="<?= provideStaticFile('css/explore.css')?>">
-	<link rel="stylesheet" href="<?= provideStaticFile('css/status.css')?>">
-
-	<script src="<?= provideStaticFile('js/explore.js')?>"></script>
-	<script src="<?= provideStaticFile('js/status.js')?>"></script>
-	<script src="<?= provideStaticFile('js/quma-status-codes.js')?>"></script>
-	<script>
-		const PAGE_TITLE_PREFIX = 'FFMPEG - ';
-		function dummy(){}
-	</script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie FFMPEG Frontend</title>
+    <link rel="stylesheet" href="css/app/app.css?v=<?= htmlspecialchars(assetVersion('css/app/app.css')) ?>">
+    <script defer src="js/app/common.js?v=<?= htmlspecialchars(assetVersion('js/app/common.js')) ?>"></script>
+    <script defer src="js/app/dashboard.js?v=<?= htmlspecialchars(assetVersion('js/app/dashboard.js')) ?>"></script>
 </head>
-<body>
-<grid>
-	<status info="base">
-		<h1>Status<actions><img src='img/hide1-16.png' alt='Hide Status'><a href='status.php' target='quma_status'><img src='img/expand1-16.png' alt='Show full Status'></a></actions></h1>
-	</status>
-	<explore></explore>
-</grid>
+<body data-page="dashboard">
+<div class="app-shell">
+    <header class="hero">
+        <div>
+            <p class="eyebrow">Explorer, Scan, Queue</p>
+            <h1>Movie FFMPEG Frontend</h1>
+            <p class="lede">Ein gemeinsamer Workspace fuer Ordneranzeige, Scan, zusaetzliche Inputs, RAR-Extract und die neue SQLite-Queue.</p>
+        </div>
+        <nav class="hero-nav">
+            <a href="batch.php">Batch</a>
+            <a href="templates.php">Templates</a>
+        </nav>
+    </header>
+
+    <section class="status-strip">
+        <div class="status-banner" id="authBanner"></div>
+        <div class="worker-banner" id="workerBanner"></div>
+    </section>
+
+    <main class="workspace-grid">
+        <aside class="panel explorer-panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Explorer</h2>
+                    <p>Ordner anzeigen, Dateien direkt oeffnen und zusaetzliche Inputs ergaenzen.</p>
+                </div>
+            </div>
+            <div class="root-switcher" id="rootSwitcher"></div>
+            <nav class="breadcrumbs" id="breadcrumbs"></nav>
+            <section class="explorer-section">
+                <div class="section-head">
+                    <h3>Ordner</h3>
+                    <button type="button" class="ghost-button" id="refreshBrowserBtn">Neu laden</button>
+                </div>
+                <div class="browser-list" id="folderList"></div>
+            </section>
+            <section class="explorer-section">
+                <div class="section-head">
+                    <h3>Dateien</h3>
+                    <input type="search" id="browserFilterInput" placeholder="Dateien und Ordner filtern">
+                </div>
+                <div class="browser-list browser-file-list" id="fileList"></div>
+            </section>
+        </aside>
+
+        <section class="panel workspace-panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Workspace</h2>
+                    <p id="workspaceSubtitle">Datei im Explorer öffnen, Scan laden und den finalen Plan bearbeiten.</p>
+                </div>
+                <div class="button-row">
+                    <button type="button" id="reloadWorkspaceBtn">Template neu anwenden</button>
+                    <button type="button" id="queueWorkspaceBtn">In Queue legen</button>
+                </div>
+            </div>
+            <div class="empty-state" id="workspaceEmpty">
+                <h3>Kein aktiver Scan</h3>
+                <p>Wähle links eine Video- oder RAR-Datei. Video-Dateien laden den Scan-Editor, RAR-Dateien den Extract-Editor.</p>
+            </div>
+            <div id="workspaceView"></div>
+        </section>
+
+        <aside class="sidebar-stack">
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Queue</h2>
+                        <p>Laufende Jobs abbrechen, pausieren, neu starten und wartende Jobs umsortieren.</p>
+                    </div>
+                </div>
+                <div class="queue-list" id="jobsList">
+                    <div class="queue-empty">Queue ist leer.</div>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <datalist id="outputRoots"></datalist>
+    <datalist id="outputHistory"></datalist>
+</div>
+<div class="modal-backdrop hidden" id="outputFolderModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="outputFolderModalTitle">
+        <div class="panel-head">
+            <div>
+                <h2 id="outputFolderModalTitle">Ausgabeordner wählen</h2>
+                <p>Ordner unter den erlaubten Output-Roots wählen oder im aktuellen Pfad neu anlegen.</p>
+            </div>
+            <button type="button" class="ghost-button" id="closeOutputFolderModalBtn">Schließen</button>
+        </div>
+        <div class="readonly-value" id="outputFolderCurrentPath"></div>
+        <div class="root-switcher" id="outputRootSwitcher"></div>
+        <nav class="breadcrumbs" id="outputBreadcrumbs"></nav>
+        <section class="explorer-section">
+            <div class="section-head">
+                <h3>Ordner</h3>
+                <div class="button-row">
+                    <button type="button" class="ghost-button" id="refreshOutputBrowserBtn">Neu laden</button>
+                    <button type="button" id="selectOutputFolderBtn">Diesen Ordner verwenden</button>
+                </div>
+            </div>
+            <div class="browser-list" id="outputFolderList"></div>
+        </section>
+        <form id="outputFolderCreateForm" class="stack-form modal-create-form">
+            <label>
+                Neuer Unterordner
+                <div class="field-action-row">
+                    <input type="text" name="folder_name" placeholder="Neuer Ordnername" autocomplete="off">
+                    <button type="submit">Ordner anlegen</button>
+                </div>
+            </label>
+        </form>
+    </div>
+</div>
 </body>
-<script>
-
-	const gStatusContainer = document.getElementsByTagName('status')[0];
-	const gShowFullInfo = false;
-	
-	var gPreset = "<?= isset($_GET['preset']) ? $_GET['preset'] : '' ?>";
-
-	window.addEventListener('popstate', historyEvent);
-
-	exploreFolderQuery('<?=str_replace(search: "'", replace: '\\x27', subject:$aFolder);?>', true, false);
-
-	<?php
-		$aConvertQueue = json_decode(json: file_get_contents(QUEUE_FILE), associative: true);
-		
-		foreach($aConvertQueue as $aQueueItem)
-		{
-			if(isset($aQueueItem['result']) && isset($aQueueItem['result']['fileSize']))
-				$aSizeArray = array(
-					'human'	=> humanFilesize($aQueueItem['result']['fileSize']) . 'B',
-					'bytes'	=> $aQueueItem['result']['fileSize'],
-					);
-			else
-				$aSizeArray = null;
-				
-			$aStatusData = array(
-				'duration'	=> isset($aQueueItem['settings']['duration']) ? $aQueueItem['settings']['duration'] : null,
-				'id'		=> $aQueueItem['id'],
-				'infile'	=> $aQueueItem['settings']['infile'],
-				'outfile'	=> isset($aQueueItem['settings']['outfile']) ? $aQueueItem['settings']['outfile'] : null,
-				'size'		=> $aSizeArray,
-				'id'		=> $aQueueItem['id'],
-				'status' 	=> $aQueueItem['status'],
-				'type'	 	=> $aQueueItem['settings']['type'],
-				);
-			
-			if(preg_match(pattern: '/^(?<id>[0-9a-f]+)(?>x(?<subIndex>\d+))/', subject: $aQueueItem['id'], matches: $aIDMatches))
-				continue;
-			
-			echo "	changeStatus('" . json_encode(value: $aStatusData, flags: JSON_HEX_APOS + JSON_HEX_QUOT) . "');\r\n";
-		}
-	?>
-</script>
 </html>

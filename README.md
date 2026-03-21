@@ -9,6 +9,14 @@ A frontend for FFMPEG video conversion, written in PHP
 ##### Video encoding is working, but excpect the unexpected and check videos after conversion!
 ##### Browser history can confuse, it's not yet properly implemented
 
+## Runtime status (2026-03)
+- New SQLite runtime available under `config/runtime.sqlite`
+- New dashboard and template editor available under `frontend/index.php` and `frontend/templates.php`
+- Batch mode available for multiple clips in one folder
+- Live updates now use SSE plus lightweight snapshot endpoints instead of repeatedly polling the old full `state.php`
+- New queue worker entrypoint: `bin/runtime-worker.php`
+- Legacy pages still exist on disk, but the new UI is now the primary product path
+
 
 ## Overview
 A PHP frontend to be run on a web server, with the purpose to convert video clips using FFMPEG.
@@ -85,11 +93,13 @@ Right now the queue-manager is a PHP script, that needs to be executed by PHP-cl
 ## Installation/Configuration
 - Edit config-example.json to your needs and rename it to **config.json**
 - Create a custom ID file if wanted: config/ID
+- The SQLite runtime database lives in `config/runtime.sqlite`
 - Set up your web server to serve PHP scripts
   - Make sure the directories "config/", "run/", "quma/" are not accessible!
 - The queue manager script needs to be run as a permanent service. 
   - For example as a system unit.
-  - It needs to be executed by PHP (example: "/usr/bin/php8.1 quma/queue-manager-service.php")
+  - New runtime worker: `"/usr/bin/php8.4 /var/www/omikron/movie-ffmpeg-php-frontend/bin/runtime-worker.php"`
+  - Legacy worker: `"/usr/bin/php8.1 quma/queue-manager-service.php"`
   - Consider setting up a non-root user for this!
   
  **Detailled installation not yet documented**

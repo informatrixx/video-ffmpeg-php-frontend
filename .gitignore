@@ -1,4 +1,8 @@
 /config/ID
+/config/runtime.sqlite
+/config/runtime.sqlite-shm
+/config/runtime.sqlite-wal
+/config/worker-feedback.jsonl
 /frontend/query/cache/*
 /frontend/static/*
 /quma/queue.json
@@ -9,4 +13,4 @@
 *.pid
 *.sock
 config/outfolder_history.json
-config/outfolder_history.json
+.codex-sessions.tsv

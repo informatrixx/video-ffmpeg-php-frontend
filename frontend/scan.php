@@ -1,5 +1,7 @@
 <?php
 
+	header('Content-Type: text/html; charset=utf-8');
+
 	if(empty($_GET['file']))
 	{
 		header("HTTP/1.0 400 Bad Request");
@@ -47,9 +49,11 @@
 
 
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
-	<title>SCAN - <?=htmlspecialchars(basename($_GET['file']))?></title>
+	<meta charset="utf-8">
+	<title>SCAN - <?=htmlspecialchars(basename($_GET['file']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?></title>
 	<link rel="stylesheet" href="<?= provideStaticFile('css/scan.css')?>">
 	<link rel="stylesheet" href="<?= provideStaticFile('css/explore.css')?>">
 	<script src="<?= provideStaticFile('js/scan.js')?>"></script>

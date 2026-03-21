@@ -1,14 +1,29 @@
 {
-	"ConvertRoots": {
-		"Example Recordings":	"/home/hts/recordings",
-		"Example Documents":	"/home/example_user/Documents"
-	},
-	"Binaries":
-	{
-		"ffprobe":	"/usr/bin/ffprobe",
-		"ffmpeg":	"/path/to/executable/ffmpeg",
-		"unrar":	"/usr/bin/unrar"
-	},
-	"Debugging":    false,
-	"OutputFileExists":	"move"
+    "InputRoots": {
+        "Filme": "/srv/media/input/filme",
+        "Serien": "/srv/media/input/serien"
+    },
+    "OutputRoots": {
+        "Transcodes": "/srv/media/output"
+    },
+    "Binaries": {
+        "ffprobe": "/usr/local/bin/ffprobe",
+        "ffmpeg": "/usr/local/bin/ffmpeg",
+        "unrar": "/usr/bin/unrar",
+        "mkvpropedit": "/usr/bin/mkvpropedit"
+    },
+    "Runtime": {
+        "DatabasePath": "/var/www/omikron/movie-ffmpeg-php-frontend/config/runtime.sqlite",
+        "WorkerPollIntervalMs": 500,
+        "WorkerIdleSleepMs": 1000,
+        "WorkerCancelGraceSeconds": 8,
+        "WorkerParallelLoudnormAnalysisMax": 3,
+        "WorkerFeedbackFile": "/var/www/omikron/movie-ffmpeg-php-frontend/config/worker-feedback.jsonl"
+    },
+    "Security": {
+        "SessionName": "movieffmpegphpfrontend",
+        "AdminPasswordHash": "$2y$10$replace_me_with_password_hash"
+    },
+    "Debugging": false,
+    "OutputFileExists": "move"
 }

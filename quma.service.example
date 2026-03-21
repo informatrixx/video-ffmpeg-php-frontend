@@ -1,0 +1,23 @@
+[Unit]
+Description=movie-ffmpeg-php-frontend SQLite Queue Worker
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/omikron/movie-ffmpeg-php-frontend
+ExecStart=/usr/bin/php8.4 /var/www/omikron/movie-ffmpeg-php-frontend/bin/runtime-worker.php
+Restart=always
+RestartSec=2
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/www/omikron/movie-ffmpeg-php-frontend/config
+# Adjust these to your configured input/output roots. If you use /home-based roots
+# like /home/torrents, ProtectHome must not be "yes".
+ReadWritePaths=/srv/media/input /srv/media/output
+
+[Install]
+WantedBy=multi-user.target
